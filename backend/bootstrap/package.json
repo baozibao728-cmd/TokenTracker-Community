@@ -1,0 +1,14 @@
+{
+  "name": "tokentracker-backend-bootstrap-validation",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node validate.mjs",
+    "check:edges": "node check-edge-contracts.mjs",
+    "verify": "npm test && npm run check:edges"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.3.14",
+    "typescript": "5.9.3"
+  }
+}

@@ -1,0 +1,187 @@
+{
+  "upstreamCommit": "619acd46208f5b5da0cd03dd05208ea656588e43",
+  "objects": [
+    {
+      "file": "migrations/20260719152022_harden-backend-concurrency.sql",
+      "name": "refresh_tokentracker_device_identity",
+      "kind": "function",
+      "installedName": "refresh_tokentracker_device_identity",
+      "sha256": "6967e029ddba62373f5e18b80cecbca2deae8f1dbeb8c2a1891ff15e5b4a85db"
+    },
+    {
+      "file": "migrations/20260817120000_account-session-states.sql",
+      "name": "tokentracker_account_session_states",
+      "kind": "table",
+      "installedName": "tokentracker_account_session_states",
+      "sha256": "64a37a8fb5fe3844b82c6369cc142e213a57b7607b716883ea523cb89f7a3010"
+    },
+    {
+      "file": "migrations/20260817120000_account-session-states.sql",
+      "name": "tokentracker_account_session_states_bucket_idx",
+      "kind": "index",
+      "installedName": "tokentracker_account_session_states_bucket_idx",
+      "sha256": "025c64b175b1869e883759cdac0e1d1dac4d967492b28bea4da7071b9df37277"
+    },
+    {
+      "file": "migrations/20260817120000_account-session-states.sql",
+      "name": "tokentracker_upsert_account_session_states",
+      "kind": "function",
+      "installedName": "tokentracker_upsert_account_session_states",
+      "sha256": "06c41f267ae02e3db35b32cff5e759e97dea04414037f421fa5596c327de798a"
+    },
+    {
+      "file": "migrations/20260718071507_add-shared-account-usage-cache.sql",
+      "name": "tokentracker_account_usage_cache",
+      "kind": "table",
+      "installedName": "tokentracker_account_usage_cache",
+      "sha256": "cfa8eaa61cf3e18be1c375804cac3a8aa7e706aac91bfbe4230a75bb79ae9770"
+    },
+    {
+      "file": "migrations/20260718071507_add-shared-account-usage-cache.sql",
+      "name": "tokentracker_account_usage_cache_fetched_at_idx",
+      "kind": "index",
+      "installedName": "tokentracker_account_usage_cache_fetched_at_idx",
+      "sha256": "4a982a229472e769b99000cf440a117d41b9cbf6addc1183093748a906848f02"
+    },
+    {
+      "file": "migrations/20260904083630_add-single-scan-account-usage-candidate.sql",
+      "name": "account_usage_grouped_single_scan_candidate",
+      "kind": "function",
+      "installedName": "account_usage_grouped",
+      "sha256": "fc2c19c41accba1bdee25e61df4695eded78d66d8dd5b8b7ef0eba57113fe117"
+    },
+    {
+      "file": "migrations/20260904090000_promote-single-scan-account-usage.sql",
+      "name": "account_usage_grouped_v2",
+      "kind": "function",
+      "installedName": "account_usage_grouped_v2",
+      "sha256": "89d8f17e3e11417959d2a91a079ae92e4e4273d4b8b4793a5eef5a866ad60aca"
+    },
+    {
+      "file": "migrations/20260821173500_deepseek-v4-time-pricing.sql",
+      "name": "account_usage_grouped_cached",
+      "kind": "function",
+      "installedName": "account_usage_grouped_cached",
+      "sha256": "16b89e8879790e48502596ae4ca5fc679d70c597f9d55e76d38655013b42459d"
+    },
+    {
+      "file": "migrations/20260918041500_fold-account-summary-and-heatmap-aggregation.sql",
+      "name": "account_summary_compact",
+      "kind": "function",
+      "installedName": "account_summary_compact",
+      "sha256": "a02bbcc82f8aa03b1afcfa955a5c05ea16e1f47403780a97d457026f789a8188"
+    },
+    {
+      "file": "migrations/20260918041500_fold-account-summary-and-heatmap-aggregation.sql",
+      "name": "account_heatmap_compact",
+      "kind": "function",
+      "installedName": "account_heatmap_compact",
+      "sha256": "c2988138dad52d4eb45f523927f831a01b30163af0f66a6d9855d5e117238806"
+    },
+    {
+      "file": "migrations/20260918043000_fold-account-model-breakdown-aggregation.sql",
+      "name": "account_model_breakdown_compact",
+      "kind": "function",
+      "installedName": "account_model_breakdown_compact",
+      "sha256": "8cee2466984b462775fbc117b4556c44b42c630279bb75a561b2589e8d180d2b"
+    },
+    {
+      "file": "migrations/20260918050000_fold-account-daily-aggregation.sql",
+      "name": "account_daily_compact",
+      "kind": "function",
+      "installedName": "account_daily_compact",
+      "sha256": "d3dfac2742030a9b56090d1f984cbafe84dccb1fb879f804b4eb89c3ece54932"
+    },
+    {
+      "file": "migrations/20260804043427_align-leaderboard-machine-clusters.sql",
+      "name": "tokentracker_leaderboard_rollup_meta_v2",
+      "kind": "table",
+      "installedName": "tokentracker_leaderboard_rollup_meta_v2",
+      "sha256": "39ddcb0ade05e69bba1c4fb3b65167783de6a28b61fdaf57884ca8ce484203e4"
+    },
+    {
+      "file": "migrations/20260904064000_cache-leaderboard-total-rollup.sql",
+      "name": "tokentracker_leaderboard_rollup_total_v2",
+      "kind": "table",
+      "installedName": "tokentracker_leaderboard_rollup_total_v2",
+      "sha256": "ffe3234064bbfdc3377148a462c12b84cb1157ff0ae9bfcdb5a9f3b5ed28cfb9"
+    },
+    {
+      "file": "migrations/20260817120000_account-session-states.sql",
+      "name": "leaderboard_hourly_dedup_v2",
+      "kind": "function",
+      "installedName": "leaderboard_hourly_dedup_v2",
+      "sha256": "1448519303a89cab557319f644b7df8f915dea18f3cd0ebfc2a4412ef712710e"
+    },
+    {
+      "file": "migrations/20260904064000_cache-leaderboard-total-rollup.sql",
+      "name": "leaderboard_rollup_total_v2_after_insert",
+      "kind": "function",
+      "installedName": "leaderboard_rollup_total_v2_after_insert",
+      "sha256": "5b921e91b6c2f3da299933152acb6e6a11ab7b8a81518be23998b35d147ebebe"
+    },
+    {
+      "file": "migrations/20260904064000_cache-leaderboard-total-rollup.sql",
+      "name": "leaderboard_rollup_total_v2_after_delete",
+      "kind": "function",
+      "installedName": "leaderboard_rollup_total_v2_after_delete",
+      "sha256": "8eb48552db4e1c917451a1f0668a88bec046d88d5d80abae03a161903a5b0acc"
+    },
+    {
+      "file": "migrations/20260904064000_cache-leaderboard-total-rollup.sql",
+      "name": "leaderboard_rollup_total_v2_after_update",
+      "kind": "function",
+      "installedName": "leaderboard_rollup_total_v2_after_update",
+      "sha256": "d34baa135fdb82aeb427159caece981c97ab8417ddb29d53149041f2427561f0"
+    },
+    {
+      "file": "migrations/20260904064000_cache-leaderboard-total-rollup.sql",
+      "name": "tokentracker_leaderboard_rollup_daily_v2_total_insert",
+      "kind": "trigger",
+      "installedName": "tokentracker_leaderboard_rollup_daily_v2_total_insert",
+      "sha256": "f0d12acf91468d6f73a93b6bbf551ed8b1bb4a82688db164394dd180b58eb400"
+    },
+    {
+      "file": "migrations/20260904064000_cache-leaderboard-total-rollup.sql",
+      "name": "tokentracker_leaderboard_rollup_daily_v2_total_delete",
+      "kind": "trigger",
+      "installedName": "tokentracker_leaderboard_rollup_daily_v2_total_delete",
+      "sha256": "d195a6e4dd13b3c7604bd17260c01cd1f7e345f64c04bba01ca116ff6927c18b"
+    },
+    {
+      "file": "migrations/20260904064000_cache-leaderboard-total-rollup.sql",
+      "name": "tokentracker_leaderboard_rollup_daily_v2_total_update",
+      "kind": "trigger",
+      "installedName": "tokentracker_leaderboard_rollup_daily_v2_total_update",
+      "sha256": "1832b8651e083e0ac7bd07555e87f0ee6f4cee8df57a0460969ffb9004016c25"
+    },
+    {
+      "file": "migrations/20260817120000_account-session-states.sql",
+      "name": "leaderboard_rollup_daily_advance_v2",
+      "kind": "function",
+      "installedName": "leaderboard_rollup_daily_advance_v2",
+      "sha256": "960495f3c7418ce44f7bce7ee6265db73ce8d362b6e169e77f2171e954ac2a85"
+    },
+    {
+      "file": "migrations/20260904064000_cache-leaderboard-total-rollup.sql",
+      "name": "leaderboard_usage_grouped",
+      "kind": "function",
+      "installedName": "leaderboard_usage_grouped",
+      "sha256": "e1ce1faacac3ee9c379bce916e95f22ff0d49ddc7c73b49678afca7335dcac12"
+    },
+    {
+      "file": "migrations/20260904064500_shard-leaderboard-total-read.sql",
+      "name": "leaderboard_usage_grouped_total_shard",
+      "kind": "function",
+      "installedName": "leaderboard_usage_grouped_total_shard",
+      "sha256": "695d67908768ee822718d2354216312823d0c10583a31628101ac8c632311e52"
+    },
+    {
+      "file": "migrations/20260717013000_harden-backend-hot-paths.sql",
+      "name": "leaderboard_user_metadata",
+      "kind": "function",
+      "installedName": "leaderboard_user_metadata",
+      "sha256": "200aff79ea3027a40abe36d8c1bb5bbddbc4a51f6789d6648e7458e23f4d0a8e"
+    }
+  ]
+}
