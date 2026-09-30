@@ -1,0 +1,25 @@
+{
+  "name": "tokentracker-backend-bootstrap-validation",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node validate.mjs",
+    "check:edges": "node check-edge-contracts.mjs",
+    "check:upstream": "node check-edge-contracts.mjs --upstream",
+    "check:adapters": "node ../edge/build-adapters.mjs --check",
+    "check:types": "node ../edge/check-types.mjs",
+    "test:edges": "node ../edge/validate.mjs",
+    "test:credentials": "node ../edge/validate.mjs --api-key-only",
+    "build:migration": "node ../deploy/build-migration.mjs",
+    "check:migration": "node ../deploy/build-migration.mjs --check",
+    "test:pg15": "node pg15-checks.mjs && node validate.mjs --pg15 && node check-edge-contracts.mjs --pg15 && node ../edge/validate.mjs --pg15 --api-key-only",
+    "check:secrets": "node ../deploy/scan-artifacts.mjs",
+    "verify": "npm run check:migration && npm test && npm run check:adapters && npm run check:types && npm run check:edges && npm run test:edges && npm run test:credentials && npm run test:pg15 && npm run check:secrets"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.3.14",
+    "@insforge/sdk": "1.4.5",
+    "pg": "8.16.3",
+    "typescript": "5.9.3"
+  }
+}
