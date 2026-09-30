@@ -6,6 +6,10 @@
 
 ## 当前结论
 
+后续 **MVP Edge Contract Closure** 已完成：独立适配层见 [报告](../edge/README.md)。默认 `check:edges` 检查真实 MVP 发布入口，13/13 通过；`check:upstream` 仍保留原样上游的 9/13 诊断。全部 SQL 和对象来源保持不变，未部署。以下原 Schema Baseline 结论和缺口表保留为历史依据。
+
+### Schema Baseline 阶段结论（适配前）
+
 - 本地 PostgreSQL 17.5（PGlite）验证：32 项通过。
 - 现有 `test/edge-pricing-parity.test.js`：11 项通过；首次运行被沙箱的子进程权限阻止，获准重跑后完整通过，没有改动测试或价格代码。
 - 实际创建：12 张表、1 个 View、21 个函数（含 4 个 Trigger 函数）、4 个业务 Trigger、23 个索引（含 PK/UNIQUE 自动索引）。
@@ -77,9 +81,9 @@
 - `leaderboard_rollup_daily_replace_v2`：保留上游逐日重建方式，补齐最终 reader 所需的 tier 维度，并序列化重建操作。空范围正常返回。
 - `leaderboard_refresh_try_claim`：单语句 `INSERT ... ON CONFLICT ... WHERE` 实现时间窗限流；强制刷新 interval=0 与上游调用契约一致。它不是长任务租约。
 
-## 不能可靠补齐 / 尚未闭合的依赖
+## 原样 upstream 的未闭合依赖
 
-不能靠增加禁止范围内的空表或返回空数组的假 RPC 让检查变绿。以下缺口保留为显式失败：
+不能靠增加禁止范围内的空表或返回空数组的假 RPC 让检查变绿。以下缺口在 `check:upstream` 中仍为显式失败；MVP 已在独立 Edge 层裁剪，详见后续阶段报告：
 
 | 目标 Edge | 缺失对象 | 实际影响及下一阶段最小处理 |
 | --- | --- | --- |
@@ -94,7 +98,7 @@
 
 1. 上游历史机器 value-based clustering 的完整构建算法缺失。新安装依赖 machine_id 身份收敛；不声称能重建官方历史别名。稀疏映射的实际去重和删除路径已验证。
 2. 自有 InsForge 的实际角色、`auth.users` 列/权限、OAuth metadata 中头像字段尚未查询确认。测试 fixture 只验证这份明确的平台契约，不证明平台已匹配。
-3. 多连接并发、InsForge Edge SDK/网关行为、真实 JWT 登录与设备 Token 签发仍需后续在自有测试项目验证。当前 Token 测试验证存储及归属约束，不声称已执行 HTTP 签发。
+3. 多连接并发、InsForge 云端网关行为及真实登录仍需后续在自有测试项目验证。后续 MVP 测试已用真实 SDK、本地 JWT 和 SQL 执行 HTTP handler 签发，但不是云端集成验证。
 4. 保留上游 30 秒账号缓存和 7 天逐批历史修复语义；修正历史汇总不是全部即时完成。
 5. 上游排行榜 list 不按 `is_public` 过滤，profile 以存在 snapshot 为公开入口；因此设置 `leaderboard_public=false` **不能解释为不上榜/不公开**。本阶段没有改变此业务契约，后续 MVP Edge 适配需明确展示/隐私语义后再公开服务。
 
@@ -108,8 +112,10 @@
 npm --prefix backend/bootstrap ci --ignore-scripts --no-audit --no-fund
 npm --prefix backend/bootstrap test
 npm --prefix backend/bootstrap run check:edges
-# 完整门禁；目前应非零退出，不能作为绿色发布门禁：
+# MVP 完整门禁：
 npm --prefix backend/bootstrap run verify
+# 原样 upstream 诊断应非零退出：
+npm --prefix backend/bootstrap run check:upstream
 # 原项目价格一致性回归：
 node --test test/edge-pricing-parity.test.js
 ```
@@ -122,7 +128,7 @@ node --test test/edge-pricing-parity.test.js
 
 ## 第一次云端 bootstrap 的判断
 
-**当前结论：暂不执行。** SQL 基线已通过本地验证，但 13 个原样 Edge 的完整依赖还未全部满足，平台契约也尚未实测。数据库 baseline 与 Edge 发布是两个不同门槛。
+**Schema Baseline 阶段结论：暂不执行。** 后续 MVP 门禁已闭合，当前具备首次自有空项目契约验证的本地条件；云端平台契约仍未实测，执行前核实事项见 [MVP 报告](../edge/README.md)。数据库 baseline 与 Edge 发布是两个不同门槛。本阶段没有自行部署。
 
 下一阶段最小顺序：
 
@@ -133,7 +139,7 @@ node --test test/edge-pricing-parity.test.js
 
 本阶段没有进行第 3、4 步，也没有改动任何 `src/`、`dashboard/`、历史 migration 或客户端配置。
 
-## 本次 Git 状态
+## Schema Baseline 最初交付时的 Git 状态（历史记录）
 
 - 分支：`chore/backend-bootstrap`，从 clean `main` 创建。
 - origin：`https://github.com/baozibao728-cmd/TokenTracker-Community.git`。

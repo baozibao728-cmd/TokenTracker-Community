@@ -1,0 +1,122 @@
+{
+  "upstreamCommit": "619acd46208f5b5da0cd03dd05208ea656588e43",
+  "functions": [
+    {
+      "name": "tokentracker-device-token-issue",
+      "entry": "dashboard/edge-patches/tokentracker-device-token-issue.ts",
+      "upstream": "dashboard/edge-patches/tokentracker-device-token-issue.ts",
+      "upstreamSha256": "13e141c6d9453a325348107569590f8b6365227c5ae524217fa37917c969254e",
+      "entrySha256": "13e141c6d9453a325348107569590f8b6365227c5ae524217fa37917c969254e",
+      "adapted": false,
+      "adapterKind": null
+    },
+    {
+      "name": "tokentracker-ingest",
+      "entry": "dashboard/edge-patches/tokentracker-ingest.ts",
+      "upstream": "dashboard/edge-patches/tokentracker-ingest.ts",
+      "upstreamSha256": "08692fefd8b9728b8edfcd28eb26d6e7047cb16808d4d7c02213f50b6ba1a401",
+      "entrySha256": "08692fefd8b9728b8edfcd28eb26d6e7047cb16808d4d7c02213f50b6ba1a401",
+      "adapted": false,
+      "adapterKind": null
+    },
+    {
+      "name": "tokentracker-account-summary",
+      "entry": "backend/edge/tokentracker-account-summary.ts",
+      "upstream": "dashboard/edge-patches/tokentracker-account-summary.ts",
+      "upstreamSha256": "3dcaac6330eb884be16e8256cef3c31a90a586869e130f6c93f486c98de4b8c9",
+      "entrySha256": "2a8b93190d088ef8c31f9ed34e4e1650473d3e87200fa1bc8d4d334c4aa5ddc9",
+      "adapted": true,
+      "adapterKind": "type-compatibility"
+    },
+    {
+      "name": "tokentracker-account-daily",
+      "entry": "dashboard/edge-patches/tokentracker-account-daily.ts",
+      "upstream": "dashboard/edge-patches/tokentracker-account-daily.ts",
+      "upstreamSha256": "2ecf19a5b349880387d9078ed90af5f669184564a618f3292134d64328d72617",
+      "entrySha256": "2ecf19a5b349880387d9078ed90af5f669184564a618f3292134d64328d72617",
+      "adapted": false,
+      "adapterKind": null
+    },
+    {
+      "name": "tokentracker-account-hourly",
+      "entry": "dashboard/edge-patches/tokentracker-account-hourly.ts",
+      "upstream": "dashboard/edge-patches/tokentracker-account-hourly.ts",
+      "upstreamSha256": "eb58db59da16a8cb2ebcb5c4dab4f7edd34f5ed8ecdba4583994429785aa9634",
+      "entrySha256": "eb58db59da16a8cb2ebcb5c4dab4f7edd34f5ed8ecdba4583994429785aa9634",
+      "adapted": false,
+      "adapterKind": null
+    },
+    {
+      "name": "tokentracker-account-monthly",
+      "entry": "dashboard/edge-patches/tokentracker-account-monthly.ts",
+      "upstream": "dashboard/edge-patches/tokentracker-account-monthly.ts",
+      "upstreamSha256": "9ac720b863b58ae7dfd7cc1b0116e84029947c5884c62143657f55b740167afa",
+      "entrySha256": "9ac720b863b58ae7dfd7cc1b0116e84029947c5884c62143657f55b740167afa",
+      "adapted": false,
+      "adapterKind": null
+    },
+    {
+      "name": "tokentracker-account-heatmap",
+      "entry": "dashboard/edge-patches/tokentracker-account-heatmap.ts",
+      "upstream": "dashboard/edge-patches/tokentracker-account-heatmap.ts",
+      "upstreamSha256": "9026ebda2b36b422094d67f776eb2a4cfe96304f22d53f61224b4320ed3e0374",
+      "entrySha256": "9026ebda2b36b422094d67f776eb2a4cfe96304f22d53f61224b4320ed3e0374",
+      "adapted": false,
+      "adapterKind": null
+    },
+    {
+      "name": "tokentracker-account-model-breakdown",
+      "entry": "dashboard/edge-patches/tokentracker-account-model-breakdown.ts",
+      "upstream": "dashboard/edge-patches/tokentracker-account-model-breakdown.ts",
+      "upstreamSha256": "a555c377603711fdf6853367dbb6cf45181e783c52416676dab1f3194364c279",
+      "entrySha256": "a555c377603711fdf6853367dbb6cf45181e783c52416676dab1f3194364c279",
+      "adapted": false,
+      "adapterKind": null
+    },
+    {
+      "name": "tokentracker-account-devices",
+      "entry": "backend/edge/tokentracker-account-devices.ts",
+      "upstream": "dashboard/edge-patches/tokentracker-account-devices.ts",
+      "upstreamSha256": "3d1877bea34f0abb2514bc3abd8510690bdd50862944759834c5ec80e9dbc306",
+      "entrySha256": "3ae7dad33fb8866ea90a833390cc47417d2bb1a2a06d2e5fdee000360dc6cc1f",
+      "adapted": true,
+      "adapterKind": "type-compatibility"
+    },
+    {
+      "name": "tokentracker-public-visibility",
+      "entry": "backend/edge/tokentracker-public-visibility.ts",
+      "upstream": "dashboard/edge-patches/tokentracker-public-visibility.ts",
+      "upstreamSha256": "91a3364fd3edaa7d77794c92c9484af4201545f1b8e6194796e063017d0f7c16",
+      "entrySha256": "33aa0942afc0aaba2770d8c95ffe8d35b244efd781139cf4608413367c8209f8",
+      "adapted": true,
+      "adapterKind": "mvp-capability"
+    },
+    {
+      "name": "tokentracker-leaderboard-refresh",
+      "entry": "backend/edge/tokentracker-leaderboard-refresh.ts",
+      "upstream": "dashboard/edge-patches/tokentracker-leaderboard-refresh.ts",
+      "upstreamSha256": "204951f307f7d936123846cfb175f1a1a8684c15d048f166ec4bf4bf7f8df2e6",
+      "entrySha256": "08bc99edd9d6a1315a45a28f6ebc02f432d38ed9e77f2d46b7c51c6879f92276",
+      "adapted": true,
+      "adapterKind": "mvp-capability"
+    },
+    {
+      "name": "tokentracker-leaderboard",
+      "entry": "backend/edge/tokentracker-leaderboard.ts",
+      "upstream": "dashboard/edge-patches/tokentracker-leaderboard.ts",
+      "upstreamSha256": "ed45ef8ca930e5b7417d563d6df642eb8df23a763eecf612c7d0c4d14747e355",
+      "entrySha256": "4a6aa9fc7a65a72efdc5d1c80f319939741c89d60cd1e98fb4bc4c36acd1dee9",
+      "adapted": true,
+      "adapterKind": "mvp-capability"
+    },
+    {
+      "name": "tokentracker-leaderboard-profile",
+      "entry": "backend/edge/tokentracker-leaderboard-profile.ts",
+      "upstream": "dashboard/edge-patches/tokentracker-leaderboard-profile.ts",
+      "upstreamSha256": "fa1a43ba4e8ec882686656943db63104f93392591bb00ad7d4a795d80ee3bf99",
+      "entrySha256": "0927658ada7025d343bae3ddf869ff469b31b6ccdfd099a527a3c26cd19e3588",
+      "adapted": true,
+      "adapterKind": "mvp-capability"
+    }
+  ]
+}

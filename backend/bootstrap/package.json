@@ -5,10 +5,15 @@
   "scripts": {
     "test": "node validate.mjs",
     "check:edges": "node check-edge-contracts.mjs",
-    "verify": "npm test && npm run check:edges"
+    "check:upstream": "node check-edge-contracts.mjs --upstream",
+    "check:adapters": "node ../edge/build-adapters.mjs --check",
+    "check:types": "node ../edge/check-types.mjs",
+    "test:edges": "node ../edge/validate.mjs",
+    "verify": "npm test && npm run check:adapters && npm run check:types && npm run check:edges && npm run test:edges"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.3.14",
+    "@insforge/sdk": "1.4.5",
     "typescript": "5.9.3"
   }
 }
