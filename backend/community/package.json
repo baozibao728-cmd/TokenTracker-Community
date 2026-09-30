@@ -7,6 +7,9 @@
     "check:migration": "node build-migration.mjs --check",
     "test:config": "node --test config.test.mjs",
     "test:pg15": "node validate.mjs",
-    "verify": "npm run check:migration && npm run test:config && npm run test:pg15 && node ../deploy/scan-artifacts.mjs"
+    "build:edges": "node build-edges.mjs",
+    "check:edges": "node build-edges.mjs --check && node check-edge-types.mjs",
+    "test:edges": "node validate-edges.mjs",
+    "verify": "npm run check:migration && npm run test:config && npm run check:edges && npm run test:pg15 && npm run test:edges && node ../deploy/scan-artifacts.mjs"
   }
 }
