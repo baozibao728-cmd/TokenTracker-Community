@@ -8,7 +8,9 @@ import { checkMigration } from '../deploy/build-migration.mjs';
 export const dir = path.dirname(fileURLToPath(import.meta.url));
 export const root = path.resolve(dir, '../..');
 export const sqlFiles = fs.readdirSync(dir).filter(n => /^\d{3}[a-z]?_.*\.sql$/.test(n)).sort();
-export const read = name => fs.readFileSync(path.join(dir, name), 'utf8');
+// Same canonical LF bytes as build-migration/provenance; Windows checkout CRLF
+// must not appear as upstream definition drift. All other bytes remain checked.
+export const read = name => fs.readFileSync(path.join(dir, name), 'utf8').replace(/\r\n/g, '\n');
 export async function createTestDatabase() {
   // No connection URL accepted; never reads .insforge, .env or credentials.
   const db = process.argv.includes('--pg15')

@@ -1,0 +1,12 @@
+{
+  "name": "tokentracker-community-database-validation",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:migration": "node build-migration.mjs",
+    "check:migration": "node build-migration.mjs --check",
+    "test:config": "node --test config.test.mjs",
+    "test:pg15": "node validate.mjs",
+    "verify": "npm run check:migration && npm run test:config && npm run test:pg15 && node ../deploy/scan-artifacts.mjs"
+  }
+}
