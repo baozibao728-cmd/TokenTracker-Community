@@ -4,20 +4,21 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { PGlite } from '@electric-sql/pglite';
 import { inspectEdge } from './edge-contracts.mjs';
+import { checkMigration } from '../deploy/build-migration.mjs';
 export const dir = path.dirname(fileURLToPath(import.meta.url));
 export const root = path.resolve(dir, '../..');
 export const sqlFiles = fs.readdirSync(dir).filter(n => /^\d{3}[a-z]?_.*\.sql$/.test(n)).sort();
 export const read = name => fs.readFileSync(path.join(dir, name), 'utf8');
 export async function createTestDatabase() {
   // No connection URL accepted; never reads .insforge, .env or credentials.
-  const db = new PGlite();
+  const db = process.argv.includes('--pg15')
+    ? await (await import('./pg15-runtime.mjs')).createPg15Database()
+    : new PGlite();
   try {
     await db.exec(read('test-platform.sql'));
     await db.exec('SET ROLE project_admin; BEGIN;');
-    for (const file of sqlFiles) {
-      try { await db.exec(read(file)); }
-      catch (error) { throw new Error(`${file}: ${error.message}`, {cause: error}); }
-    }
+    // Execute the exact checked release artifact, not a parallel SQL implementation.
+    await db.exec(checkMigration());
     await db.exec('COMMIT;');
     return db;
   } catch (error) { await db.close(); throw error; }

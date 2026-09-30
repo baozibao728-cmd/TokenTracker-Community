@@ -1,3 +1,4 @@
+// GENERATED SERVER-CREDENTIAL ADAPTER. Regenerate with build-adapters.mjs.
 // GENERATED TYPE-ONLY ADAPTER. Runtime JavaScript must equal upstream.
 /**
  * InsForge Edge: list the signed-in user's active devices with per-device
@@ -10,6 +11,16 @@
  * gateway, so we verify the signature ourselves before returning per-user data.
  */
 import { createClient } from "npm:@insforge/sdk";
+
+// Source template inlined into every generated single-file MVP Edge entry.
+// Read only project credentials injected by InsForge Edge Runtime.
+// Never use request headers, ANON_KEY, CLI credentials or local configuration.
+export function resolveServerCredential(): string | undefined {
+  return Deno.env.get("INSFORGE_SERVICE_ROLE_KEY")?.trim()
+    || Deno.env.get("API_KEY")?.trim()
+    || undefined;
+}
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -200,7 +211,7 @@ export default async function (req: Request): Promise<Response> {
     req.headers.get("apikey") ?? req.headers.get("Apikey") ?? req.headers.get("x-api-key") ?? undefined;
   const anonKey =
     Deno.env.get("INSFORGE_ANON_KEY") ?? Deno.env.get("ANON_KEY") ?? incomingApiKey ?? undefined;
-  const serviceRoleKey = Deno.env.get("INSFORGE_SERVICE_ROLE_KEY");
+  const serviceRoleKey = resolveServerCredential();
   if (!serviceRoleKey) return json({ error: "server misconfigured" }, 500);
 
   const client = createClient({

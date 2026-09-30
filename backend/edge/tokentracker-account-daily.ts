@@ -1,35 +1,7 @@
 // GENERATED SERVER-CREDENTIAL ADAPTER. Regenerate with build-adapters.mjs.
-// GENERATED TYPE-ONLY ADAPTER. Runtime JavaScript must equal upstream.
 /**
- * InsForge Edge: account-wide usage summary (cross-device, aggregated by user_id).
- * Mirrors local-api.js `tokentracker-usage-summary` response schema.
- *
- * Auth: HS256 JWT_SECRET signature verification (same template as
- * tokentracker-device-token-issue). InsForge does NOT validate JWTs at the
- * gateway, so edge functions that expose per-user data MUST verify the
- * signature themselves — otherwise any caller can forge {"sub":"<victim>"}
- * and read another user's full token history.
- *
- * Cross-device aggregation lives server-side in the account_usage_grouped RPC
- * (this function just buckets/sums what the RPC returns). The RPC splits by
- * source class — see its header + test/account-source-parity.test.js:
- *   * MACHINE-LEVEL sources (claude/codex/gemini/...): real independent
- *     per-machine work → SUM across the user's ACTIVE devices (revoked_at IS
- *     NULL). The active-device filter + machine-stable device_name (the
- *     dashboard derives it from /functions/tokentracker-machine-id, see
- *     cloud-sync.ts resolveDeviceNameSuffix) drop historic device_id churn so
- *     SUM doesn't double-count one machine opened in multiple browsers.
- *   * ACCOUNT-LEVEL sources (cursor): data comes from a per-ACCOUNT cloud API,
- *     NOT machine logs, so every device that synced it stores an IDENTICAL
- *     copy. These are DEDUPED across ALL devices (one canonical whole row per
- *     hour/source/model), NOT summed. Summing multiplied a user's Cursor total
- *     by their device count — the v0.42–0.43 double-count bug (a 2-machine
- *     user's Cursor was ~2x; ~5% of their grand total).
- *
- *   Cross-device = additive (GitHub Discussion #101) still holds for the
- *   machine-level sources that motivated it. The dashboard total and the
- *   leaderboard rank now use the SAME two-class semantic
- *   (leaderboard-refresh.ts / leaderboard-profile.ts), so they agree.
+ * InsForge Edge: account-wide daily usage (cross-device, aggregated by user_id).
+ * Mirrors local-api.js `tokentracker-usage-daily` response schema.
  */
 import { createClient } from "npm:@insforge/sdk";
 
@@ -51,6 +23,21 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
 };
 
+/**
+ * Kept deliberately plain: do NOT add Content-Encoding here.
+ *
+ * This endpoint carried a gzip branch for a while (body over 1 KB and a caller
+ * advertising gzip got a compressed stream). It never reached a client. The
+ * InsForge gateway decompresses an encoded edge response and forwards it as
+ * identity: `Vary: Accept-Encoding` is passed through, `Content-Encoding` is
+ * stripped, and both `Content-Length` and the ETag are computed over the plain
+ * body. Verified end to end on 2026-09-20 against the public leaderboard
+ * endpoint with cache-busted requests: 77529 bytes on the wire either way, and
+ * a body starting with `{"en` rather than the gzip magic 1f 8b.
+ *
+ * So compressing here only burns CPU twice. The way to shrink these responses
+ * is fewer bytes (the *_compact RPCs) or fewer requests (client-side caches).
+ */
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -59,8 +46,11 @@ function json(data: unknown, status = 200) {
 }
 
 /**
- * Convert UTC timestamp to local YYYY-MM-DD (see local-api.js#getZonedParts).
- * Positive offsetMinutes = east of UTC.
+ * Convert a UTC timestamp to the caller's local YYYY-MM-DD. Mirrors the
+ * convention used by src/lib/local-api.js#getZonedParts:
+ *   - tz: IANA name (preferred); resolved via Intl.DateTimeFormat("en-CA")
+ *   - offsetMinutes: positive = east of UTC (e.g. +480 for Asia/Shanghai)
+ * Falls back to UTC slice when neither is provided/valid.
  */
 function zonedDayKey(hourStart: string, tz: string | null, offsetMinutes: number | null): string {
   if (tz) {
@@ -94,9 +84,10 @@ function b64urlToBytes(s: string): Uint8Array<ArrayBuffer> {
 }
 
 /**
- * Verify HS256 JWT against JWT_SECRET and return its sub. Mirrors the helper
- * in tokentracker-device-token-issue.ts. Returns null on any failure (bad
- * shape, bad signature, expired) — caller surfaces that as 401.
+ * Verify legacy HS256 and current RS256 InsForge JWTs locally. InsForge 2.2.2+
+ * signs newly refreshed access tokens with RS256/JWT_PUBLIC_KEY while existing
+ * sessions may still present HS256/JWT_SECRET tokens during the transition.
+ * Returns null on any failure so an unverified sub can never reach user data.
  */
 async function verifiedUserIdFromJwt(authHeader: string | null): Promise<string | null> {
   if (!authHeader) return null;
@@ -105,22 +96,46 @@ async function verifiedUserIdFromJwt(authHeader: string | null): Promise<string 
   const parts = token.split(".");
   if (parts.length !== 3) return null;
   try {
-    const header = JSON.parse(new TextDecoder().decode(b64urlToBytes(parts[0]))) as Record<string, unknown>;
+    const header = JSON.parse(
+      new TextDecoder().decode(b64urlToBytes(parts[0])),
+    ) as Record<string, unknown>;
     const data = new TextEncoder().encode(`${parts[0]}.${parts[1]}`);
     const sig = b64urlToBytes(parts[2]);
     let ok = false;
     if (header.alg === "HS256") {
       const secret = Deno.env.get("JWT_SECRET");
       if (!secret) return null;
-      const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["verify"]);
+      const key = await crypto.subtle.importKey(
+        "raw",
+        new TextEncoder().encode(secret),
+        { name: "HMAC", hash: "SHA-256" },
+        false,
+        ["verify"],
+      );
       ok = await crypto.subtle.verify("HMAC", key, sig, data);
     } else if (header.alg === "RS256") {
       const publicKeyPem = Deno.env.get("JWT_PUBLIC_KEY");
       if (!publicKeyPem) return null;
-      const publicKeyDer = Uint8Array.from(atob(publicKeyPem.replace(/-----[^-]+-----|\s/g, "")), (char) => char.charCodeAt(0));
-      const key = await crypto.subtle.importKey("spki", publicKeyDer, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"]);
-      ok = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, sig, data);
-    } else return null;
+      const publicKeyDer = Uint8Array.from(
+        atob(publicKeyPem.replace(/-----[^-]+-----|\s/g, "")),
+        (char) => char.charCodeAt(0),
+      );
+      const key = await crypto.subtle.importKey(
+        "spki",
+        publicKeyDer,
+        { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+        false,
+        ["verify"],
+      );
+      ok = await crypto.subtle.verify(
+        "RSASSA-PKCS1-v1_5",
+        key,
+        sig,
+        data,
+      );
+    } else {
+      return null;
+    }
     if (!ok) return null;
     const payload = JSON.parse(new TextDecoder().decode(b64urlToBytes(parts[1]))) as Record<string, unknown>;
     if (typeof payload.exp === "number" && Date.now() / 1000 > payload.exp) return null;
@@ -132,11 +147,9 @@ async function verifiedUserIdFromJwt(authHeader: string | null): Promise<string 
   return null;
 }
 
-/** Per-model pricing (USD per million tokens). Synced from src/lib/local-api.js. */
-
-// NOTE: MODEL_PRICING + getModelPricing synced from tokentracker-leaderboard-refresh.ts
-// to fix dashboard cost under-reporting (e.g. mimo-v2.5-pro → $0, gpt-5.5 → fallback gpt-5).
-// TODO: extract to a shared edge-pricing module; tracked in feedback_model_pricing_sync.
+// MODEL_PRICING + getModelPricing synced from tokentracker-leaderboard-refresh.ts
+// 2026-05-28: includes mimo, gpt-5.5, glm, grok, deepseek-v4, kiro, hy3-preview (86 models).
+// Keep this block byte-identical with leaderboard-refresh.ts; see feedback_model_pricing_sync.
 const MODEL_PRICING: Record<string, { input: number; output: number; cache_read: number; cache_write?: number }> = {
   // ── Anthropic Claude ──
   "claude-fable-5": { input: 10, output: 50, cache_read: 1, cache_write: 12.5 },
@@ -547,7 +560,6 @@ function getRowPricing(row: { model?: string; source?: string; hour_start?: stri
   return { input: pricing.input * 0.5, output: pricing.output * 0.5, cache_read: pricing.cache_read * 0.5, cache_write: (pricing.cache_write || 0) * 0.5 };
 }
 
-
 interface HourlyRow {
   hour_start: string;
   source: string;
@@ -577,47 +589,39 @@ interface GroupedRow {
 }
 
 /**
- * What account_summary_compact() returns. Everything this endpoint actually
- * emits, and nothing more:
+ * What account_daily_compact() returns.
  *
- *  - cost_dims:    [source, model, pricing_tier, input, output, cache_read,
- *                  cache_write, reasoning] summed over the requested [from, to]
- *                  with the day dimension dropped. Pricing depends only on
- *                  (source, model, pricing_tier) and computeRowCost is linear in
- *                  every token column, so folding the days away before pricing is
- *                  exact. Checked against the per-day path on 12 real heavy
- *                  accounts: worst relative difference 8.5e-16 (double epsilon),
- *                  zero differences at the emitted toFixed(6).
- *  - day_rollup:   [local day, total_tokens, conversations] over the whole
- *                  rolling window, which is all last_7d / last_30d need.
- *  - range_totals: token columns + conversation_count + active_days over
- *                  [from, to].
+ * `days` carries everything a day needs except its cost; `cost_dims` keeps the
+ * (source, model, pricing_tier) split because pricing depends on it, but the
+ * day's rows are already summed per dim and the JSON key names are gone.
  */
-interface CompactSummary {
-  cost_dims: [string, string, string | null, number | string, number | string, number | string, number | string, number | string][];
-  day_rollup: [string, number | string, number | string][];
-  range_totals: Record<string, number | string>;
+interface CompactDaily {
+  // [day, total, input, output, cache_read, cache_write, reasoning,
+  //  conversations, { model: tokens }]
+  days: [string, number | string, number | string, number | string, number | string,
+    number | string, number | string, number | string, Record<string, number | string> | null][];
+  // [day, source, model, pricing_tier, input, output, cache_read, cache_write, reasoning]
+  cost_dims: [string, string | null, string | null, string | null, number | string,
+    number | string, number | string, number | string, number | string][];
 }
 
 const COMPACT_TTL_MS = 30_000;
 const COMPACT_STALE_IF_ERROR_MS = 5 * 60_000;
-const compactCache = new Map<string, { fetchedAt: number; value: CompactSummary }>();
-const compactInFlight = new Map<string, Promise<CompactSummary>>();
+const compactCache = new Map<string, { fetchedAt: number; value: CompactDaily }>();
+const compactInFlight = new Map<string, Promise<CompactDaily>>();
 
 /**
- * Server-side aggregation, folded down to what this endpoint emits.
+ * Server-side aggregation, folded to what this endpoint emits.
  *
- * account_summary_compact() runs the very same account_usage_grouped_cached()
- * scan underneath — same 30s shared Postgres cache, same cross-device dedup —
- * but does the day/model rollup in Postgres instead of shipping every
- * (bucket, source, model, pricing_tier) row to the edge to be summed and then
- * dropped. This endpoint never emitted per-day rows at all: it emits totals, a
- * day count and two rolling windows. A 30-day window for a heavy account goes
- * from ~99 KB to ~4.8 KB, and the common `from=today&to=today` poll to ~1.6 KB
- * (~98% less). Measured p90 also drops from ~7.3s to ~1.1s, because the tail was
- * large-payload transfer jitter rather than query time.
+ * account_daily_compact() runs the very same account_usage_grouped_cached() scan
+ * underneath — same 30s shared Postgres cache, same cross-device dedup — but
+ * rolls each day up in Postgres. Unlike summary/heatmap/model-breakdown, daily
+ * genuinely needs a per-model split (it prints a cost per day), so the win here
+ * is smaller: dropping the repeated JSON key names and pre-summing each day's
+ * rows per dim takes a 30-day window for a heavy account from ~146 KB to ~60 KB
+ * (-59%) rather than -90%.
  */
-async function fetchCompactSummary(
+async function fetchCompactDaily(
   client: ReturnType<typeof createClient>,
   userId: string,
   requestedDeviceId: string | null,
@@ -627,7 +631,7 @@ async function fetchCompactSummary(
   rangeTo: string,
   tz: string | null,
   tzOffsetMinutes: number | null,
-): Promise<CompactSummary> {
+): Promise<CompactDaily> {
   const cacheKey = JSON.stringify([userId, requestedDeviceId, fromIso, toIso, rangeFrom, rangeTo, tz, tzOffsetMinutes]);
   const cached = compactCache.get(cacheKey);
   if (cached && Date.now() - cached.fetchedAt < COMPACT_TTL_MS) return cached.value;
@@ -636,7 +640,7 @@ async function fetchCompactSummary(
 
   const pending = (async () => {
     try {
-      const { data, error } = await client.database.rpc("account_summary_compact", {
+      const { data, error } = await client.database.rpc("account_daily_compact", {
         p_user_id: userId,
         p_device_id: requestedDeviceId,
         p_from: fromIso,
@@ -647,11 +651,10 @@ async function fetchCompactSummary(
         p_range_to: rangeTo,
       });
       if (error) throw new Error(error.message);
-      const payload = (data ?? {}) as Partial<CompactSummary>;
-      const value: CompactSummary = {
+      const payload = (data ?? {}) as Partial<CompactDaily>;
+      const value: CompactDaily = {
+        days: Array.isArray(payload.days) ? payload.days : [],
         cost_dims: Array.isArray(payload.cost_dims) ? payload.cost_dims : [],
-        day_rollup: Array.isArray(payload.day_rollup) ? payload.day_rollup : [],
-        range_totals: (payload.range_totals ?? {}) as Record<string, number | string>,
       };
       compactCache.set(cacheKey, { fetchedAt: Date.now(), value });
       if (compactCache.size > 64) {
@@ -713,32 +716,6 @@ function computeRowCost(row: GroupedRow): number {
   );
 }
 
-interface DayRoll {
-  billable_total_tokens: number;
-  conversation_count: number;
-}
-
-// Prices one already-day-folded cost_dims tuple. computeRowCost only reads
-// source / model / pricing_tier and the five priced token columns, so the
-// remaining GroupedRow fields are filled with the neutral values the per-day
-// rows would have contributed.
-function costOfDim(dim: CompactSummary["cost_dims"][number]): number {
-  return computeRowCost({
-    bucket: "",
-    source: dim[0],
-    model: dim[1],
-    pricing_tier: dim[2] ?? undefined,
-    input_tokens: Number(dim[3]) || 0,
-    output_tokens: Number(dim[4]) || 0,
-    cached_input_tokens: Number(dim[5]) || 0,
-    cache_creation_input_tokens: Number(dim[6]) || 0,
-    reasoning_output_tokens: Number(dim[7]) || 0,
-    total_tokens: 0,
-    conversations: 0,
-  });
-}
-
-
 export default async function (req: Request): Promise<Response> {
   if (req.method === "OPTIONS")
     return new Response(null, { status: 204, headers: corsHeaders });
@@ -780,121 +757,87 @@ export default async function (req: Request): Promise<Response> {
   const userId = await verifiedUserIdFromJwt(req.headers.get("Authorization"));
   if (!userId) return json({ error: "Unauthorized" }, 401);
 
-  // The v2 RPC resolves and validates device ownership in the same database
-  // statement as aggregation, avoiding a second PostgREST connection.
   const rawDeviceId = url.searchParams.get("device_id");
   const requestedDeviceId = rawDeviceId && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(rawDeviceId)
     ? rawDeviceId
     : null;
 
-  // Range for requested [from, to]; widen ±1 day to capture TZ-shifted
-  // edge hours for non-UTC callers.
+  // Widen the UTC query window by ±1 day so TZ-shifted buckets at the
+  // edges still capture the relevant hours (up to 14h offset worldwide).
   const startDate = new Date(`${from}T00:00:00Z`);
   startDate.setUTCDate(startDate.getUTCDate() - 1);
-  const nextDay = new Date(`${to}T00:00:00Z`);
-  nextDay.setUTCDate(nextDay.getUTCDate() + 2);
+  const endDate = new Date(`${to}T00:00:00Z`);
+  endDate.setUTCDate(endDate.getUTCDate() + 2);
   const rangeStart = startDate.toISOString();
-  const rangeEnd = nextDay.toISOString();
+  const rangeEnd = endDate.toISOString();
 
-  // Anchor rolling windows to the caller's local "today" (matches daily
-  // buckets which are keyed by local day via zonedDayKey).
-  const todayStr = zonedDayKey(new Date().toISOString(), tz, tzOffsetMinutes);
-  const todayUtcMidnight = new Date(`${todayStr}T00:00:00Z`);
-  const thirtyAgo = new Date(todayUtcMidnight);
-  thirtyAgo.setUTCDate(thirtyAgo.getUTCDate() - 29);
-  const thirtyAgoStr = thirtyAgo.toISOString().slice(0, 10);
-  // Widen ±1 UTC day around the local-day boundary for query safety.
-  const rollingStartDate = new Date(`${(thirtyAgoStr < from ? thirtyAgoStr : from)}T00:00:00Z`);
-  rollingStartDate.setUTCDate(rollingStartDate.getUTCDate() - 1);
-  const rollingEndDate = new Date(todayUtcMidnight);
-  rollingEndDate.setUTCDate(rollingEndDate.getUTCDate() + 2);
-  const rollingStart = rollingStartDate.toISOString();
-  const rollingEndNext = rollingEndDate;
-
-  let compact: CompactSummary;
+  let compact: CompactDaily;
   try {
-    compact = await fetchCompactSummary(client, userId, requestedDeviceId, rollingStart, rollingEndNext.toISOString(), from, to, tz, tzOffsetMinutes);
+    compact = await fetchCompactDaily(client, userId, requestedDeviceId, rangeStart, rangeEnd, from, to, tz, tzOffsetMinutes);
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }
 
-  // Postgres already summed [from, to]; only the pricing stays here, because the
-  // model price table lives in this file (and its four siblings) and must not be
-  // duplicated into SQL as a sixth copy.
-  const rt = compact.range_totals;
-  const num = (key: string) => Number(rt[key]) || 0;
-  let totalCost = 0;
-  for (const dim of compact.cost_dims) totalCost += costOfDim(dim);
-
-  const totals = {
-    total_tokens: num("total_tokens"),
-    billable_total_tokens: num("total_tokens"),
-    total_cost_usd: totalCost,
-    input_tokens: num("input_tokens"),
-    output_tokens: num("output_tokens"),
-    cached_input_tokens: num("cached_input_tokens"),
-    cache_creation_input_tokens: num("cache_creation_input_tokens"),
-    reasoning_output_tokens: num("reasoning_output_tokens"),
-    conversation_count: num("conversation_count"),
-  };
-
-  const byDay = new Map<string, DayRoll>();
-  for (const [day, tokens, conversations] of compact.day_rollup) {
+  const byDay = new Map<string, {
+    day: string;
+    total_tokens: number;
+    billable_total_tokens: number;
+    total_cost_usd: number;
+    input_tokens: number;
+    output_tokens: number;
+    cached_input_tokens: number;
+    cache_creation_input_tokens: number;
+    reasoning_output_tokens: number;
+    conversation_count: number;
+    // Per-model token totals for the day, so the dashboard Usage Trend can stack
+    // by MODEL in cloud (account) mode — mirrors src/lib/local-api.js daily output.
+    // Without this the trend falls back to a token-type breakdown in cloud mode.
+    models: Record<string, number>;
+  }>();
+  // Postgres already bucketed to the local day and kept only [from, to] — the
+  // same inclusive range the `day < from || day > to` skip used to enforce —
+  // and folded a NULL/empty model into "unknown" just as String(model || …) did.
+  for (const [day, tt, i, o, cr, cw, rs, cv, models] of compact.days) {
+    const total = Number(tt) || 0;
+    const mdl: Record<string, number> = {};
+    if (models) for (const name of Object.keys(models)) mdl[name] = Number(models[name]) || 0;
     byDay.set(day, {
-      billable_total_tokens: Number(tokens) || 0,
-      conversation_count: Number(conversations) || 0,
+      day,
+      total_tokens: total,
+      billable_total_tokens: total,
+      total_cost_usd: 0,
+      input_tokens: Number(i) || 0,
+      output_tokens: Number(o) || 0,
+      cached_input_tokens: Number(cr) || 0,
+      cache_creation_input_tokens: Number(cw) || 0,
+      reasoning_output_tokens: Number(rs) || 0,
+      conversation_count: Number(cv) || 0,
+      models: mdl,
     });
   }
 
-  const collectDays = (n: number) => {
-    const out: DayRoll[] = [];
-    for (let i = n - 1; i >= 0; i--) {
-      const d = new Date(todayUtcMidnight);
-      d.setUTCDate(d.getUTCDate() - i);
-      const dd = byDay.get(d.toISOString().slice(0, 10));
-      if (dd) out.push(dd);
-    }
-    return out;
-  };
-  const sumDays = (days: DayRoll[]) =>
-    days.reduce(
-      (a, r) => {
-        a.billable_total_tokens += r.billable_total_tokens;
-        a.conversation_count += r.conversation_count;
-        return a;
-      },
-      { billable_total_tokens: 0, conversation_count: 0 },
-    );
+  // Cost stays on the edge because the price table lives here. Each dim is one
+  // day's rows already summed per (source, model, pricing_tier); computeRowCost
+  // is linear in every token column, so adding the dims up per day gives the
+  // same total the per-day rows did.
+  for (const [day, source, model, tier, i, o, cr, cw, rs] of compact.cost_dims) {
+    const a = byDay.get(day);
+    if (!a) continue;
+    a.total_cost_usd += computeRowCost({
+      bucket: day,
+      source: source as string,
+      model: model as string,
+      pricing_tier: tier ?? undefined,
+      input_tokens: Number(i) || 0,
+      output_tokens: Number(o) || 0,
+      cached_input_tokens: Number(cr) || 0,
+      cache_creation_input_tokens: Number(cw) || 0,
+      reasoning_output_tokens: Number(rs) || 0,
+      total_tokens: 0,
+      conversations: 0,
+    });
+  }
 
-  const l7 = collectDays(7);
-  const l30 = collectDays(30);
-  const l7t = sumDays(l7);
-  const l30t = sumDays(l30);
-  const l7from = new Date(todayUtcMidnight);
-  l7from.setUTCDate(l7from.getUTCDate() - 6);
-  const l30from = new Date(todayUtcMidnight);
-  l30from.setUTCDate(l30from.getUTCDate() - 29);
-
-  return json({
-    from,
-    to,
-    days: num("active_days"),
-    totals: { ...totals, total_cost_usd: totalCost.toFixed(6) },
-    rolling: {
-      last_7d: {
-        from: l7from.toISOString().slice(0, 10),
-        to: todayStr,
-        active_days: l7.length,
-        totals: l7t,
-      },
-      last_30d: {
-        from: l30from.toISOString().slice(0, 10),
-        to: todayStr,
-        active_days: l30.length,
-        totals: l30t,
-        avg_per_active_day:
-          l30.length > 0 ? Math.round(l30t.billable_total_tokens / l30.length) : 0,
-      },
-    },
-  });
+  const data = Array.from(byDay.values()).sort((a, b) => a.day.localeCompare(b.day));
+  return json({ from, to, data });
 }

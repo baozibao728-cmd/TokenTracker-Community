@@ -12,11 +12,12 @@ const require = createRequire(new URL('../bootstrap/package.json',import.meta.ur
 const ts = require('typescript');
 const {createClient} = await import(pathToFileURL(path.join(path.dirname(require.resolve('@insforge/sdk')),'index.mjs')).href);
 const db = await createTestDatabase();
+const serviceCredential=randomUUID();
 const env = new Map([
-  ['INSFORGE_BASE_URL','https://bootstrap.test'],['INSFORGE_SERVICE_ROLE_KEY',randomUUID()],
+  ['INSFORGE_BASE_URL','https://bootstrap.test'],[process.argv.includes('--api-key-only') ? 'API_KEY' : 'INSFORGE_SERVICE_ROLE_KEY',serviceCredential],
   ['JWT_SECRET',randomUUID()],['LEADERBOARD_BLOCKED_USER_IDS','22222222-2222-4222-8222-222222222222'],
 ]);
-const transport = await localTransport(db,env.get('INSFORGE_SERVICE_ROLE_KEY'));
+const transport = await localTransport(db,serviceCredential);
 const functions = new Map();
 const now = new Date();
 // Freeze JS time only; PG uses its real local clock for cache/rollup semantics.
@@ -71,7 +72,14 @@ try {
     for (const entry of entries.filter(row=>row.adapted)) {
       const original=fs.readFileSync(path.join(root,entry.upstream),'utf8');
       const current=fs.readFileSync(path.join(root,entry.entry),'utf8');
-      if (entry.adapterKind==='type-compatibility') assert.equal(compile(current),compile(original),entry.name);
+      // Strip only the deliberate credential adaptation before testing the previous
+      // type-only/runtime equivalence. Capability patches are separately exercised.
+      if (!entry.adapterKind.startsWith('mvp-capability')) {
+        const template=fs.readFileSync(path.join(root,'backend/edge/server-credential.ts'),'utf8').replace(/\r\n/g,'\n');
+        let before=current.replace(/\r\n/g,'\n').replace('\n\n'+template,'');
+        before=before.replaceAll('resolveServerCredential()', 'Deno.env.get("INSFORGE_SERVICE_ROLE_KEY")');
+        assert.equal(compile(before),compile(original),entry.name);
+      }
       // Compare actual AST declarations, including row-cost logic and source rules.
       const pricing = source => {
         const file=ts.createSourceFile('edge.ts',source,ts.ScriptTarget.Latest,true);
@@ -96,7 +104,7 @@ try {
     }
   });
   await test('fresh empty baseline refreshes all periods and serves an empty real leaderboard',async()=>{
-    const result=await call('leaderboard-refresh',{token:env.get('INSFORGE_SERVICE_ROLE_KEY'),body:{force_refresh:true}});
+    const result=await call('leaderboard-refresh',{token:serviceCredential,body:{force_refresh:true}});
     assert.equal(result.status,200,JSON.stringify(result.data));
     for (const period of ['week','month','total']) {
       assert.equal(result.data.results[period].upserted,0);
@@ -108,9 +116,9 @@ try {
     await db.exec('DELETE FROM tokentracker_leaderboard_refresh_state');
   });
   await db.exec('RESET ROLE');
-  await db.query("INSERT INTO auth.users VALUES($1,'alice@example.test','{\"name\":\"Alice\"}'),($2,'blocked@example.test','{}')",[user,blocked]);
+  await db.query("INSERT INTO auth.users(id,email,profile) VALUES($1,'alice@example.test','{\"name\":\"Alice\"}'),($2,'blocked@example.test','{}')",[user,blocked]);
   await db.exec('SET ROLE project_admin');
-  const token=await jwt(user), otherToken=await jwt(blocked), admin=env.get('INSFORGE_SERVICE_ROLE_KEY');
+  const token=await jwt(user), otherToken=await jwt(blocked), admin=serviceCredential;
   let deviceToken,deviceId;
   await test('RS256 signed user reaches verification; forged RSA token fails',async()=>{
     const keys=await webcrypto.subtle.generateKey({name:'RSASSA-PKCS1-v1_5',modulusLength:2048,publicExponent:new Uint8Array([1,0,1]),hash:'SHA-256'},true,['sign','verify']);
@@ -228,6 +236,25 @@ try {
   await test('actual trace has no removed objects and all calls stayed on local test host',async()=>{
     assert.ok(transport.trace.length>30);
     for(const call of transport.trace) assert.ok(!/badge|anomal|anticheat|quarantine|public_views/.test(call.name),call.name);
+  });
+  await test('credential priority selects legacy key before differing API_KEY; blank legacy falls back',async()=>{
+    env.set('INSFORGE_SERVICE_ROLE_KEY',serviceCredential);env.set('API_KEY',randomUUID());
+    assert.equal((await call('leaderboard')).status,200);
+    env.set('INSFORGE_SERVICE_ROLE_KEY','  ');env.set('API_KEY',serviceCredential);
+    assert.equal((await call('leaderboard')).status,200);
+  });
+  await test('all 13 handlers explicitly fail without either service credential; ANON_KEY never substitutes',async()=>{
+    env.set('INSFORGE_SERVICE_ROLE_KEY','');env.set('API_KEY','');env.set('ANON_KEY',randomUUID());
+    const before=transport.trace.length;
+    for(const name of entries.map(row=>row.name.replace('tokentracker-',''))) {
+      const options=name==='device-token-issue' ? {token,body:{device_name:'No credential',platform:'windows'}}
+        : name==='ingest' ? {token:deviceToken,body:upload}
+        : name==='leaderboard-refresh' ? {token,body:{period:'week'}}
+        : {token,query:`user_id=${user}&from=${day}&to=${day}&day=${day}&tz=UTC`};
+      const result=await call(name,options);
+      assert.equal(result.status,500,`${name}: ${JSON.stringify(result.data)}`);
+    }
+    assert.equal(transport.trace.length,before,'Missing service credentials must not reach the database');
   });
   console.log(`MVP Edge request checks passed: ${passed}; executed ${transport.trace.length} actual local database requests`);
 } finally { await db.close(); }

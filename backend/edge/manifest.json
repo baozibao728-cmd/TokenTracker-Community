@@ -3,120 +3,120 @@
   "functions": [
     {
       "name": "tokentracker-device-token-issue",
-      "entry": "dashboard/edge-patches/tokentracker-device-token-issue.ts",
+      "entry": "backend/edge/tokentracker-device-token-issue.ts",
       "upstream": "dashboard/edge-patches/tokentracker-device-token-issue.ts",
       "upstreamSha256": "13e141c6d9453a325348107569590f8b6365227c5ae524217fa37917c969254e",
-      "entrySha256": "13e141c6d9453a325348107569590f8b6365227c5ae524217fa37917c969254e",
-      "adapted": false,
-      "adapterKind": null
+      "entrySha256": "b0386445843a3d6e4131f7a2a4768894f97834d47879dd6ece9e932495e6a5f2",
+      "adapted": true,
+      "adapterKind": "server-credential"
     },
     {
       "name": "tokentracker-ingest",
-      "entry": "dashboard/edge-patches/tokentracker-ingest.ts",
+      "entry": "backend/edge/tokentracker-ingest.ts",
       "upstream": "dashboard/edge-patches/tokentracker-ingest.ts",
       "upstreamSha256": "08692fefd8b9728b8edfcd28eb26d6e7047cb16808d4d7c02213f50b6ba1a401",
-      "entrySha256": "08692fefd8b9728b8edfcd28eb26d6e7047cb16808d4d7c02213f50b6ba1a401",
-      "adapted": false,
-      "adapterKind": null
+      "entrySha256": "60c8ba1c2da774bc60a9a74f021b64187be4fa3e7276f863e47ab6bebae21be6",
+      "adapted": true,
+      "adapterKind": "server-credential"
     },
     {
       "name": "tokentracker-account-summary",
       "entry": "backend/edge/tokentracker-account-summary.ts",
       "upstream": "dashboard/edge-patches/tokentracker-account-summary.ts",
       "upstreamSha256": "3dcaac6330eb884be16e8256cef3c31a90a586869e130f6c93f486c98de4b8c9",
-      "entrySha256": "2a8b93190d088ef8c31f9ed34e4e1650473d3e87200fa1bc8d4d334c4aa5ddc9",
+      "entrySha256": "d9701db9aeda4b3766c346314792bb738a603d269718cf757e5a969466b7e4d8",
       "adapted": true,
-      "adapterKind": "type-compatibility"
+      "adapterKind": "type-compatibility+server-credential"
     },
     {
       "name": "tokentracker-account-daily",
-      "entry": "dashboard/edge-patches/tokentracker-account-daily.ts",
+      "entry": "backend/edge/tokentracker-account-daily.ts",
       "upstream": "dashboard/edge-patches/tokentracker-account-daily.ts",
       "upstreamSha256": "2ecf19a5b349880387d9078ed90af5f669184564a618f3292134d64328d72617",
-      "entrySha256": "2ecf19a5b349880387d9078ed90af5f669184564a618f3292134d64328d72617",
-      "adapted": false,
-      "adapterKind": null
+      "entrySha256": "ea8e3c59efd39352efd4df72e0abd9539dd32fb5850dec3448b2ca5b398fa4f9",
+      "adapted": true,
+      "adapterKind": "server-credential"
     },
     {
       "name": "tokentracker-account-hourly",
-      "entry": "dashboard/edge-patches/tokentracker-account-hourly.ts",
+      "entry": "backend/edge/tokentracker-account-hourly.ts",
       "upstream": "dashboard/edge-patches/tokentracker-account-hourly.ts",
       "upstreamSha256": "eb58db59da16a8cb2ebcb5c4dab4f7edd34f5ed8ecdba4583994429785aa9634",
-      "entrySha256": "eb58db59da16a8cb2ebcb5c4dab4f7edd34f5ed8ecdba4583994429785aa9634",
-      "adapted": false,
-      "adapterKind": null
+      "entrySha256": "c9884ee1132498f36b56b2ceb915743977608ff1dbbf78c45ae4042a49cdebbe",
+      "adapted": true,
+      "adapterKind": "server-credential"
     },
     {
       "name": "tokentracker-account-monthly",
-      "entry": "dashboard/edge-patches/tokentracker-account-monthly.ts",
+      "entry": "backend/edge/tokentracker-account-monthly.ts",
       "upstream": "dashboard/edge-patches/tokentracker-account-monthly.ts",
       "upstreamSha256": "9ac720b863b58ae7dfd7cc1b0116e84029947c5884c62143657f55b740167afa",
-      "entrySha256": "9ac720b863b58ae7dfd7cc1b0116e84029947c5884c62143657f55b740167afa",
-      "adapted": false,
-      "adapterKind": null
+      "entrySha256": "5cb67b0e38034c86c3e53f2bd6554d70dc1e894e2d0709bb7346ff38774f19c4",
+      "adapted": true,
+      "adapterKind": "server-credential"
     },
     {
       "name": "tokentracker-account-heatmap",
-      "entry": "dashboard/edge-patches/tokentracker-account-heatmap.ts",
+      "entry": "backend/edge/tokentracker-account-heatmap.ts",
       "upstream": "dashboard/edge-patches/tokentracker-account-heatmap.ts",
       "upstreamSha256": "9026ebda2b36b422094d67f776eb2a4cfe96304f22d53f61224b4320ed3e0374",
-      "entrySha256": "9026ebda2b36b422094d67f776eb2a4cfe96304f22d53f61224b4320ed3e0374",
-      "adapted": false,
-      "adapterKind": null
+      "entrySha256": "4466ae1bbd9a8834440aebbf5e2b1f5445d8ec2c7721095e2ed66c024fa6aa44",
+      "adapted": true,
+      "adapterKind": "server-credential"
     },
     {
       "name": "tokentracker-account-model-breakdown",
-      "entry": "dashboard/edge-patches/tokentracker-account-model-breakdown.ts",
+      "entry": "backend/edge/tokentracker-account-model-breakdown.ts",
       "upstream": "dashboard/edge-patches/tokentracker-account-model-breakdown.ts",
       "upstreamSha256": "a555c377603711fdf6853367dbb6cf45181e783c52416676dab1f3194364c279",
-      "entrySha256": "a555c377603711fdf6853367dbb6cf45181e783c52416676dab1f3194364c279",
-      "adapted": false,
-      "adapterKind": null
+      "entrySha256": "94134958d1298ef858b96b97a8cde639fc1386709a44e943b4efce82065fdf66",
+      "adapted": true,
+      "adapterKind": "server-credential"
     },
     {
       "name": "tokentracker-account-devices",
       "entry": "backend/edge/tokentracker-account-devices.ts",
       "upstream": "dashboard/edge-patches/tokentracker-account-devices.ts",
       "upstreamSha256": "3d1877bea34f0abb2514bc3abd8510690bdd50862944759834c5ec80e9dbc306",
-      "entrySha256": "3ae7dad33fb8866ea90a833390cc47417d2bb1a2a06d2e5fdee000360dc6cc1f",
+      "entrySha256": "796f9089a1eb2073eaa3ac1068221264f815edf61c376d06694da32db620a378",
       "adapted": true,
-      "adapterKind": "type-compatibility"
+      "adapterKind": "type-compatibility+server-credential"
     },
     {
       "name": "tokentracker-public-visibility",
       "entry": "backend/edge/tokentracker-public-visibility.ts",
       "upstream": "dashboard/edge-patches/tokentracker-public-visibility.ts",
       "upstreamSha256": "91a3364fd3edaa7d77794c92c9484af4201545f1b8e6194796e063017d0f7c16",
-      "entrySha256": "33aa0942afc0aaba2770d8c95ffe8d35b244efd781139cf4608413367c8209f8",
+      "entrySha256": "2d072cdb4d79f5f7800d604343b43300423a0caa3881c2fbfb1a4d5125fe51df",
       "adapted": true,
-      "adapterKind": "mvp-capability"
+      "adapterKind": "mvp-capability+server-credential"
     },
     {
       "name": "tokentracker-leaderboard-refresh",
       "entry": "backend/edge/tokentracker-leaderboard-refresh.ts",
       "upstream": "dashboard/edge-patches/tokentracker-leaderboard-refresh.ts",
       "upstreamSha256": "204951f307f7d936123846cfb175f1a1a8684c15d048f166ec4bf4bf7f8df2e6",
-      "entrySha256": "08bc99edd9d6a1315a45a28f6ebc02f432d38ed9e77f2d46b7c51c6879f92276",
+      "entrySha256": "bdf5c33e726c3a7f2af464462563f80e9b0daae5e301e828fc809c1b0382759f",
       "adapted": true,
-      "adapterKind": "mvp-capability"
+      "adapterKind": "mvp-capability+server-credential"
     },
     {
       "name": "tokentracker-leaderboard",
       "entry": "backend/edge/tokentracker-leaderboard.ts",
       "upstream": "dashboard/edge-patches/tokentracker-leaderboard.ts",
       "upstreamSha256": "ed45ef8ca930e5b7417d563d6df642eb8df23a763eecf612c7d0c4d14747e355",
-      "entrySha256": "4a6aa9fc7a65a72efdc5d1c80f319939741c89d60cd1e98fb4bc4c36acd1dee9",
+      "entrySha256": "5a0d2c26594cb1b562ddbcfc1ca335a9cbc0b8c12c617a74bc171aaf55aa51d6",
       "adapted": true,
-      "adapterKind": "mvp-capability"
+      "adapterKind": "mvp-capability+server-credential"
     },
     {
       "name": "tokentracker-leaderboard-profile",
       "entry": "backend/edge/tokentracker-leaderboard-profile.ts",
       "upstream": "dashboard/edge-patches/tokentracker-leaderboard-profile.ts",
       "upstreamSha256": "fa1a43ba4e8ec882686656943db63104f93392591bb00ad7d4a795d80ee3bf99",
-      "entrySha256": "0927658ada7025d343bae3ddf869ff469b31b6ccdfd099a527a3c26cd19e3588",
+      "entrySha256": "5d6061fde5f7fd610a460832b0ace7ef70c400401b476476ed18ffeef23cd47b",
       "adapted": true,
-      "adapterKind": "mvp-capability"
+      "adapterKind": "mvp-capability+server-credential"
     }
   ]
 }

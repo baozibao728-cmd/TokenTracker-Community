@@ -85,7 +85,11 @@ export async function localTransport(db, serviceToken) {
         }
         sql += ` RETURNING ${projection}`;
       } else throw new Error(`Unsupported test method ${method}`);
-      const result = await db.query(sql,args);
+      // Serialize REST rows in PostgreSQL, as a PostgREST JSON response does.
+      // Raw node-postgres returns int8 as strings; that is a driver policy, not
+      // the JSON wire representation. Keep strict request assertions unchanged.
+      const wire = await db.query(`WITH response_rows AS (${sql}) SELECT row_to_json(response_rows) AS payload FROM response_rows`,args);
+      const result = {rows:wire.rows.map(row=>row.payload)};
       const single = (headers.get('Accept') || '').includes('vnd.pgrst.object');
       if (single && result.rows.length !== 1) return response({message:'JSON object requested, multiple (or no) rows returned',details:`The result contains ${result.rows.length} rows`,code:'PGRST116'},406);
       const extra = {};

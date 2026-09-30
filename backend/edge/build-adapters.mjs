@@ -34,7 +34,7 @@ function mvpPayload(data: unknown) {
   };
 }
 `;
-export function adapt(name, original) {
+export function adaptCapabilities(name, original) {
   let source = original;
   if (typeOnly.has(name)) {
     if (name === 'tokentracker-account-devices')
@@ -109,25 +109,46 @@ export function adapt(name, original) {
   }
   return '// GENERATED MVP ADAPTER. Edit build-adapters.mjs; run it locally after reviewing upstream changes.\n' + source;
 }
+export function adapt(name, original) {
+  let source = adaptCapabilities(name, original);
+  const anchor = 'Deno.env.get("INSFORGE_SERVICE_ROLE_KEY")';
+  if (!source.includes(anchor)) throw new Error(`Service credential anchor missing: ${name}`);
+  source = source.replaceAll(anchor, 'resolveServerCredential()');
+  // Public leaderboard previously relied on a failing anon DB query when misconfigured.
+  // Every database client now fails explicitly before any request without admin credentials.
+  const clientAnchor = '  const serviceRoleKey = resolveServerCredential();';
+  if (!source.includes(clientAnchor)) throw new Error(`Credential guard anchor missing: ${name}`);
+  if (!source.includes('if (!serviceRoleKey)')) {
+    if (name === 'tokentracker-leaderboard-profile') {
+      source = once(source, clientAnchor, clientAnchor + '\n  if (!serviceRoleKey) return null;');
+      source = once(source, '  const client = getClient();',
+        '  const client = getClient();\n  if (!client) return json({ error: "server misconfigured" }, 500);');
+    } else source = once(source, clientAnchor,
+      clientAnchor + '\n  if (!serviceRoleKey) return json({ error: "server misconfigured" }, 500);');
+  }
+  const resolver = fs.readFileSync(path.join(dir, 'server-credential.ts'), 'utf8').replace(/\r\n/g, '\n');
+  source = once(source, 'import { createClient } from "npm:@insforge/sdk";',
+    'import { createClient } from "npm:@insforge/sdk";\n\n' + resolver);
+  return '// GENERATED SERVER-CREDENTIAL ADAPTER. Regenerate with build-adapters.mjs.\n' + source;
+}
 const manifest = {upstreamCommit: '619acd46208f5b5da0cd03dd05208ea656588e43', functions: []};
 const outputs = new Map();
 for (const name of edges) {
   const upstream = `dashboard/edge-patches/${name}.ts`;
   const original = fs.readFileSync(path.join(root, upstream), 'utf8').replace(/\r\n/g,'\n');
   const source = adapt(name, original);
-  const changed = adapted.has(name) || typeOnly.has(name);
-  const entry = changed ? `backend/edge/${name}.ts` : upstream;
-  manifest.functions.push({name, entry, upstream, upstreamSha256: hash(original), entrySha256: hash(source), adapted: changed,
-    adapterKind: adapted.has(name) ? 'mvp-capability' : typeOnly.has(name) ? 'type-compatibility' : null});
-  if (changed) outputs.set(path.join(dir, `${name}.ts`), source);
+  const entry = `backend/edge/${name}.ts`;
+  manifest.functions.push({name, entry, upstream, upstreamSha256: hash(original), entrySha256: hash(source), adapted: true,
+    adapterKind: adapted.has(name) ? 'mvp-capability+server-credential' : typeOnly.has(name) ? 'type-compatibility+server-credential' : 'server-credential'});
+  outputs.set(path.join(dir, `${name}.ts`), source);
 }
 outputs.set(path.join(dir,'manifest.json'), JSON.stringify(manifest,null,2)+'\n');
 if (process.argv.includes('--check')) {
   for (const [filename,expected] of outputs) {
     if (!fs.existsSync(filename) || fs.readFileSync(filename,'utf8').replace(/\r\n/g,'\n') !== expected) throw new Error(`Adapter drift: ${path.basename(filename)}. Review upstream changes and regenerate.`);
   }
-  console.log('PASS 4 MVP capability adapters, 2 type-only adapters and 13 source hashes match their reviewed patches');
+  console.log('PASS 13 credential adapters, 4 capability patches, 2 type patches and upstream hashes match');
 } else {
   for (const [filename,source] of outputs) fs.writeFileSync(filename,source);
-  console.log('Generated 4 MVP capability adapters, 2 type-only adapters and 13-function manifest; nothing deployed.');
+  console.log('Generated 13 single-file credential adapters and manifest; nothing deployed.');
 }

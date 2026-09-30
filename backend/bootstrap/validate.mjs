@@ -39,7 +39,8 @@ try {
   console.log(`Engine: ${await scalar('SELECT version()')}`);
   await test('all ordered SQL applies as non-superuser project_admin', async () => {
     assert.equal(await scalar('SELECT current_user'), 'project_admin');
-    assert.equal(await scalar("SELECT rolsuper OR rolbypassrls FROM pg_roles WHERE rolname=current_user"), false);
+    assert.equal(await scalar("SELECT rolsuper FROM pg_roles WHERE rolname=current_user"), false);
+    assert.equal(await scalar("SELECT rolbypassrls FROM pg_roles WHERE rolname=current_user"), true);
   });
   await test('baseline refuses to overwrite an existing backend', async () => {
     await assert.rejects(() => db.exec(read('000_preflight.sql')), /Existing TokenTracker objects/);
@@ -113,7 +114,8 @@ try {
   });
   await test('seed only the local platform fixture, then issue device identities/tokens', async () => {
     await db.exec('RESET ROLE');
-    await db.query("INSERT INTO auth.users VALUES($1,'alice@example.test','{\"name\":\"Alice\",\"avatar_url\":\"https://example.test/avatar.png\"}'),($2,'bob@example.test','{}'),($3,'empty@example.test','{}')",[user,other,empty]);
+    await db.query("INSERT INTO auth.users(id,email,profile) VALUES($1,'alice@example.test','{\"name\":\"Alice\",\"avatar_url\":\"https://example.test/avatar.png\"}'),($2,'bob@example.test','{}'),($3,'empty@example.test',NULL)",[user,other,empty]);
+    await db.query('UPDATE auth.users SET metadata=NULL WHERE id=$1',[empty]);
     await db.exec('SET ROLE project_admin');
     await db.query("INSERT INTO tokentracker_devices(id,user_id,device_name,platform,machine_id) VALUES($1,$2,'Laptop','windows','machine-1'),($3,$2,'Desktop','windows','machine-2'),($4,$5,'Other','linux','machine-1')",[device,user,second,foreign,other]);
     await db.query("INSERT INTO tokentracker_device_tokens(user_id,device_id,token_hash) VALUES($1,$2,$3)",[user,device,'a'.repeat(64)]);
@@ -214,6 +216,8 @@ try {
     await db.query('UPDATE tokentracker_devices SET revoked_at=NULL WHERE id=$1',[second]);
   });
   await test('public settings defaults and profile view/metadata projection', async () => {
+    assert.equal(await scalar('SELECT display_name FROM tokentracker_user_profiles WHERE user_id=$1',[empty]),'empty');
+    assert.equal(await scalar('SELECT avatar_url FROM tokentracker_user_profiles WHERE user_id=$1',[empty]),null);
     const initial = await scalar('SELECT leaderboard_user_metadata(ARRAY[$1]::uuid[])',[user]);
     assert.equal(initial[0].leaderboard_public,false); assert.equal(initial[0].display_name,'Alice');
     await db.query("INSERT INTO tokentracker_user_settings(user_id,display_name,leaderboard_public) VALUES($1,'Custom',true)",[user]);

@@ -6,6 +6,8 @@
 
 ## 当前结论
 
+后续 **First Cloud Bootstrap Preparation** 新增单 migration 产物与 PostgreSQL 15.18 验证，详见 [发布准备报告](../deploy/README.md)。测试现在执行该生成产物；fixture 已对齐云端 BYPASSRLS 与 nullable profile/metadata。`verify` 增加产物一致性、真实 PG15、API_KEY fallback 请求测试及 secret/path scan；引擎不可用时明确失败。原 12 份可部署 SQL 与 provenance 没有改动。
+
 后续 **MVP Edge Contract Closure** 已完成：独立适配层见 [报告](../edge/README.md)。默认 `check:edges` 检查真实 MVP 发布入口，13/13 通过；`check:upstream` 仍保留原样上游的 9/13 诊断。全部 SQL 和对象来源保持不变，未部署。以下原 Schema Baseline 结论和缺口表保留为历史依据。
 
 ### Schema Baseline 阶段结论（适配前）

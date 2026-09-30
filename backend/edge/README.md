@@ -2,6 +2,8 @@
 
 本阶段完成自有后端的 **13/13 MVP Edge 数据库依赖闭合**。新增独立适配层，不修改 upstream Edge 原文件，不增加数据库对象，不读取本机凭据，不连接或部署任何云端项目。
 
+后续 **First Cloud Bootstrap Preparation** 已将 13 个发布入口全部生成为本目录单文件，并内联统一 `server-credential.ts` 模板，支持 `INSFORGE_SERVICE_ROLE_KEY` → `API_KEY`。上游源文件/hash 不变，原能力裁剪和价格代码保留。缺少两种服务凭据时明确返回 500，绝不退到 anon 权限。详情及复现见 [发布准备报告](../deploy/README.md)。下文六个适配/七个原样入口的描述属于此前 Closure 阶段记录，当前部署以 manifest 为准。
+
 支持链路：InsForge 平台登录 → Device Token → ingest → Account Usage → week/month/total 基础排行榜。这里的登录由 InsForge Auth 提供；本地测试从签名 JWT 开始，**没有验证真实 OAuth 登录**。
 
 ## 四个失败的根因与分类

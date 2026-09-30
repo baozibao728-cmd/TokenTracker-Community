@@ -1,3 +1,4 @@
+// GENERATED SERVER-CREDENTIAL ADAPTER. Regenerate with build-adapters.mjs.
 // GENERATED MVP ADAPTER. Edit build-adapters.mjs; run it locally after reviewing upstream changes.
 /**
  * Tokentracker leaderboard profile (DETAIL).
@@ -20,6 +21,16 @@
  * MUST be mirrored to refresh.ts and src/lib/local-api.js.
  */
 import { createClient } from "npm:@insforge/sdk";
+
+// Source template inlined into every generated single-file MVP Edge entry.
+// Read only project credentials injected by InsForge Edge Runtime.
+// Never use request headers, ANON_KEY, CLI credentials or local configuration.
+export function resolveServerCredential(): string | undefined {
+  return Deno.env.get("INSFORGE_SERVICE_ROLE_KEY")?.trim()
+    || Deno.env.get("API_KEY")?.trim()
+    || undefined;
+}
+
 
 // Explicit MVP contract: omitted capabilities are not simulated in the database.
 const MVP_CAPABILITIES = {
@@ -103,7 +114,8 @@ async function verifyCallerUserId(req: Request): Promise<string | null> {
 }
 
 function getClient() {
-  const serviceRoleKey = Deno.env.get("INSFORGE_SERVICE_ROLE_KEY");
+  const serviceRoleKey = resolveServerCredential();
+  if (!serviceRoleKey) return null;
   const anonKey = Deno.env.get("INSFORGE_ANON_KEY") ?? Deno.env.get("ANON_KEY");
   return createClient({
     baseUrl: Deno.env.get("INSFORGE_BASE_URL")!,
@@ -773,6 +785,7 @@ export default async function (req: Request): Promise<Response> {
   const callerUserId = await verifyCallerUserId(req);
   const isSelf = Boolean(callerUserId && callerUserId === userId);
   const client = getClient();
+  if (!client) return json({ error: "server misconfigured" }, 500);
 
   // Reject the removed route explicitly; no badge RPC or fabricated results.
   if (url.searchParams.get("view") === "badges") {

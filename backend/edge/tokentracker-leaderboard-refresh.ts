@@ -1,3 +1,4 @@
+// GENERATED SERVER-CREDENTIAL ADAPTER. Regenerate with build-adapters.mjs.
 // GENERATED MVP ADAPTER. Edit build-adapters.mjs; run it locally after reviewing upstream changes.
 /**
  * InsForge Edge：排行榜快照刷新。
@@ -5,6 +6,16 @@
  * 接受 POST，可选 body: { period: "week"|"month"|"total" }，不传则刷新全部三个。
  */
 import { createClient } from "npm:@insforge/sdk";
+
+// Source template inlined into every generated single-file MVP Edge entry.
+// Read only project credentials injected by InsForge Edge Runtime.
+// Never use request headers, ANON_KEY, CLI credentials or local configuration.
+export function resolveServerCredential(): string | undefined {
+  return Deno.env.get("INSFORGE_SERVICE_ROLE_KEY")?.trim()
+    || Deno.env.get("API_KEY")?.trim()
+    || undefined;
+}
+
 
 // Explicit MVP contract: omitted capabilities are not simulated in the database.
 const MVP_CAPABILITIES = {
@@ -116,7 +127,7 @@ async function authorizeRefresh(req: Request): Promise<RefreshAuthorization | nu
 
   const auth = req.headers.get("Authorization");
   const bearer = auth ? auth.replace(/^Bearer\s+/i, "").trim() : "";
-  const serviceKey = Deno.env.get("INSFORGE_SERVICE_ROLE_KEY");
+  const serviceKey = resolveServerCredential();
   if (bearer && serviceKey && timingSafeEqualStr(bearer, serviceKey)) return "privileged";
 
   const claims = await verifiedClaimsFromJwt(auth);
@@ -720,7 +731,7 @@ export default async function (req: Request): Promise<Response> {
     req.headers.get("apikey") ?? req.headers.get("Apikey") ?? req.headers.get("x-api-key") ?? undefined;
   const anonKey =
     Deno.env.get("INSFORGE_ANON_KEY") ?? Deno.env.get("ANON_KEY") ?? incomingApiKey ?? undefined;
-  const serviceRoleKey = Deno.env.get("INSFORGE_SERVICE_ROLE_KEY");
+  const serviceRoleKey = resolveServerCredential();
   if (!serviceRoleKey) return json({ error: "server misconfigured" }, 500);
 
   const client = createClient({

@@ -1,3 +1,4 @@
+// GENERATED SERVER-CREDENTIAL ADAPTER. Regenerate with build-adapters.mjs.
 // GENERATED MVP ADAPTER. Edit build-adapters.mjs; run it locally after reviewing upstream changes.
 /**
  * InsForge Edge：公开资料开关。
@@ -5,6 +6,16 @@
  * SDK 的 getCurrentUser() 在部分 Edge 运行时上对出站请求处理不稳定。
  */
 import { createClient } from "npm:@insforge/sdk";
+
+// Source template inlined into every generated single-file MVP Edge entry.
+// Read only project credentials injected by InsForge Edge Runtime.
+// Never use request headers, ANON_KEY, CLI credentials or local configuration.
+export function resolveServerCredential(): string | undefined {
+  return Deno.env.get("INSFORGE_SERVICE_ROLE_KEY")?.trim()
+    || Deno.env.get("API_KEY")?.trim()
+    || undefined;
+}
+
 
 // Explicit MVP contract: omitted capabilities are not simulated in the database.
 const MVP_CAPABILITIES = {
@@ -105,7 +116,7 @@ export default async function (req: Request): Promise<Response> {
   const userId = await verifiedUserIdFromJwt(token);
   if (!userId) return json({ error: "Unauthorized" }, 401);
 
-  const serviceRoleKey = Deno.env.get("INSFORGE_SERVICE_ROLE_KEY");
+  const serviceRoleKey = resolveServerCredential();
   if (!serviceRoleKey) return json({ error: "server misconfigured" }, 500);
   const client = createClient({
     baseUrl,
