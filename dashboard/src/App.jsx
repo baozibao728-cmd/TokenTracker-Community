@@ -72,6 +72,12 @@ const LeaderboardPage = lazy(() =>
 const LeaderboardProfilePage = lazy(() =>
   import("./pages/LeaderboardProfilePage.jsx").then((m) => ({ default: m.LeaderboardProfilePage })),
 );
+const CommunitiesPage = lazy(() =>
+  import("./pages/CommunitiesPage.jsx").then((m) => ({ default: m.CommunitiesPage })),
+);
+const CommunityDetailPage = lazy(() =>
+  import("./pages/CommunityDetailPage.jsx").then((m) => ({ default: m.CommunityDetailPage })),
+);
 const LimitsPage = lazy(() =>
   import("./pages/LimitsPage.jsx").then((m) => ({ default: m.LimitsPage })),
 );
@@ -134,6 +140,9 @@ export default function App() {
   const normalizedPath = pathname.replace(/\/+$/, "") || "/";
   const isDashboardDefaultPath = normalizedPath === "/" || normalizedPath === "/dashboard";
   const isLeaderboardPath = normalizedPath === "/leaderboard";
+  const communityMatch = normalizedPath.match(/^\/communities\/([^/]+)$/);
+  const communityId = communityMatch?.[1] || null;
+  const isCommunitiesPath = normalizedPath === "/communities" || Boolean(communityId);
   // Standalone shareable profile page: /u/:userId (public, anonymous-visible).
   const profileMatch = normalizedPath.match(/^\/u\/([^/]+)$/i);
   const profileUserId = profileMatch ? profileMatch[1] : null;
@@ -211,6 +220,7 @@ export default function App() {
   if (normalizedPath === "/landing") gate = "landing";
   if (normalizedPath === "/dashboard") gate = "dashboard";
   if (isLeaderboardPath) gate = "dashboard";
+  if (isCommunitiesPath) gate = "dashboard";
   if (profileUserId) gate = "dashboard";
 
   const isLimitsPath = normalizedPath === "/limits";
@@ -229,6 +239,10 @@ export default function App() {
     PageComponent = LeaderboardProfilePage;
   } else if (normalizedPath === "/leaderboard") {
     PageComponent = LeaderboardPage;
+  } else if (communityId) {
+    PageComponent = CommunityDetailPage;
+  } else if (isCommunitiesPath) {
+    PageComponent = CommunitiesPage;
   } else if (isLimitsPath) {
     PageComponent = LimitsPage;
   } else if (isSettingsPath) {
@@ -255,6 +269,7 @@ export default function App() {
     (normalizedPath === "/dashboard" ||
       normalizedPath === "/" ||
       isLeaderboardPath ||
+      isCommunitiesPath ||
       isLimitsPath ||
       isSettingsPath ||
       isSkillsPath ||
@@ -320,6 +335,7 @@ export default function App() {
         publicMode={publicMode}
         publicToken={publicToken}
         userId={profileUserId}
+        communityId={communityId}
         signInUrl="/login"
         signUpUrl="/login"
         onMainContentVisible={handleDashboardMainContentVisible}

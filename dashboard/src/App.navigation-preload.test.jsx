@@ -16,6 +16,8 @@ const TEXT = {
   landing: "Landing page",
   leaderboard: "Leaderboard page",
   leaderboardNav: "Leaderboard nav",
+  communities: "Communities page",
+  communitiesNav: "Communities nav",
   limits: "Limits page",
   limitsNav: "Limits nav",
   login: "Login page",
@@ -113,6 +115,7 @@ vi.mock("./ui/components/Sidebar.jsx", async () => {
         <nav>
           <Link to="/limits">{TEXT.limitsNav}</Link>
           <Link to="/leaderboard">{TEXT.leaderboardNav}</Link>
+          <Link to="/communities">{TEXT.communitiesNav}</Link>
         </nav>
         {children}
       </div>
@@ -141,6 +144,12 @@ vi.mock("./pages/LimitsPage.jsx", () => ({
 
 vi.mock("./pages/LeaderboardPage.jsx", () => ({
   LeaderboardPage: () => <main>{TEXT.leaderboard}</main>,
+}));
+vi.mock("./pages/CommunitiesPage.jsx", () => ({
+  CommunitiesPage: () => <main>{TEXT.communities}</main>,
+}));
+vi.mock("./pages/CommunityDetailPage.jsx", () => ({
+  CommunityDetailPage: ({ communityId }) => <main>{communityId}</main>,
 }));
 
 vi.mock("./pages/NativeAuthCallbackPage.jsx", () => ({
@@ -202,5 +211,16 @@ describe("App navigation while preload is pending", () => {
     });
 
     expect(await screen.findByText(TEXT.leaderboard)).toBeInTheDocument();
+  });
+  it("switches to /communities without waiting for pending preload promises", async () => {
+    const user = userEvent.setup();
+    await startPendingPreload(user);
+    await act(async () => { await user.click(screen.getByRole("link", { name: TEXT.communitiesNav })); });
+    expect(await screen.findByText(TEXT.communities)).toBeInTheDocument();
+  });
+  it("opens a community detail route inside the existing layout", async () => {
+    renderApp("/communities/community-a");
+    expect(await screen.findByText("community-a")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: TEXT.communitiesNav })).toBeInTheDocument();
   });
 });

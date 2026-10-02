@@ -1675,3 +1675,101 @@ quota.percent,ui,QuotaWidget,QuotaWidget,percent,"%",,active
 quota.reset_in,ui,QuotaWidget,QuotaWidget,reset_in,"Resets in {{time}}",,active
 quota.close,ui,QuotaWidget,QuotaWidget,close,"Close widget",,active
 quota.close_hint,ui,QuotaWidget,QuotaWidget,close_hint,"Close widget; reopen from the tray menu",,active
+nav.communities,dashboard,CommunityPages,CommunityPages,communities,"Communities",,active
+communities.title,dashboard,CommunityPages,CommunityPages,title,"Communities",,active
+communities.subtitle,dashboard,CommunityPages,CommunityPages,subtitle,"Your private circles. A shared view of token usage.",,active
+communities.refresh,dashboard,CommunityPages,CommunityPages,refresh,"Refresh",,active
+communities.retry,dashboard,CommunityPages,CommunityPages,retry,"Try again",,active
+communities.loading,dashboard,CommunityPages,CommunityPages,loading,"Loading community…",,active
+communities.sign_in,dashboard,CommunityPages,CommunityPages,sign_in,"Sign in",,active
+communities.sign_in_title,dashboard,CommunityPages,CommunityPages,sign_in_title,"Sign in to your communities",,active
+communities.sign_in_hint,dashboard,CommunityPages,CommunityPages,sign_in_hint,"Use your cloud account to create or join a private community.",,active
+communities.quota.owned,dashboard,CommunityPages,CommunityPages,quota_owned,"Owned",,active
+communities.quota.joined,dashboard,CommunityPages,CommunityPages,quota_joined,"Joined",,active
+communities.quota.includes_owner,dashboard,CommunityPages,CommunityPages,quota_includes_owner,"Owned communities also count as joined.",,active
+communities.my_list,dashboard,CommunityPages,CommunityPages,my_list,"My communities",,active
+communities.owner,dashboard,CommunityPages,CommunityPages,owner,"Owner",,active
+communities.member,dashboard,CommunityPages,CommunityPages,member,"Member",,active
+communities.no_description,dashboard,CommunityPages,CommunityPages,no_description,"A private community for shared token rankings.",,active
+communities.member_count,dashboard,CommunityPages,CommunityPages,member_count,"{{count}} / {{max}} members",,active
+communities.empty,dashboard,CommunityPages,CommunityPages,empty,"No communities yet. Create one or join with an invite code.",,active
+communities.pagination,dashboard,CommunityPages,CommunityPages,pagination,"Page {{page}} of {{pages}} · {{total}} total",,active
+communities.list_pagination,dashboard,CommunityPages,CommunityPages,list_pagination,"Community list pages",,active
+communities.create.title,dashboard,CommunityPages,CommunityPages,create_title,"Create a community",,active
+communities.create.hint,dashboard,CommunityPages,CommunityPages,create_hint,"You become the owner and first member.",,active
+communities.create.name,dashboard,CommunityPages,CommunityPages,create_name,"Community name",,active
+communities.create.description,dashboard,CommunityPages,CommunityPages,create_description,"Description (optional)",,active
+communities.create.submit,dashboard,CommunityPages,CommunityPages,create_submit,"Create community",,active
+communities.join.title,dashboard,CommunityPages,CommunityPages,join_title,"Join with an invite",,active
+communities.join.hint,dashboard,CommunityPages,CommunityPages,join_hint,"Ask the community owner for an invite code.",,active
+communities.join.code,dashboard,CommunityPages,CommunityPages,join_code,"Invite code",,active
+communities.join.submit,dashboard,CommunityPages,CommunityPages,join_submit,"Join community",,active
+communities.join.full_hint,dashboard,CommunityPages,CommunityPages,join_full_hint,"Your joined quota is full. An existing membership can still be opened with its invite code.",,active
+communities.transfer.incoming,dashboard,CommunityPages,CommunityPages,transfer_incoming,"Incoming ownership requests",,active
+communities.transfer.title,dashboard,CommunityPages,CommunityPages,transfer_title,"Ownership transfer",,active
+communities.transfer.empty,dashboard,CommunityPages,CommunityPages,transfer_empty,"No pending ownership requests.",,active
+communities.transfer.to,dashboard,CommunityPages,CommunityPages,transfer_to,"Recipient: {{name}}",,active
+communities.transfer.expires,dashboard,CommunityPages,CommunityPages,transfer_expires,"Expires {{date}}",,active
+communities.transfer.pending,dashboard,CommunityPages,CommunityPages,transfer_pending,"Pending",,active
+communities.transfer.accepted,dashboard,CommunityPages,CommunityPages,transfer_accepted,"Accepted",,active
+communities.transfer.rejected,dashboard,CommunityPages,CommunityPages,transfer_rejected,"Rejected",,active
+communities.transfer.expired,dashboard,CommunityPages,CommunityPages,transfer_expired,"Expired",,active
+communities.transfer.accept,dashboard,CommunityPages,CommunityPages,transfer_accept,"Accept ownership",,active
+communities.transfer.reject,dashboard,CommunityPages,CommunityPages,transfer_reject,"Reject",,active
+communities.transfer.accepted_notice,dashboard,CommunityPages,CommunityPages,transfer_accepted_notice,"Ownership accepted. Your permissions have been refreshed.",,active
+communities.transfer.rejected_notice,dashboard,CommunityPages,CommunityPages,transfer_rejected_notice,"Ownership request rejected. The current owner stays unchanged.",,active
+communities.transfer.sent_notice,dashboard,CommunityPages,CommunityPages,transfer_sent_notice,"Ownership request sent. The recipient must accept before ownership changes.",,active
+communities.transfer.accept_hint,dashboard,CommunityPages,CommunityPages,transfer_accept_hint,"You will become the community owner. The previous owner stays a member.",,active
+communities.transfer.confirm,dashboard,CommunityPages,CommunityPages,transfer_confirm,"Send an ownership request to {{name}}? You stay the owner until they accept.",,active
+communities.transfer.select_member,dashboard,CommunityPages,CommunityPages,transfer_select_member,"Select {{name}} for ownership transfer",,active
+communities.transfer.choose,dashboard,CommunityPages,CommunityPages,transfer_choose,"Select for transfer",,active
+communities.transfer.hint,dashboard,CommunityPages,CommunityPages,transfer_hint,"Transfer to an existing member. The request requires their acceptance.",,active
+communities.transfer.selected,dashboard,CommunityPages,CommunityPages,transfer_selected,"Selected member: {{name}}",,active
+communities.transfer.select_hint,dashboard,CommunityPages,CommunityPages,transfer_select_hint,"Select a member from the member list.",,active
+communities.transfer.send,dashboard,CommunityPages,CommunityPages,transfer_send,"Send transfer request",,active
+communities.back,dashboard,CommunityPages,CommunityPages,back,"All communities",,active
+communities.private,dashboard,CommunityPages,CommunityPages,private,"Private · invite only",,active
+communities.leaderboard,dashboard,CommunityPages,CommunityPages,leaderboard,"Community leaderboard",,active
+communities.period_label,dashboard,CommunityPages,CommunityPages,period_label,"Ranking period",,active
+communities.my_rank,dashboard,CommunityPages,CommunityPages,my_rank,"Your current rank",,active
+communities.rank,dashboard,CommunityPages,CommunityPages,rank,"#{{rank}}",,active
+communities.not_ranked,dashboard,CommunityPages,CommunityPages,not_ranked,"Not ranked",,active
+communities.tokens,dashboard,CommunityPages,CommunityPages,tokens,"Tokens",,active
+communities.date_range,dashboard,CommunityPages,CommunityPages,date_range,"{{from}} – {{to}} (UTC)",,active
+communities.you,dashboard,CommunityPages,CommunityPages,you,"You",,active
+communities.rank_empty,dashboard,CommunityPages,CommunityPages,rank_empty,"No ranking entries on this page.",,active
+communities.rank_pagination,dashboard,CommunityPages,CommunityPages,rank_pagination,"Leaderboard pages",,active
+communities.rank_basis,dashboard,CommunityPages,CommunityPages,rank_basis,"Member-reported tokens. Automatic anticheat is not enabled.",,active
+communities.members,dashboard,CommunityPages,CommunityPages,members,"Members",,active
+communities.joined_at,dashboard,CommunityPages,CommunityPages,joined_at,"Joined {{date}}",,active
+communities.members_pagination,dashboard,CommunityPages,CommunityPages,members_pagination,"Member list pages",,active
+communities.owner_settings,dashboard,CommunityPages,CommunityPages,owner_settings,"Owner settings",,active
+communities.invite.title,dashboard,CommunityPages,CommunityPages,invite_title,"Community invite code",,active
+communities.invite.hint,dashboard,CommunityPages,CommunityPages,invite_hint,"Share privately with people you want to invite.",,active
+communities.invite.copy,dashboard,CommunityPages,CommunityPages,invite_copy,"Copy",,active
+communities.invite.copied,dashboard,CommunityPages,CommunityPages,invite_copied,"Invite code copied.",,active
+communities.invite.copy_failed,dashboard,CommunityPages,CommunityPages,invite_copy_failed,"Clipboard unavailable. Select and copy the code manually.",,active
+communities.delete.title,dashboard,CommunityPages,CommunityPages,delete_title,"Delete community",,active
+communities.delete.hint,dashboard,CommunityPages,CommunityPages,delete_hint,"This permanently removes the community and its membership and transfer records. Your token data and other rankings stay unchanged.",,active
+communities.delete.confirm_name,dashboard,CommunityPages,CommunityPages,delete_confirm_name,"Type “{{name}}” to confirm",,active
+communities.delete.submit,dashboard,CommunityPages,CommunityPages,delete_submit,"Delete community",,active
+communities.leave.title,dashboard,CommunityPages,CommunityPages,leave_title,"Leave community",,active
+communities.leave.hint,dashboard,CommunityPages,CommunityPages,leave_hint,"You will leave this leaderboard. Your token data is kept; an invite is required to join again.",,active
+communities.leave.submit,dashboard,CommunityPages,CommunityPages,leave_submit,"Leave community",,active
+communities.confirm,dashboard,CommunityPages,CommunityPages,confirm,"Confirm",,active
+communities.error.not_configured,dashboard,CommunityPages,CommunityPages,error_not_configured,"Configure your self-hosted InsForge URL before using communities.",,active
+communities.error.sign_in,dashboard,CommunityPages,CommunityPages,error_sign_in,"Your session is unavailable or expired. Please sign in again.",,active
+communities.error.owned_limit,dashboard,CommunityPages,CommunityPages,error_owned_limit,"You have reached your owned community limit.",,active
+communities.error.joined_limit,dashboard,CommunityPages,CommunityPages,error_joined_limit,"You have reached your joined community limit.",,active
+communities.error.member_limit,dashboard,CommunityPages,CommunityPages,error_member_limit,"This community is full.",,active
+communities.error.unavailable,dashboard,CommunityPages,CommunityPages,error_unavailable,"This community is unavailable or you do not have access.",,active
+communities.error.transfer_unavailable,dashboard,CommunityPages,CommunityPages,error_transfer_unavailable,"This ownership request is unavailable to you.",,active
+communities.error.transfer_pending,dashboard,CommunityPages,CommunityPages,error_transfer_pending,"There is already a pending ownership request.",,active
+communities.error.transfer_not_pending,dashboard,CommunityPages,CommunityPages,error_transfer_not_pending,"This request has already been handled or is no longer valid. Refresh to see the current state.",,active
+communities.error.transfer_expired,dashboard,CommunityPages,CommunityPages,error_transfer_expired,"This ownership request has expired.",,active
+communities.error.owner_leave,dashboard,CommunityPages,CommunityPages,error_owner_leave,"Transfer ownership or delete the community before leaving.",,active
+communities.error.target_not_member,dashboard,CommunityPages,CommunityPages,error_target_not_member,"The selected recipient is no longer a member. Refresh the member list.",,active
+communities.error.confirmation,dashboard,CommunityPages,CommunityPages,error_confirmation,"The confirmation must exactly match the community name.",,active
+communities.error.invalid_input,dashboard,CommunityPages,CommunityPages,error_invalid_input,"Check the name, invite code or selected member and try again.",,active
+communities.error.network,dashboard,CommunityPages,CommunityPages,error_network,"The request could not be completed. Refresh before retrying a creation or transfer.",,active
+communities.error.generic,dashboard,CommunityPages,CommunityPages,error_generic,"The request failed. Refresh the page and try again.",,active
