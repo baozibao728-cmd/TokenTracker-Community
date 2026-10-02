@@ -5,6 +5,7 @@ import {
   BarChart3,
   Gauge,
   Trophy,
+  Users,
   History,
   LayoutGrid,
   PawPrint,
@@ -42,6 +43,7 @@ export function getNavGroups() {
         { id: "sessions", to: "/sessions", icon: History, label: copy("nav.sessions") },
         { id: "limits", to: "/limits", icon: Gauge, label: copy("nav.limits") },
         { id: "leaderboard", to: "/leaderboard", icon: Trophy, label: copy("nav.leaderboard") },
+        { id: "communities", to: "/communities", icon: Users, label: copy("nav.communities") },
         { id: "achievements", to: "/achievements", icon: Award, label: copy("nav.achievements") },
       ],
     },
@@ -112,6 +114,9 @@ function isActive(pathname, to) {
   }
   if (to === "/leaderboard") {
     return normalized === "/leaderboard" || normalized.startsWith("/leaderboard/");
+  }
+  if (to === "/communities") {
+    return normalized === "/communities" || normalized.startsWith("/communities/");
   }
   return normalized === to;
 }

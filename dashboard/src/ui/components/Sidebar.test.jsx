@@ -13,6 +13,7 @@ const LABELS = {
   "nav.sessions": "Sessions",
   "nav.limits": "Limits",
   "nav.leaderboard": "Leaderboard",
+  "nav.communities": "Communities",
   "nav.achievements": "Achievements",
   "nav.widgets": "Widgets",
   "nav.pet": "Desktop pet",
@@ -59,9 +60,9 @@ vi.mock("../../components/InsforgeUserHeaderControls.jsx", () => ({
 let desktopMatches = false;
 let mediaListeners;
 
-function renderLayout() {
+function renderLayout(path = "/settings") {
   return render(
-    <MemoryRouter initialEntries={["/settings"]}>
+    <MemoryRouter initialEntries={[path]}>
       <AppLayout>
         <main />
       </AppLayout>
@@ -84,6 +85,12 @@ describe("AppLayout sidebar controls", () => {
       removeListener: (_listener) => {},
       dispatchEvent: vi.fn(),
     }));
+  });
+
+  it("marks Communities active on a nested detail route", () => {
+    renderLayout("/communities/community-a");
+    expect(screen.getByRole("link", { name: "Communities" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Leaderboard" })).not.toHaveAttribute("aria-current");
   });
 
   it("collapses and expands the desktop sidebar and persists the preference", async () => {

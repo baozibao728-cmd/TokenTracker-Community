@@ -16,6 +16,13 @@ import { getInsforgeRemoteUrl, getInsforgeAnonKey } from "./insforge-config";
 import { isValidJwtShape } from "./auth-token";
 import { getLocalApiAuthHeaders } from "./local-api-auth";
 
+// Independent, JWT-only Community adapter; existing foundation transports stay unchanged.
+export {
+  getCommunities, getCommunityDetail, getCommunityLeaderboard,
+  createCommunity, joinCommunity, leaveCommunity, createCommunityTransfer,
+  acceptCommunityTransfer, rejectCommunityTransfer, deleteCommunity,
+} from "./community-api";
+
 type AnyRecord = Record<string, any>;
 
 // React auth/scope resolution can make multiple consumers ask for the exact

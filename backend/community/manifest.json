@@ -1,0 +1,153 @@
+{
+  "sdkImport": "npm:@insforge/sdk@1.4.5",
+  "sources": [
+    {
+      "source": "backend/community/config.mjs",
+      "sha256": "bab951817cc281d67f38ba1026a274a91d791faf1c5dac8ef9da1ef627de6152"
+    },
+    {
+      "source": "backend/edge/server-credential.ts",
+      "sha256": "c3a152169d039d857cbc41a11346f7a392bdfe338fdb365e40d43449f25203ec"
+    },
+    {
+      "source": "backend/community/src/runtime.ts",
+      "sha256": "d6f5fd5bb31ac17601ce4b1880921e4df3439997acc82b32df2610b33b9a06cc"
+    },
+    {
+      "source": "backend/community/edge-spec.mjs",
+      "sha256": "399f1464ca9aad6e48963a4f46117071178d7e20a9e998f7f68321638e381227"
+    },
+    {
+      "source": "backend/community/build-edges.mjs",
+      "sha256": "feef2395c095723effa642a4479bda440586d4318fcf7e0469ba62a731be7f50"
+    },
+    {
+      "source": "backend/community/src/tokentracker-create-community.ts",
+      "sha256": "39b8fea6182bba2283c1ce3d229e4cada7516b0c2092423425a840ef5d54aa19"
+    },
+    {
+      "source": "backend/community/src/tokentracker-join-community.ts",
+      "sha256": "d03866402db6fc43459406fb1f0e9589e874d69292bd8fe6be487374811da312"
+    },
+    {
+      "source": "backend/community/src/tokentracker-leave-community.ts",
+      "sha256": "cd9400f19c5b41bc84e8d091c3c27eb5b922f53641c37051291a7413f0b01c9d"
+    },
+    {
+      "source": "backend/community/src/tokentracker-community-detail.ts",
+      "sha256": "9fcaef6e0d842756486810cfd12b0274568dbbd74a92959c68429b37c5e27e7c"
+    },
+    {
+      "source": "backend/community/src/tokentracker-community-leaderboard.ts",
+      "sha256": "7519dabe1720be9158e4725efbdaf467981b516c49a060270afe79283f0955d6"
+    },
+    {
+      "source": "backend/community/src/tokentracker-create-community-transfer.ts",
+      "sha256": "a5c70fb07187da6d4cea8927ab9d5cfd130e3bb25aeeb3008e6c6d3878227f07"
+    },
+    {
+      "source": "backend/community/src/tokentracker-accept-community-transfer.ts",
+      "sha256": "d65f824cfdf60a50bcf738ed228b184076a91e2a5ed5251e238347e4f8ea5478"
+    },
+    {
+      "source": "backend/community/src/tokentracker-reject-community-transfer.ts",
+      "sha256": "e94238e8a7e3854d572d1f08c1351aa7a445d23b3f9cc0f8e8d970581b91d6f5"
+    },
+    {
+      "source": "backend/community/src/tokentracker-delete-community.ts",
+      "sha256": "2a24355a23f92c6a1f00f92825fc64fc1eb8480bf664f81dd1561b421a55aaea"
+    }
+  ],
+  "functions": [
+    {
+      "operation": "create-community",
+      "name": "tokentracker-create-community",
+      "rpc": "community_create",
+      "method": "POST",
+      "source": "backend/community/src/tokentracker-create-community.ts",
+      "entry": "backend/community/edge/tokentracker-create-community.js",
+      "sourceSha256": "39b8fea6182bba2283c1ce3d229e4cada7516b0c2092423425a840ef5d54aa19",
+      "entrySha256": "9097213fc46bc5e61db2bb283e3e1a1fc7b5d771e805dad605c150eac1b0f39c"
+    },
+    {
+      "operation": "join-community",
+      "name": "tokentracker-join-community",
+      "rpc": "community_join",
+      "method": "POST",
+      "source": "backend/community/src/tokentracker-join-community.ts",
+      "entry": "backend/community/edge/tokentracker-join-community.js",
+      "sourceSha256": "d03866402db6fc43459406fb1f0e9589e874d69292bd8fe6be487374811da312",
+      "entrySha256": "f21462bc066765923dfd1781a6495d05bdb33cd3be838c2fa6993d793e72d907"
+    },
+    {
+      "operation": "leave-community",
+      "name": "tokentracker-leave-community",
+      "rpc": "community_leave",
+      "method": "POST",
+      "source": "backend/community/src/tokentracker-leave-community.ts",
+      "entry": "backend/community/edge/tokentracker-leave-community.js",
+      "sourceSha256": "cd9400f19c5b41bc84e8d091c3c27eb5b922f53641c37051291a7413f0b01c9d",
+      "entrySha256": "9324f5fe750c0395a98e64c0cbb28f58ce23b364e35d841e9ecc9fea2a8004fd"
+    },
+    {
+      "operation": "community-detail",
+      "name": "tokentracker-community-detail",
+      "rpc": "community_read",
+      "method": "GET",
+      "source": "backend/community/src/tokentracker-community-detail.ts",
+      "entry": "backend/community/edge/tokentracker-community-detail.js",
+      "sourceSha256": "9fcaef6e0d842756486810cfd12b0274568dbbd74a92959c68429b37c5e27e7c",
+      "entrySha256": "f889591154a818484c3e3bbc388b8a21cff373ea27e001b7eefc513cacbeb395"
+    },
+    {
+      "operation": "community-leaderboard",
+      "name": "tokentracker-community-leaderboard",
+      "rpc": "community_leaderboard",
+      "method": "GET",
+      "source": "backend/community/src/tokentracker-community-leaderboard.ts",
+      "entry": "backend/community/edge/tokentracker-community-leaderboard.js",
+      "sourceSha256": "7519dabe1720be9158e4725efbdaf467981b516c49a060270afe79283f0955d6",
+      "entrySha256": "8ef27e43689c2bb9caa1fdef303e71a03819c33462900f16114365d85a6598e9"
+    },
+    {
+      "operation": "create-community-transfer",
+      "name": "tokentracker-create-community-transfer",
+      "rpc": "community_create_transfer",
+      "method": "POST",
+      "source": "backend/community/src/tokentracker-create-community-transfer.ts",
+      "entry": "backend/community/edge/tokentracker-create-community-transfer.js",
+      "sourceSha256": "a5c70fb07187da6d4cea8927ab9d5cfd130e3bb25aeeb3008e6c6d3878227f07",
+      "entrySha256": "e377b7e80b6ecd2d63c795dfcad6be270499ccf8646b37aef6c649e6a09ddaaf"
+    },
+    {
+      "operation": "accept-community-transfer",
+      "name": "tokentracker-accept-community-transfer",
+      "rpc": "community_accept_transfer",
+      "method": "POST",
+      "source": "backend/community/src/tokentracker-accept-community-transfer.ts",
+      "entry": "backend/community/edge/tokentracker-accept-community-transfer.js",
+      "sourceSha256": "d65f824cfdf60a50bcf738ed228b184076a91e2a5ed5251e238347e4f8ea5478",
+      "entrySha256": "5f2961d65218e591307a1ccc60f4822a144672b581210ce7706c58cfa29cbfad"
+    },
+    {
+      "operation": "reject-community-transfer",
+      "name": "tokentracker-reject-community-transfer",
+      "rpc": "community_reject_transfer",
+      "method": "POST",
+      "source": "backend/community/src/tokentracker-reject-community-transfer.ts",
+      "entry": "backend/community/edge/tokentracker-reject-community-transfer.js",
+      "sourceSha256": "e94238e8a7e3854d572d1f08c1351aa7a445d23b3f9cc0f8e8d970581b91d6f5",
+      "entrySha256": "d2322f769ec999c0c93104f1c33f3ac65c03e7ab33c95dd2c9c6ce92b35d0097"
+    },
+    {
+      "operation": "delete-community",
+      "name": "tokentracker-delete-community",
+      "rpc": "community_delete",
+      "method": "POST",
+      "source": "backend/community/src/tokentracker-delete-community.ts",
+      "entry": "backend/community/edge/tokentracker-delete-community.js",
+      "sourceSha256": "2a24355a23f92c6a1f00f92825fc64fc1eb8480bf664f81dd1561b421a55aaea",
+      "entrySha256": "46e4d579f950d46a98b88de43b84984585c0d99d7191af897441c8564d02a952"
+    }
+  ]
+}

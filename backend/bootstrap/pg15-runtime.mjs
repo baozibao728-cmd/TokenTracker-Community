@@ -17,6 +17,7 @@ async function command(file, args) {
 export async function createPg15Database() {
   let cleanRuntime = async () => {};
   let client;
+  const additionalClients = new Set();
   try {
     const bin = path.join(here, 'node_modules/.cache/postgresql-15.18/pgsql/bin');
     const native = process.platform === 'win32' && await fs.access(path.join(bin,'postgres.exe')).then(()=>true,()=>false);
@@ -80,7 +81,18 @@ export async function createPg15Database() {
     const version=(await client.query("SELECT current_setting('server_version_num')::int AS version")).rows[0].version;
     if(version!==150018) throw new Error(`Expected PostgreSQL 15.18, got server_version_num=${version}`);
     return {query:(sql,args=[])=>client.query(sql,args),exec:sql=>client.query(sql),
-      close:async()=>{try {await client.end();} finally {await cleanRuntime();}}};
+      // Test-only additional connections to THIS ephemeral cluster. Never accepts
+      // external URLs; credentials remain in memory, including the Docker case.
+      createConnection:async()=>{
+        const extra=new pg.Client({...client.connectionParameters,ssl:false});
+        additionalClients.add(extra);
+        await extra.connect();
+        return extra;
+      },
+      close:async()=>{try {
+        await Promise.all([...additionalClients].map(c=>c.end()));
+        await client.end();
+      } finally {await cleanRuntime();}}};
   } catch(error) {
     try {if(client) await client.end();} finally {await cleanRuntime();}
     throw new Error(`Real PG15 validation unavailable or failed (never skipped): ${error.message}`,{cause:error});
