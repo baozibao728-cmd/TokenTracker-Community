@@ -702,7 +702,10 @@ pub fn node_command(node: &Path) -> Result<Command, String> {
         .ok_or_else(|| "HOME must be absolute for Community data isolation".to_string())?;
     let mut command = Command::new(node);
     command.env("TOKENTRACKER_APP_SHELL", "linux");
-    command.env("TOKENTRACKER_DATA_ROOT", home.join(".tokentracker-community"));
+    command.env(
+        "TOKENTRACKER_DATA_ROOT",
+        home.join(".tokentracker-community"),
+    );
     Ok(command)
 }
 

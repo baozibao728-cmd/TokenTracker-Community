@@ -178,7 +178,11 @@ pub fn ensure_appimage_protocol_registration() -> Result<bool, String> {
         .map_err(|error| format!("failed to write {}: {error}", desktop_path.display()))?;
 
     let registration = run_command_with_timeout(
-        Command::new("xdg-mime").args(["default", desktop_name, "x-scheme-handler/tokentracker-community"]),
+        Command::new("xdg-mime").args([
+            "default",
+            desktop_name,
+            "x-scheme-handler/tokentracker-community",
+        ]),
         "xdg-mime registration",
         Duration::from_secs(3),
     )?;
@@ -191,7 +195,11 @@ pub fn ensure_appimage_protocol_registration() -> Result<bool, String> {
     }
 
     let query = run_command_with_timeout(
-        Command::new("xdg-mime").args(["query", "default", "x-scheme-handler/tokentracker-community"]),
+        Command::new("xdg-mime").args([
+            "query",
+            "default",
+            "x-scheme-handler/tokentracker-community",
+        ]),
         "xdg-mime verification",
         Duration::from_secs(3),
     )?;

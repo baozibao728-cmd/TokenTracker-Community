@@ -143,8 +143,11 @@ fn exe_relative_prefix_is_probed_before_the_absolute_install_path() {
         &PathBuf::from("/opt/tokentracker/bin/../lib/tokentracker-community-linux"),
     )
     .expect("exe-relative prefix should be a candidate");
-    let absolute = index_of(&candidates, Path::new("/usr/lib/tokentracker-community-linux"))
-        .expect("Arch install path should always be a candidate");
+    let absolute = index_of(
+        &candidates,
+        Path::new("/usr/lib/tokentracker-community-linux"),
+    )
+    .expect("Arch install path should always be a candidate");
 
     assert!(
         relative < absolute,
@@ -280,7 +283,10 @@ fn resolution_reports_every_checked_location_when_nothing_is_found() {
     // AppImage and development locations, not just one of them.
     assert!(error.contains("appdir"), "got {error}");
     assert!(error.contains("project"), "got {error}");
-    assert!(error.contains("/usr/lib/tokentracker-community-linux"), "got {error}");
+    assert!(
+        error.contains("/usr/lib/tokentracker-community-linux"),
+        "got {error}"
+    );
 }
 
 #[test]

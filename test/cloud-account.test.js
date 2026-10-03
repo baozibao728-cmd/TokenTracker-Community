@@ -218,6 +218,8 @@ test("fetchAccountFunction forwards query params except account/scope, sets auth
 test("fetchAccountFunction throws with status on non-ok", async () => {
   await assert.rejects(
     () => fetchAccountFunction({
+      baseUrl: "https://cloud.example",
+      anonKey: "fixture-anon",
       accessToken: "x",
       slug: "tokentracker-account-summary",
       searchParams: new URLSearchParams(),
@@ -648,6 +650,8 @@ test("fetchAccountUsage caches the heatmap payload already expanded", async () =
     });
   };
   const call = () => fetchAccountUsage({
+    baseUrl: "https://cloud.example",
+    anonKey: "fixture-anon",
     usageSlug: "tokentracker-usage-heatmap",
     searchParams: new URLSearchParams("weeks=52"),
     refreshToken: "r",

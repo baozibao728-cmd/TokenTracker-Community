@@ -21,10 +21,15 @@ test("GNOME extension parses as an ES module", () => {
   assert.equal(result.status, 0, result.stderr);
 });
 
-test("GNOME extension metadata matches its directory and lists shell versions", () => {
+test("GNOME extension metadata matches the documented installation directory and lists shell versions", () => {
   const metadata = JSON.parse(fs.readFileSync(path.join(extensionDir, "metadata.json"), "utf8"));
-  // GNOME only loads an extension whose uuid equals its directory name.
-  assert.equal(metadata.uuid, path.basename(extensionDir));
+  // The historical checkout directory is retained, but GNOME loads the
+  // documented symlink destination, whose basename must match the fork UUID.
+  assert.equal(metadata.uuid, "tokentracker-community@tokentracker.cc");
+  const readme = fs.readFileSync(path.join(extensionDir, "README.md"), "utf8");
+  assert.ok(readme.includes(`~/.local/share/gnome-shell/extensions/${metadata.uuid}`));
+  assert.ok(readme.includes(`gnome-extensions enable ${metadata.uuid}`));
+  assert.ok(readme.includes(`ln -s "$PWD/TokenTrackerLinux/gnome-extension/${path.basename(extensionDir)}"`));
   assert.ok(Array.isArray(metadata["shell-version"]) && metadata["shell-version"].length > 0);
   for (const version of metadata["shell-version"]) {
     assert.match(version, /^\d+$/);

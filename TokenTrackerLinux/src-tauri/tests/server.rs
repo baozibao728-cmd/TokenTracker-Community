@@ -192,7 +192,10 @@ fn log_paths_fall_back_to_home_then_tmp() {
 #[test]
 fn log_paths_survive_a_missing_home() {
     let paths = server_log_paths(None, None);
-    assert_eq!(paths, vec![PathBuf::from("/tmp/tokentracker-community-server.log")]);
+    assert_eq!(
+        paths,
+        vec![PathBuf::from("/tmp/tokentracker-community-server.log")]
+    );
 }
 
 #[test]
@@ -273,7 +276,10 @@ fn records_never_land_in_a_world_writable_directory() {
         Some(PathBuf::from("/home/u")),
     );
 
-    assert_eq!(dirs[0], PathBuf::from("/state/tokentracker-community/servers"));
+    assert_eq!(
+        dirs[0],
+        PathBuf::from("/state/tokentracker-community/servers")
+    );
     assert_eq!(
         dirs[1],
         PathBuf::from("/home/u/.local/state/tokentracker-community/servers")

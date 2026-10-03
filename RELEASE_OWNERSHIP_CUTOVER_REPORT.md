@@ -780,7 +780,17 @@ GitHub REST 重新核对发现 repository Actions 已 enabled=true，远端 11 �
 
 ### 13.3 固定提交与实际 CI
 
-首次提交、Draft PR 和 runner 结果将在实际执行后补充；当前不宣称普通 CI 已通过。后续 docs-only head 如产生，将与实际已测试源码 SHA 分别记录。
+首次源码提交：`ca9b366733fae988b7e33bbfc28182e177100080`（`chore: prepare community release ownership`），已非 force push 到自有分支。Draft PR：[baozibao728-cmd/TokenTracker-Community#1](https://github.com/baozibao728-cmd/TokenTracker-Community/pull/1)，base=main，始终保持 Draft。
+
+第一次普通 CI：[37112008154](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37112008154)，PR head 为上述提交，runner checkout 的真实 PR merge SHA 为 `43bfa632292fe4debcfac6138a575f1b0c2ac930`，不是 main 已合并。Windows PASS；其余三个 job FAIL，尚不宣称普通 CI 已通过。
+
+- Windows 实际 SDK `8.0.425`，global.json rollForward=disable；64/64 xUnit PASS，包含新增 OAuth diagnostics / updater install permission gate / release identity；正式模式 `.NET 8` build PASS，0 warnings / 0 errors，没有依赖本机 .NET 9 roll-forward。
+- Ubuntu 和 macOS 的 own client-config 校验与 Dashboard build 已成功，证明 repository Variable/Secret 确实进入 runner。Ubuntu typecheck、所选 Dashboard（含 41 项新增覆盖组）步骤成功。Root suite 均有 16 个失败：移除官方默认后遗漏的模拟 backend/anon 参数、禁用的官方反作弊工作流旧断言、独立 GNOME UUID 与 macOS 去除系统 CLI fallback 的旧断言。它们是本次 cutover 测试契约未对齐，不归入两项已知全球排行榜基线失败。
+- Linux cargo fmt 失败明确给出 4 个文件/7 个格式差异；只按 rustfmt 输出换行/尾逗号，业务 token/权限/协议逻辑不变。
+- 最小修复仅为 Rust 格式和测试夹具/契约：明确注入 mock URL/public credential 并恢复环境，保留 token/count/cache/header/error/backoff 断言；GNOME 验证文档所规定的安装 symlink destination 与独立 UUID；macOS 验证固定 7682 同端口并拒绝系统 CLI fallback；运营门禁改为明确禁止自动触发、backend URL/credentials、网络/SQL/GitHub 写入，原 upstream SQL/Edge 的原子 reconciliation 断言继续保留。没有跳过失败、重启官方任务、放宽权限或改产品算法。
+- 本机定向 121 项 fixture 回归为 120 PASS/1 FAIL：Reasonix 测试读取到本机现有 DSH 样本，首次两台 clean runner 没有该失败；没有为此改 Provider。另 Windows CRLF checkout 使原未修改的 upstream total-rollup 静态断言失败，首次 clean runner 同项通过；没有转换 Foundation 源码或弱化断言。GNOME/macOS 定向 3/3 PASS。最终 gate 以修复后真实 clean runner 为准。
+
+修复提交及后续 CI 结果待实际运行后补充；后续 docs-only head 如产生，将与实际已测试源码 SHA 分别记录。
 
 ### 13.4 下一阶段边界
 

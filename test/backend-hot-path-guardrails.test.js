@@ -397,42 +397,20 @@ test("leaderboard refresh reconciles stale rows after the replacement snapshot i
   );
 });
 
-test("leaderboard anti-cheat workflow verifies database-native scans, reconciles exclusions, and never leaks identities", () => {
-  const workflow = read(".github/workflows/leaderboard-anticheat.yml");
-  assert.match(
-    workflow,
-    /cron: "53 \* \* \* \*"/u,
-    "a daily poll can miss a flag created after that day's run for nearly 24 hours",
-  );
-  assert.doesNotMatch(
-    workflow,
-    /issues:\s*write|gh issue (?:create|edit|close|list)/u,
-    "automatic soft exclusion must not depend on or create a public GitHub issue",
-  );
-  assert.match(workflow, /secrets\.LEADERBOARD_REFRESH_SECRET/u);
-  assert.doesNotMatch(
-    workflow,
-    /"scan_anomalies":true/u,
-    "the HTTP workflow must not synchronously rerun a detector that can exceed the backend proxy timeout",
-  );
-  assert.match(workflow, /last_scan_completed_at/u);
-  assert.match(workflow, /scan_age_seconds/u);
-  assert.doesNotMatch(workflow, /force_refresh\\":true/u,
-    "anti-cheat response must not rebuild every leaderboard snapshot");
-  assert.match(workflow, /anti_cheat_reconcile_at/u,
-    "the responder must use the atomic exclusion reconciliation path");
-  assert.doesNotMatch(workflow, /for period in week month total/u,
-    "the responder must not fan one queue change out into three heavy refreshes");
-  const postBranch = workflow.slice(workflow.indexOf('if [[ "$method" == "GET" ]]'));
-  assert.doesNotMatch(postBranch.slice(postBranch.indexOf("else")), /--retry-all-errors/u,
-    "write requests must not overlap after a lost gateway response");
-  assert.match(workflow, /\?anomalies=1/u, "the workflow must independently read back queue state");
-  assert.doesNotMatch(workflow, /user_id/u, "workflow logs must never expose flagged identities");
-  assert.match(
-    workflow,
-    /GITHUB_STEP_SUMMARY/u,
-    "the health check should retain private run-level observability",
-  );
+test("Community leaderboard operation workflows cannot run upstream production tasks", () => {
+  for (const file of ["leaderboard-anticheat.yml", "leaderboard-freshness.yml", "leaderboard-moderation-audit.yml"]) {
+    const workflow = read(`.github/workflows/${file}`);
+    assert.match(workflow, /\(disabled\)/u, `${file} must be explicitly disabled`);
+    assert.match(workflow, /^  workflow_dispatch:/mu);
+    assert.doesNotMatch(workflow, /^\s+(?:schedule|push|pull_request|pull_request_target|workflow_run|repository_dispatch):/mu,
+      "inherited operation workflows must not trigger automatically");
+    assert.match(workflow, /^  contents: read$/mu);
+    assert.match(workflow, /^  disabled:/mu);
+    assert.match(workflow, /^\s+- run: echo /mu);
+    assert.doesNotMatch(workflow, /secrets\.|https?:\/\/|\bcurl\b|\bwget\b|\bpsql\b|\bnode\b|\bgh\b|uses:|:\s*write/u,
+      "even a manual dispatch must not contact a backend, use credentials, or mutate GitHub");
+    assert.doesNotMatch(workflow, /user_id/u, "disabled workflows must not log flagged identities");
+  }
 });
 
 test("anti-cheat health reports database-native scan freshness before protected snapshot refresh", () => {
@@ -469,18 +447,12 @@ test("database-native anti-cheat detector has a bounded hourly scan budget", () 
     "a runaway detector must fail closed before it destabilizes the database server");
 });
 
-test("anti-cheat responder atomically reconciles snapshots only when the moderation queue changed", () => {
-  const workflow = read(".github/workflows/leaderboard-anticheat.yml");
+test("retained upstream anti-cheat responder preserves atomic snapshot reconciliation", () => {
   const source = read("dashboard/edge-patches/tokentracker-leaderboard-refresh.ts");
   const migration = readMigrationBySuffix("reconcile-anticheat-snapshot-exclusions");
 
-  assert.match(workflow, /last_queue_changed_at/u);
-  assert.match(workflow, /last_response_completed_at/u);
-  assert.match(workflow, /needs_response/u,
-    "unchanged queues must not repeat snapshot reconciliation every hour");
-  assert.match(workflow, /anti_cheat_reconcile_at/u);
-  assert.match(workflow, /reconcile request failed; checking durable database state/u,
-    "a lost HTTP response must fall through to durable state read-back");
+  assert.doesNotMatch(read(".github/workflows/leaderboard-anticheat.yml"), /last_queue_changed_at|needs_response|anti_cheat_reconcile_at/u,
+    "the fork must not dispatch the retained upstream responder");
   assert.match(source, /reconcile_anticheat_snapshot_exclusions/u);
   assert.match(source, /reconciled_snapshot_rows/u);
   assert.match(migration, /FOR UPDATE/u,

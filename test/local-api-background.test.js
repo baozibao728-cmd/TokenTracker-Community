@@ -432,7 +432,7 @@ test("local-api manual and drain sync still issue relayed cloud device tokens", 
 test("native background payload reaches ingest with the runtime anon key", async () => {
   const http = require("node:http");
   const realSpawn = require("node:child_process").spawn;
-  const { DEFAULT_ANON_KEY } = require("../src/lib/runtime-config");
+  const fixtureAnonKey = "fixture-anon";
   const tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), "tokentracker-native-publish-"));
   const trackerDir = path.join(tmpHome, ".tokentracker", "tracker");
   const requests = [];
@@ -452,6 +452,7 @@ test("native background payload reaches ingest with the runtime anon key", async
     fs.writeFileSync(path.join(trackerDir, "cloud-sync-pref.json"), JSON.stringify({ enabled: true }));
     fs.writeFileSync(path.join(trackerDir, "config.json"), JSON.stringify({
       baseUrl: `http://127.0.0.1:${backend.address().port}`,
+      anonKey: fixtureAnonKey,
       deviceToken: "fixture-device-token",
     }));
     const sessions = path.join(tmpHome, ".codex", "sessions", "2026", "09", "07");
@@ -492,7 +493,7 @@ test("native background payload reaches ingest with the runtime anon key", async
     ].includes(request.url)));
     const ingests = requests.filter((request) => request.url === "/functions/tokentracker-ingest");
     assert.equal(ingests.length, 1);
-    assert.equal(ingests[0].headers.apikey, DEFAULT_ANON_KEY);
+    assert.equal(ingests[0].headers.apikey, fixtureAnonKey);
     assert.equal(ingests[0].headers.authorization, "Bearer fixture-device-token");
     const queueState = JSON.parse(fs.readFileSync(path.join(trackerDir, "queue.state.json"), "utf8"));
     assert.ok(queueState.offset > 0, "successful ingest acknowledges the local queue");

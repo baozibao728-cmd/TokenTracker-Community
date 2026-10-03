@@ -27,7 +27,10 @@ async function makeTrackerDir() {
 
 // Env WITHOUT the test-runner marker, so maybeSendHeartbeat is exercised for
 // real; individual tests layer opt-out flags on top.
-const BASE_ENV = {};
+const BASE_ENV = {
+  TOKENTRACKER_INSFORGE_BASE_URL: "https://cloud.example",
+  TOKENTRACKER_INSFORGE_ANON_KEY: "fixture-anon",
+};
 
 function fakeFetch(responses) {
   const calls = [];
@@ -91,7 +94,8 @@ test("maybeSendHeartbeat sends once, records state, and throttles the same day",
   const { url, options } = calls[0];
   assert.ok(url.endsWith(`/functions/${HEARTBEAT_FUNCTION_SLUG}`), url);
   assert.equal(options.method, "POST");
-  assert.ok(options.headers.apikey, "apikey header present");
+  assert.equal(options.headers.apikey, BASE_ENV.TOKENTRACKER_INSFORGE_ANON_KEY);
+  assert.equal(new URL(url).origin, BASE_ENV.TOKENTRACKER_INSFORGE_BASE_URL);
   const body = JSON.parse(options.body);
   assert.deepEqual(Object.keys(body).sort(), ["app_version", "machine_hash", "platform", "shell"]);
   assert.match(body.machine_hash, /^[0-9a-f]{64}$/);

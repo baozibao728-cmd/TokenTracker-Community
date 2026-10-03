@@ -6,7 +6,7 @@ const { test } = require("node:test");
 
 const { cmdSync } = require("../src/commands/sync");
 const { openLock } = require("../src/lib/fs");
-const { DEFAULT_ANON_KEY } = require("../src/lib/runtime-config");
+const FIXTURE_ANON_KEY = "fixture-anon";
 
 function tokenCountLine({ ts, totalTokens }) {
   const usage = {
@@ -647,6 +647,7 @@ test("explicit account publication uploads after bounded background parsing", as
     await writeCodexRollout(codexHome, "2026-06-30", "019f16bd-1007-7000-8000-aaaaaaaaaaaa", 64);
     process.env.TOKENTRACKER_DEVICE_TOKEN = "test-device-token";
     process.env.TOKENTRACKER_INSFORGE_BASE_URL = "https://cloud.example";
+    process.env.TOKENTRACKER_INSFORGE_ANON_KEY = FIXTURE_ANON_KEY;
     const originalFetch = global.fetch;
     let ingestCalls = 0;
     let ingestHeaders = null;
@@ -671,7 +672,7 @@ test("explicit account publication uploads after bounded background parsing", as
     }
 
     assert.equal(ingestCalls, 1);
-    assert.equal(ingestHeaders.apikey, DEFAULT_ANON_KEY);
+    assert.equal(ingestHeaders.apikey, FIXTURE_ANON_KEY);
     const queueState = JSON.parse(
       await fs.readFile(path.join(home, ".tokentracker", "tracker", "queue.state.json"), "utf8"),
     );
