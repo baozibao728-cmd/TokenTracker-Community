@@ -206,6 +206,10 @@ test("defaultSeedPath stays inside the queue path's home and outside ~/.tokentra
   const seed = defaultSeedPath("/Users/alice/.tokentracker/tracker/queue.jsonl");
   assert.equal(seed, path.join("/Users/alice", ".config", "tokentracker", "machine-id"));
   assert.ok(!seed.includes(".tokentracker"), "seed must survive `rm -rf ~/.tokentracker`");
+
+  const communitySeed = defaultSeedPath("/Users/alice/.tokentracker-community/tracker/queue.jsonl");
+  assert.equal(communitySeed, path.join("/Users/alice", ".config", "tokentracker-community", "machine-id"));
+  assert.notEqual(communitySeed, seed, "community reinstall identity must stay separate from upstream");
 });
 
 test("local-api re-exports the machine-id helpers (back-compat for existing callers)", () => {

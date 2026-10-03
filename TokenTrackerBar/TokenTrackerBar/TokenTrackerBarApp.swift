@@ -34,7 +34,7 @@ struct TokenTrackerBarApp: App {
                 // Default Help menu shows "Help isn't available" — open the website.
                 CommandGroup(replacing: .help) {
                     Button(Strings.menuHelp) {
-                        if let url = URL(string: "https://www.tokentracker.cc") {
+                        if let url = URL(string: "https://github.com/baozibao728-cmd/TokenTracker-Community") {
                             NSWorkspace.shared.open(url)
                         }
                     }
@@ -121,7 +121,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        removeLegacyAppBundleIfNeeded()
         NativeLocalization.synchronizeSharedPreference()
 
         statusBarController = StatusBarController(
@@ -195,26 +194,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
     }
 
-    /// One-time migration: PRODUCT_NAME changed `TokenTrackerBar.app` → `TokenTracker.app`.
-    /// Auto-update (or a manual drag-install) puts the renamed bundle alongside the
-    /// old one, so terminate any still-running legacy instance and remove the
-    /// orphaned legacy copy (same bundle id) when running from a standard install path.
-    private func removeLegacyAppBundleIfNeeded() {
-        let appDirs = ["/Applications", "/Users/\(NSUserName())/Applications"]
-        guard appDirs.contains(where: { Bundle.main.bundlePath == "\($0)/TokenTracker.app" }) else { return }
-        for legacyPath in appDirs.map({ "\($0)/TokenTrackerBar.app" }) {
-            guard let legacyBundle = Bundle(path: legacyPath),
-                  legacyBundle.bundleIdentifier == Bundle.main.bundleIdentifier
-            else { continue }
-            // A legacy instance may still be sitting in the menu bar (manual
-            // drag-install case) — two instances would fight over the server port.
-            NSWorkspace.shared.runningApplications
-                .filter { $0.bundleIdentifier == Bundle.main.bundleIdentifier && $0.bundleURL?.path == legacyPath }
-                .forEach { $0.terminate() }
-            try? FileManager.default.removeItem(atPath: legacyPath)
-        }
-    }
-
     @objc private func scheduleWakeCatchUp(_ notification: Notification) {
         let now = Date()
         if let lastWakeCatchUpAttemptAt,
@@ -231,11 +210,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func application(_ application: NSApplication, open urls: [URL]) {
         for url in urls {
-            guard url.scheme == "tokentracker" else { continue }
+            guard url.scheme == "tokentracker-community" else { continue }
             if url.host == "auth" && url.path.hasPrefix("/done") {
                 DashboardWindowController.shared.handleAuthDone()
             } else if url.host == "auth" && url.path.hasPrefix("/callback") {
-                // Browser relays OAuth code back via tokentracker://auth/callback?insforge_code=xxx
+                // Browser relays OAuth code back via tokentracker-community://auth/callback?insforge_code=xxx
                 let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
                 let code = components?.queryItems?.first(where: { $0.name == "insforge_code" })?.value
                 if let code {
@@ -243,7 +222,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             } else if url.host == "open" || url.host == "dashboard" {
                 // The web app's local-only pages (Limits / Skills on
-                // tokentracker.cc) deep-link here via tokentracker://open to
+                // the Community dashboard) deep-link here via tokentracker-community://open to
                 // surface the local dashboard window.
                 DashboardPresentationCoordinator.shared.showDashboard()
             }

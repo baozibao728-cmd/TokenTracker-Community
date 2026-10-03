@@ -12,13 +12,19 @@ const { test, beforeEach, afterEach } = require("node:test");
 let tmpHome;
 let prevHome;
 let prevUserProfile;
+let prevBaseUrl;
+let prevAnonKey;
 
 beforeEach(() => {
   tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), "tt-account-view-home-"));
   prevHome = process.env.HOME;
   prevUserProfile = process.env.USERPROFILE;
+  prevBaseUrl = process.env.TOKENTRACKER_INSFORGE_BASE_URL;
+  prevAnonKey = process.env.TOKENTRACKER_INSFORGE_ANON_KEY;
   process.env.HOME = tmpHome;
   process.env.USERPROFILE = tmpHome;
+  process.env.TOKENTRACKER_INSFORGE_BASE_URL = "https://cloud.example";
+  process.env.TOKENTRACKER_INSFORGE_ANON_KEY = "fixture-anon";
   delete require.cache[require.resolve("../src/lib/cloud-account")];
 });
 
@@ -27,6 +33,10 @@ afterEach(() => {
   else process.env.HOME = prevHome;
   if (prevUserProfile === undefined) delete process.env.USERPROFILE;
   else process.env.USERPROFILE = prevUserProfile;
+  if (prevBaseUrl === undefined) delete process.env.TOKENTRACKER_INSFORGE_BASE_URL;
+  else process.env.TOKENTRACKER_INSFORGE_BASE_URL = prevBaseUrl;
+  if (prevAnonKey === undefined) delete process.env.TOKENTRACKER_INSFORGE_ANON_KEY;
+  else process.env.TOKENTRACKER_INSFORGE_ANON_KEY = prevAnonKey;
   try {
     fs.rmSync(tmpHome, { recursive: true, force: true });
   } catch {

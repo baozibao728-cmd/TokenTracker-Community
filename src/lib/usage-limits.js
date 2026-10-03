@@ -7,6 +7,7 @@ const http = require("node:http");
 const https = require("node:https");
 const { performance } = require("node:perf_hooks");
 const { promisify } = require("node:util");
+const { resolveTrackerRoot } = require("./tracker-paths");
 
 const {
   detectClaudeCodeCredentialsPresence,
@@ -1536,8 +1537,7 @@ function parseKiroUsageOutput(output, { now = new Date() } = {}) {
 
 function readKiroCreditsSummary({ home = os.homedir() } = {}) {
   const sidecarPath = path.join(
-    home,
-    ".tokentracker",
+    resolveTrackerRoot({ home }),
     "tracker",
     KIRO_CREDITS_SIDECAR_FILE,
   );
@@ -2217,7 +2217,7 @@ async function detectAntigravityProcess({
 }
 
 function resolveAntigravityLimitsCachePath({ home } = {}) {
-  return path.join(home || os.homedir(), ".tokentracker", "tracker", ANTIGRAVITY_LIMITS_CACHE_FILE);
+  return path.join(resolveTrackerRoot({ home }), "tracker", ANTIGRAVITY_LIMITS_CACHE_FILE);
 }
 
 function parseTimeMs(value) {
@@ -2292,7 +2292,7 @@ function writeAntigravityLimitsCache(limits, { home, nowMs = Date.now() } = {}) 
 }
 
 function resolveClaudeLimitsCachePath({ home } = {}) {
-  return path.join(home || os.homedir(), ".tokentracker", "tracker", CLAUDE_LIMITS_CACHE_FILE);
+  return path.join(resolveTrackerRoot({ home }), "tracker", CLAUDE_LIMITS_CACHE_FILE);
 }
 
 // Claude windows carry their own `resets_at`; a window whose reset has already passed is
@@ -2422,7 +2422,7 @@ function writeClaudeLimitsCache(limits, { home, nowMs = Date.now() } = {}) {
 }
 
 function resolveCodexLimitsCachePath({ home } = {}) {
-  return path.join(home || os.homedir(), ".tokentracker", "tracker", CODEX_LIMITS_CACHE_FILE);
+  return path.join(resolveTrackerRoot({ home }), "tracker", CODEX_LIMITS_CACHE_FILE);
 }
 
 // Codex windows carry `reset_at` as unix seconds (not an ISO string). A window whose reset has
@@ -2504,7 +2504,7 @@ function writeCodexLimitsCache(limits, { home, nowMs = Date.now() } = {}) {
 }
 
 function resolveOpencodeGoLimitsCachePath({ home } = {}) {
-  return path.join(home || os.homedir(), ".tokentracker", "tracker", OPENCODE_GO_LIMITS_CACHE_FILE);
+  return path.join(resolveTrackerRoot({ home }), "tracker", OPENCODE_GO_LIMITS_CACHE_FILE);
 }
 
 function hasOpencodeGoWindow(limits) {
@@ -2580,7 +2580,7 @@ function writeOpencodeGoLimitsCache(limits, { home, nowMs = Date.now() } = {}) {
 }
 
 function resolveClaudeRateLimitPath({ home } = {}) {
-  return path.join(home || os.homedir(), ".tokentracker", "tracker", CLAUDE_RATE_LIMIT_FILE);
+  return path.join(resolveTrackerRoot({ home }), "tracker", CLAUDE_RATE_LIMIT_FILE);
 }
 
 function claudeTokenExpiryStamp(tokenExpiresAtMs) {

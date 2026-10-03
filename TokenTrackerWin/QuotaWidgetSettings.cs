@@ -5,8 +5,7 @@ namespace TokenTrackerWin;
 
 internal sealed class QuotaWidgetSettings
 {
-    private static readonly string FilePath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TokenTracker", "quota-widget.json");
+    private static readonly string FilePath = Path.Combine(Constants.DataDirectory, "quota-widget.json");
     public bool Enabled { get; set; }
     public int? X { get; set; }
     public int? Y { get; set; }

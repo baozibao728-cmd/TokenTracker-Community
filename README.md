@@ -1,6 +1,12 @@
  <div align="center">
 
-# Token Tracker
+# TokenTracker Community
+
+An independently maintained MIT fork of [xiufengsun/TokenTracker](https://github.com/xiufengsun/TokenTracker), with private Community Leaderboards. Upstream copyright and [MIT license](LICENSE) are retained.
+
+Current fork downloads and support: [Releases](https://github.com/baozibao728-cmd/TokenTracker-Community/releases) · [Issues](https://github.com/baozibao728-cmd/TokenTracker-Community/issues).
+
+The first Community release is being prepared; no public installer has been published yet. Community uses its own InsForge project. Native installation, data, URL scheme and updates are isolated from the official TokenTracker app. The inherited CLI/Homebrew examples below describe upstream packages, not a published Community CLI or tap. Cloud badges, share/likes and automatic anticheat are outside this fork's current backend scope.
 
 **English** · [简体中文](./README.zh-CN.md) · [日本語](./README.ja.md) · [한국어](./README.ko.md) · [Deutsch](./README.de.md)
 
@@ -8,16 +14,12 @@
 
 An accurate, local-first token usage and cost dashboard for **42 AI coding tools** — plus a desktop pet, **4 native widgets**, and **15 achievement tracks**. No cloud account, no API keys, no setup.
 
-[![npm version](https://img.shields.io/npm/v/tokentracker-cli.svg?color=blue)](https://www.npmjs.com/package/tokentracker-cli)
-[![npm downloads](https://img.shields.io/npm/dm/tokentracker-cli.svg?color=brightgreen)](https://www.npmjs.com/package/tokentracker-cli)
-[![Homebrew](https://img.shields.io/github/v/release/xiufengsun/TokenTracker?label=brew&color=F8B73E&logo=homebrew&logoColor=white)](https://github.com/xiufengsun/homebrew-tokentracker)
+[![Community release](https://img.shields.io/github/v/release/baozibao728-cmd/TokenTracker-Community)](https://github.com/baozibao728-cmd/TokenTracker-Community/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![CLI](https://img.shields.io/badge/CLI-macOS%20%C2%B7%20Linux%20%C2%B7%20Windows-lightgrey.svg)](https://www.npmjs.com/package/tokentracker-cli)
-[![macOS app](https://img.shields.io/badge/macOS%20app-menu%20bar%20%2B%20widgets-lightgrey.svg?logo=apple&logoColor=white)](https://github.com/xiufengsun/TokenTracker/releases/latest)
-[![Windows app](https://img.shields.io/badge/Windows%20app-system%20tray-lightgrey.svg?logo=windows&logoColor=white)](https://github.com/xiufengsun/TokenTracker/releases/latest)
-[![GitHub stars](https://img.shields.io/github/stars/xiufengsun/TokenTracker?style=social)](https://github.com/xiufengsun/TokenTracker/stargazers)
+[![macOS app](https://img.shields.io/badge/macOS%20app-menu%20bar%20%2B%20widgets-lightgrey.svg?logo=apple&logoColor=white)](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest)
+[![Windows app](https://img.shields.io/badge/Windows%20app-system%20tray-lightgrey.svg?logo=windows&logoColor=white)](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest)
+[![GitHub stars](https://img.shields.io/github/stars/baozibao728-cmd/TokenTracker-Community?style=social)](https://github.com/baozibao728-cmd/TokenTracker-Community/stargazers)
 [![Featured in 阮一峰周刊 #393](https://img.shields.io/badge/Featured%20in-%E9%98%AE%E4%B8%80%E5%B3%B0%E5%91%A8%E5%88%8A%20%23393-FF6B35?logo=rss&logoColor=white)](https://github.com/ruanyf/weekly/blob/master/docs/issue-393.md)
-[![Author tokens](https://srctyff5.us-east.insforge.app/functions/tokentracker-badge-svg?user_id=0652839f-d19f-4f67-af85-6b7675875443&metric=tokens&compact=1&label=author%20tokens)](https://github.com/xiufengsun/TokenTracker)
 
 <br/>
 
@@ -62,7 +64,7 @@ An accurate, local-first token usage and cost dashboard for **42 AI coding tools
 
 <br/><br/>
 
-⭐ **If TokenTracker saves you time, please [star it on GitHub](https://github.com/xiufengsun/TokenTracker) — it helps other developers find it.**
+⭐ **If TokenTracker saves you time, please [star it on GitHub](https://github.com/baozibao728-cmd/TokenTracker-Community) — it helps other developers find it.**
 
 <br/>
 
@@ -89,9 +91,9 @@ That's it. First run installs hooks, syncs your data, and opens the dashboard at
 - 🧩 *Optional:* a Skills tab that browses 250+ public skills and syncs them across Claude · Codex · Grok · Antigravity · Gemini · OpenCode · Hermes
 
 > **Want a native desktop app?**
-> - **macOS** — [Download `TokenTrackerBar.dmg`](https://github.com/xiufengsun/TokenTracker/releases/latest/download/TokenTrackerBar.dmg) → drag to Applications. Menu bar status icon, desktop widgets, and the dashboard in a WKWebView.
-> - **Windows** — [Download `TokenTracker-Setup.exe`](https://github.com/xiufengsun/TokenTracker/releases/latest/download/TokenTracker-Setup.exe) → run the per-user installer (no admin needed). System-tray app with the dashboard in WebView2. Portable zip also on the [releases page](https://github.com/xiufengsun/TokenTracker/releases/latest).
-> - **Linux** — [Download `TokenTracker-linux-x86_64.AppImage`](https://github.com/xiufengsun/TokenTracker/releases/latest/download/TokenTracker-linux-x86_64.AppImage) → `chmod +x` and run. Tray app with the dashboard in a WebKitGTK window. It carries its own GTK/WebKit, so it needs nothing from your distro beyond a current glibc; on GNOME the tray icon still needs the [AppIndicator extension](https://extensions.gnome.org/extension/615/appindicator-support/). `.deb` and `.rpm` packages are also on the [releases page](https://github.com/xiufengsun/TokenTracker/releases/latest) — those link the distro's `webkit2gtk-4.1`, `gtk3` and appindicator instead, so the `.deb` will not install on Debian 12 (use the AppImage there).
+> - **macOS** — [Download `TokenTrackerCommunity.dmg`](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest/download/TokenTrackerCommunity.dmg) → drag to Applications. Menu bar status icon, desktop widgets, and the dashboard in a WKWebView.
+> - **Windows** — [Download `TokenTracker-Community-Setup.exe`](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest/download/TokenTracker-Community-Setup.exe) → run the per-user installer (no admin needed). System-tray app with the dashboard in WebView2. Portable zip also on the [releases page](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest).
+> - **Linux** — [Download `TokenTracker-Community-linux-x86_64.AppImage`](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest/download/TokenTracker-Community-linux-x86_64.AppImage) → `chmod +x` and run. Tray app with the dashboard in a WebKitGTK window. It carries its own GTK/WebKit, so it needs nothing from your distro beyond a current glibc; on GNOME the tray icon still needs the [AppIndicator extension](https://extensions.gnome.org/extension/615/appindicator-support/). `.deb` and `.rpm` packages are also on the [releases page](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest) — those link the distro's `webkit2gtk-4.1`, `gtk3` and appindicator instead, so the `.deb` will not install on Debian 12 (use the AppImage there).
 
 Install globally for shorter commands:
 
@@ -125,15 +127,15 @@ Upgrade with `brew upgrade --cask xiufengsun/tokentracker/tokentracker`. The tap
 Every release ships all three. One self-contained file, no package manager:
 
 ```bash
-chmod +x TokenTracker-linux-x86_64.AppImage
-./TokenTracker-linux-x86_64.AppImage
+chmod +x TokenTracker-Community-linux-x86_64.AppImage
+./TokenTracker-Community-linux-x86_64.AppImage
 ```
 
 Or install through your package manager:
 
 ```bash
-sudo apt install ./TokenTracker-linux-x86_64.deb    # Debian / Ubuntu
-sudo dnf install ./TokenTracker-linux-x86_64.rpm    # Fedora / RHEL
+sudo apt install ./TokenTracker-Community-linux-x86_64.deb    # Debian / Ubuntu
+sudo dnf install ./TokenTracker-Community-linux-x86_64.rpm    # Fedora / RHEL
 ```
 
 > **Debian 12:** the `.deb` depends on `libappindicator3-1`, which bookworm dropped in favour of `libayatana-appindicator3-1`, so `apt` refuses it. Use the AppImage.
@@ -292,7 +294,7 @@ An Arch `PKGBUILD` for a local pacman install lives in `TokenTrackerLinux/packag
 >
 > Deeper dives: [OpenClaw integration & troubleshooting](docs/openclaw-integration.md).
 
-Missing your tool? [Open an issue](https://github.com/xiufengsun/TokenTracker/issues/new) — adding new providers is usually one parser file away.
+Missing your tool? [Open an issue](https://github.com/baozibao728-cmd/TokenTracker-Community/issues/new) — adding new providers is usually one parser file away.
 
 ---
 
@@ -401,7 +403,7 @@ Supported providers for WSL auto-discovery and aggregation:
 ## 🛠️ Development
 
 ```bash
-git clone https://github.com/xiufengsun/TokenTracker.git
+git clone https://github.com/baozibao728-cmd/TokenTracker-Community.git
 cd TokenTracker
 npm install
 
@@ -488,7 +490,7 @@ Then run the doctor for a deeper health check:
 tokentracker doctor
 ```
 
-If a provider shows as not configured even though you use it, try `tokentracker activate-if-needed` to re-run hook detection. If still missing, [open an issue](https://github.com/xiufengsun/TokenTracker/issues/new) with the `doctor` output attached.
+If a provider shows as not configured even though you use it, try `tokentracker activate-if-needed` to re-run hook detection. If still missing, [open an issue](https://github.com/baozibao728-cmd/TokenTracker-Community/issues/new) with the `doctor` output attached.
 
 </details>
 
@@ -554,57 +556,16 @@ Once granted, the permission is remembered. Note that ad-hoc signed builds re-pr
 
 ---
 
-## 🪪 README Badges
+## Cloud scope
 
-Show off your token usage on your GitHub profile or project README.
-
-To get `YOUR_USER_ID`:
-1. Run `tokentracker`, open the dashboard, and sign in to the leaderboard.
-2. Go to **Settings → Account**.
-3. Use the **User ID** shown there. On headless machines, `tokentracker device-login` also writes the same `user_id` to `~/.tokentracker/tracker/config.json`.
-
-Then drop one of these in:
-
-```markdown
-[![tokens](https://srctyff5.us-east.insforge.app/functions/tokentracker-badge-svg?user_id=YOUR_USER_ID&metric=tokens)](https://github.com/xiufengsun/TokenTracker)
-[![cost](https://srctyff5.us-east.insforge.app/functions/tokentracker-badge-svg?user_id=YOUR_USER_ID&metric=cost)](https://github.com/xiufengsun/TokenTracker)
-[![rank](https://srctyff5.us-east.insforge.app/functions/tokentracker-badge-svg?user_id=YOUR_USER_ID&metric=rank)](https://github.com/xiufengsun/TokenTracker)
-```
-
-> The link target defaults to the TokenTracker repo so every click helps other developers discover the tool. Swap it for your leaderboard profile, personal site, or `https://www.tokentracker.cc` if you'd rather route clicks elsewhere.
-
-Renders shields.io-compatible badges with your current totals (60s cache):
-
-| Param | Values | Default |
-|---|---|---|
-| `metric` | `tokens` / `cost` / `rank` | `tokens` |
-| `period` | `week` / `month` / `total` | `total` |
-| `style` | `flat` / `flat-square` | `flat` |
-| `label` | any short string | metric name |
-| `color` | hex, e.g. `ff6b35` | brand green |
-
-> **Privacy**: badges only resolve for profiles where leaderboard sharing is **on** (`Settings → Account → Public profile`). Private profiles get a "private" placeholder.
-
----
-
-## ⭐ Star History
-
-<a href="https://www.star-history.com/?repos=xiufengsun%2FTokenTracker&type=date&legend=top-left">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=xiufengsun/TokenTracker&type=date&theme=dark&legend=top-left&sealed_token=Vr7qbPNqOTtzQEdtkxS2yArAReX2QkBZKNJgs3n32Q5oJa1iXddLlrT201teNSnt7QnsXtDcHy_T387xvXJ_HXHrPtvH2QQ1xqQZ67N_HV45ulWrt3j6hziDW5eshRCmu8CAT_W31PY0-WVZpFv7NQD-acv1stVK8ndribTokIp9ukSYAedx3icuUrOu" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=xiufengsun/TokenTracker&type=date&legend=top-left&sealed_token=Vr7qbPNqOTtzQEdtkxS2yArAReX2QkBZKNJgs3n32Q5oJa1iXddLlrT201teNSnt7QnsXtDcHy_T387xvXJ_HXHrPtvH2QQ1xqQZ67N_HV45ulWrt3j6hziDW5eshRCmu8CAT_W31PY0-WVZpFv7NQD-acv1stVK8ndribTokIp9ukSYAedx3icuUrOu" />
-    <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=xiufengsun/TokenTracker&type=date&legend=top-left&sealed_token=Vr7qbPNqOTtzQEdtkxS2yArAReX2QkBZKNJgs3n32Q5oJa1iXddLlrT201teNSnt7QnsXtDcHy_T387xvXJ_HXHrPtvH2QQ1xqQZ67N_HV45ulWrt3j6hziDW5eshRCmu8CAT_W31PY0-WVZpFv7NQD-acv1stVK8ndribTokIp9ukSYAedx3icuUrOu" />
-  </picture>
-</a>
-
----
+Community v1 supports Auth, device tokens, usage ingestion, account usage and basic global/community leaderboards. Cloud badges and sharing are not enabled.
 
 ## 🤝 Contributing & Support
 
-- **Bugs / feature requests**: [open an issue](https://github.com/xiufengsun/TokenTracker/issues/new)
+- **Bugs / feature requests**: [open an issue](https://github.com/baozibao728-cmd/TokenTracker-Community/issues/new)
 - **Security**: see [SECURITY.md](SECURITY.md) — please don't open public issues for security reports
 - **Pull requests**: see [CONTRIBUTING.md](CONTRIBUTING.md) for setup, tests, and how to add a new AI tool integration
-- **Questions / showcase**: [GitHub Discussions](https://github.com/xiufengsun/TokenTracker/discussions)
+- **Questions / showcase**: [GitHub Discussions](https://github.com/baozibao728-cmd/TokenTracker-Community/issues)
 
 ## 🙏 Credits
 
@@ -626,6 +587,6 @@ The Clawd character design belongs to Anthropic. This is a community project wit
 
 **Token Tracker** — Quantify your AI output.
 
-<a href="https://www.tokentracker.cc">tokentracker.cc</a>  ·  <a href="https://www.npmjs.com/package/tokentracker-cli">npm</a>  ·  <a href="https://github.com/xiufengsun/TokenTracker">GitHub</a>
+<a href="https://github.com/baozibao728-cmd/TokenTracker-Community">TokenTracker-Community</a> · <a href="https://github.com/xiufengsun/TokenTracker">Upstream attribution</a>
 
 </div>

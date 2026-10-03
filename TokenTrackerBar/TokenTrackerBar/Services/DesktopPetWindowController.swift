@@ -593,7 +593,7 @@ enum PetSizePreset: String, CaseIterable {
 }
 
 /// A Codex-compatible companion identity. Built-ins and packages installed under
-/// ~/.tokentracker/pets share the same value type so selecting a community pet never requires
+/// ~/.tokentracker-community/pets share the same value type so selecting a community pet never requires
 /// adding a new enum case or rebuilding the app.
 struct PetCharacter: RawRepresentable, Hashable, Identifiable, CaseIterable {
     let rawValue: String
@@ -672,8 +672,8 @@ final class PetCatalog: ObservableObject {
 
     func refresh() {
         let home = FileManager.default.homeDirectoryForCurrentUser
-        let root = home
-            .appendingPathComponent(".tokentracker/pets", isDirectory: true)
+        let root = Constants.dataRootURL
+            .appendingPathComponent("pets", isDirectory: true)
         let hiddenBuiltinIDs: Set<String> = {
             let url = root.appendingPathComponent(Self.hiddenBuiltinsFilename)
             guard let data = try? Data(contentsOf: url),

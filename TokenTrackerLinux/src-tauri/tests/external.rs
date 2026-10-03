@@ -11,9 +11,9 @@ fn url(raw: &str) -> Url {
 #[test]
 fn dashboard_navigation_stays_in_the_window() {
     for internal in [
-        "http://127.0.0.1:17680/dashboard",
+        "http://127.0.0.1:17681/dashboard",
         "http://127.0.0.1:41235/status",
-        "http://localhost:17680/",
+        "http://localhost:17681/",
         "tauri://localhost/index.html",
         "http://tauri.localhost/index.html",
     ] {
@@ -30,7 +30,7 @@ fn provider_status_pages_leave_the_window() {
         "https://status.openai.com/",
         "https://status.cursor.com/",
         "https://www.githubstatus.com/",
-        "https://github.com/xiufengsun/TokenTracker",
+        "https://github.com/baozibao728-cmd/TokenTracker-Community",
     ] {
         assert!(!is_internal_url(&url(external)), "{external}");
     }

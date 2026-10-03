@@ -33,7 +33,7 @@ struct TopModel: Identifiable {
 @MainActor
 class DashboardViewModel: ObservableObject {
     private static let logger = Logger(
-        subsystem: "com.tokentracker.bar",
+        subsystem: "com.tokentracker.community",
         category: "DashboardViewModel"
     )
 

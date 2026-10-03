@@ -76,6 +76,18 @@ jobs:
           }
           Write-Host "Version OK: $env:VERSION"
 
+      - name: Verify fork target and prepare release client configuration
+        shell: pwsh
+        env:
+          VITE_INSFORGE_BASE_URL: ${{ vars.TOKENTRACKER_COMMUNITY_INSFORGE_BASE_URL }}
+          VITE_INSFORGE_ANON_KEY: ${{ secrets.TOKENTRACKER_COMMUNITY_INSFORGE_ANON_KEY }}
+        run: |
+          if ($env:GITHUB_REPOSITORY -ne 'baozibao728-cmd/TokenTracker-Community') {
+            throw 'Release workflow must run in the TokenTracker-Community fork.'
+          }
+          node scripts/prepare-release-client-config.cjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       # 1. Build dashboard. InsForge URL + anon key are public client-side values
       # (shipped in every dashboard bundle) but MUST be present at build time or
       # Vite inlines empty strings — breaks the leaderboard fetch and disables
@@ -85,8 +97,8 @@ jobs:
 
       - name: Build dashboard
         env:
-          VITE_INSFORGE_BASE_URL: https://srctyff5.us-east.insforge.app
-          VITE_INSFORGE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3OC0xMjM0LTU2NzgtOTBhYi1jZGVmMTIzNDU2NzgiLCJlbWFpbCI6ImFub25AaW5zZm9yZ2UuY29tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNDU5NDd9.T0auta_IrVIh0uXW1bob5QSnzvsnJmN28r5XkSGEuQY
+          VITE_INSFORGE_BASE_URL: ${{ vars.TOKENTRACKER_COMMUNITY_INSFORGE_BASE_URL }}
+          VITE_INSFORGE_ANON_KEY: ${{ secrets.TOKENTRACKER_COMMUNITY_INSFORGE_ANON_KEY }}
           # Include the floating-pet entry (pet.html). Off by default so the macOS +
           # web builds stay byte-identical; only the Windows build opts in.
           TOKENTRACKER_BUILD_PET: "1"
@@ -132,7 +144,7 @@ jobs:
         shell: pwsh
         run: |
           $required = @(
-            "TokenTrackerWin/publish/TokenTracker.exe",
+            "TokenTrackerWin/publish/TokenTrackerCommunity.exe",
             "TokenTrackerWin/publish/EmbeddedServer/node.exe",
             "TokenTrackerWin/publish/EmbeddedServer/tokentracker/bin/tracker.js",
             "TokenTrackerWin/publish/EmbeddedServer/tokentracker/dashboard/dist/index.html",
@@ -148,11 +160,11 @@ jobs:
         shell: pwsh
         env:
           VERSION: ${{ inputs.version }}
-        run: Compress-Archive -Path TokenTrackerWin/publish/* -DestinationPath "TokenTracker-win-x64-v$env:VERSION.zip" -CompressionLevel Optimal
+        run: Compress-Archive -Path TokenTrackerWin/publish/* -DestinationPath "TokenTracker-Community-win-x64-v$env:VERSION.zip" -CompressionLevel Optimal
 
       # 6. Build the per-user installer (setup.exe) with Inno Setup. windows-latest
       # ships Inno Setup 6; fall back to installing it via choco if the path moves.
-      # Output: TokenTrackerWin/installer/Output/TokenTracker-Setup-v<version>.exe
+      # Output: TokenTrackerWin/installer/Output/TokenTracker-Community-Setup-v<version>.exe
       - name: Build installer (Inno Setup)
         shell: pwsh
         env:
@@ -166,7 +178,7 @@ jobs:
           }
           if (-not (Test-Path $iscc)) { Write-Host "::error::ISCC.exe not found after install"; exit 1 }
           & $iscc "/DMyAppVersion=$env:VERSION" TokenTrackerWin\installer\TokenTracker.iss
-          $setup = "TokenTrackerWin/installer/Output/TokenTracker-Setup-v$env:VERSION.exe"
+          $setup = "TokenTrackerWin/installer/Output/TokenTracker-Community-Setup-v$env:VERSION.exe"
           if (-not (Test-Path $setup)) { Write-Host "::error::installer not produced at $setup"; exit 1 }
           Write-Host "Installer built: $setup"
 
@@ -182,16 +194,16 @@ jobs:
           $tag = "v$env:VERSION"
           # Build artifacts carry the version in their filename (clearer on the
           # runner / in the Inno output folder).
-          $zipBuilt = "TokenTracker-win-x64-v$env:VERSION.zip"
-          $setupBuilt = "TokenTrackerWin/installer/Output/TokenTracker-Setup-v$env:VERSION.exe"
+          $zipBuilt = "TokenTracker-Community-win-x64-v$env:VERSION.zip"
+          $setupBuilt = "TokenTrackerWin/installer/Output/TokenTracker-Community-Setup-v$env:VERSION.exe"
           # Upload version-less names ONLY, matching the macOS DMG (which ships a
-          # single version-less TokenTrackerBar.dmg). The landing page / READMEs
-          # deep-link releases/latest/download/TokenTracker-Setup.exe, so the asset
+          # single version-less TokenTrackerCommunity.dmg). The landing page / READMEs
+          # deep-link releases/latest/download/TokenTracker-Community-Setup.exe, so the asset
           # names must be stable; the release heading already shows the version, so
           # a second versioned copy of each asset would just be a redundant
           # duplicate on the release page.
-          $setup = "TokenTracker-Setup.exe"
-          $zip = "TokenTracker-win-x64.zip"
+          $setup = "TokenTracker-Community-Setup.exe"
+          $zip = "TokenTracker-Community-win-x64.zip"
           Copy-Item $setupBuilt $setup -Force
           Copy-Item $zipBuilt $zip -Force
           $releaseJson = gh release view $tag --json isDraft 2>$null

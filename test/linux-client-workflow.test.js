@@ -4,8 +4,8 @@ const path = require('node:path');
 const test = require('node:test');
 
 const root = path.resolve(__dirname, '..');
-const ci = fs.readFileSync(path.join(root, '.github/workflows/ci.yml'), 'utf8');
-const release = fs.readFileSync(path.join(root, '.github/workflows/release-dmg.yml'), 'utf8');
+const ci = fs.readFileSync(path.join(root, '.github/workflows/ci.yml'), 'utf8').replace(/\r\n/g, '\n');
+const release = fs.readFileSync(path.join(root, '.github/workflows/release-dmg.yml'), 'utf8').replace(/\r\n/g, '\n');
 const validatorPath = path.join(root, 'TokenTrackerLinux/scripts/validate-package.sh');
 const pkgbuild = fs.readFileSync(
   path.join(root, 'TokenTrackerLinux/packaging/arch/tokentracker-linux/PKGBUILD'),
@@ -98,11 +98,21 @@ test('release builds one artifact per Linux format and verifies every payload', 
   for (const ext of ['AppImage', 'deb', 'rpm']) {
     assert.match(
       linuxJob,
-      new RegExp(`dist-linux/TokenTracker-linux-x86_64\\.${ext}`),
+      new RegExp(`dist-linux/TokenTracker-Community-linux-x86_64\\.${ext}`),
       `the ${ext} must be staged under its stable asset name`,
     );
   }
-  assert.match(linuxJob, /TokenTracker-linux-x86_64\.rpm --clobber/);
+  assert.match(linuxJob, /TokenTracker-Community-linux-x86_64\.rpm --clobber/);
+});
+
+test('Linux release validates the Community backend configuration before bundling', () => {
+  const linuxJob = release.slice(release.indexOf('\n  linux:'), release.indexOf('\n  publish:'));
+  const preflight = linuxJob.indexOf('node scripts/prepare-release-client-config.cjs');
+  const bundle = linuxJob.indexOf('run bundle:node');
+  assert.ok(preflight >= 0, 'Linux release must validate its backend target and credential');
+  assert.ok(bundle > preflight, 'client configuration must be checked before bundling');
+  assert.match(linuxJob, /vars\.TOKENTRACKER_COMMUNITY_INSFORGE_BASE_URL/);
+  assert.match(linuxJob, /secrets\.TOKENTRACKER_COMMUNITY_INSFORGE_ANON_KEY/);
 });
 
 test('publish waits for all three platforms and verifies every asset', () => {
@@ -113,12 +123,12 @@ test('publish waits for all three platforms and verifies every asset', () => {
     .find((line) => line.includes('for asset in'));
   assert.ok(assetLine, 'publish should enumerate the required assets');
   for (const asset of [
-    'TokenTrackerBar.dmg',
-    'TokenTracker-win-x64.zip',
-    'TokenTracker-Setup.exe',
-    'TokenTracker-linux-x86_64.AppImage',
-    'TokenTracker-linux-x86_64.deb',
-    'TokenTracker-linux-x86_64.rpm',
+    'TokenTrackerCommunity.dmg',
+    'TokenTracker-Community-win-x64.zip',
+    'TokenTracker-Community-Setup.exe',
+    'TokenTracker-Community-linux-x86_64.AppImage',
+    'TokenTracker-Community-linux-x86_64.deb',
+    'TokenTracker-Community-linux-x86_64.rpm',
   ]) {
     assert.ok(assetLine.includes(asset), `publish must verify ${asset}`);
   }
@@ -148,7 +158,7 @@ test('no workflow or doc still references the old release workflow name', () => 
   }
 });
 
-test('deb and rpm register tokentracker:// so the OAuth return reaches the app', () => {
+test('deb and rpm register tokentracker-community:// so the OAuth return reaches the app', () => {
   // Tauri's default desktop template has no %u and no scheme handler, and the
   // runtime xdg-mime registration only runs for the AppImage, so v1.1.0's deb
   // and rpm could never finish a browser sign-in.
@@ -160,13 +170,13 @@ test('deb and rpm register tokentracker:// so the OAuth return reaches the app',
 
   const template = fs.readFileSync(path.join(tauriDir, debTemplate), 'utf8');
   assert.match(template, /^Exec=\{\{exec\}\} %u$/m);
-  assert.match(template, /^MimeType=x-scheme-handler\/tokentracker;$/m);
+  assert.match(template, /^MimeType=x-scheme-handler\/tokentracker-community;$/m);
 
   const linuxJob = release.slice(release.indexOf('\n  linux:'), release.indexOf('\n  publish:'));
   assert.match(linuxJob, /verify_scheme_handler "deb" "\$workdir\/deb"/);
   assert.match(linuxJob, /verify_scheme_handler "rpm" "\$workdir\/rpm"/);
-  assert.match(linuxJob, /grep -Fxq 'MimeType=x-scheme-handler\/tokentracker;'/);
-  assert.match(linuxJob, /grep -Fxq 'Exec=tokentracker-linux %u'/);
+  assert.match(linuxJob, /grep -Fxq 'MimeType=x-scheme-handler\/tokentracker-community;'/);
+  assert.match(linuxJob, /tokentracker-community-linux %u/);
 });
 
 test('Arch package build disables the unused split debug package', () => {
@@ -178,19 +188,65 @@ test('Arch package validator checks the shipped runtime contract', () => {
   const validator = fs.readFileSync(validatorPath, 'utf8');
 
   for (const required of [
-    'usr/bin/tokentracker-linux',
-    'usr/lib/tokentracker-linux/node',
-    'usr/lib/tokentracker-linux/tokentracker/bin/tracker.js',
-    'usr/lib/tokentracker-linux/tokentracker/dashboard/dist/index.html',
-    'usr/share/applications/tokentracker-linux.desktop',
-    'usr/share/icons/hicolor/512x512/apps/tokentracker-linux.png',
-    'usr/share/licenses/tokentracker-linux/LICENSE',
+    'usr/bin/tokentracker-community-linux',
+    'usr/lib/tokentracker-community-linux/node',
+    'usr/lib/tokentracker-community-linux/tokentracker/bin/tracker.js',
+    'usr/lib/tokentracker-community-linux/tokentracker/src/lib/release-client-config.json',
+    'usr/lib/tokentracker-community-linux/tokentracker/dashboard/dist/index.html',
+    'usr/share/applications/tokentracker-community-linux.desktop',
+    'usr/share/icons/hicolor/512x512/apps/tokentracker-community-linux.png',
+    'usr/share/licenses/tokentracker-community-linux/LICENSE',
   ]) {
     assert.match(validator, new RegExp(required.replaceAll('/', '\\/')));
   }
 
   assert.match(validator, /desktop-file-validate/);
-  assert.match(validator, /x-scheme-handler\/tokentracker/);
+  assert.match(validator, /x-scheme-handler\/tokentracker-community/);
   assert.match(validator, /22\.22\.2/);
   assert.match(validator, /tokentracker-user-status/);
+});
+
+test('Linux release identity coexists with the official client', () => {
+  const linuxRoot = path.join(root, 'TokenTrackerLinux');
+  const tauriDir = path.join(linuxRoot, 'src-tauri');
+  const conf = JSON.parse(fs.readFileSync(path.join(tauriDir, 'tauri.conf.json'), 'utf8'));
+  const pkg = JSON.parse(fs.readFileSync(path.join(linuxRoot, 'package.json'), 'utf8'));
+  const cargo = fs.readFileSync(path.join(tauriDir, 'Cargo.toml'), 'utf8');
+  const desktop = fs.readFileSync(
+    path.join(linuxRoot, 'packaging/arch/tokentracker-linux/tokentracker-linux.desktop'),
+    'utf8',
+  );
+  const extensionDir = path.join(linuxRoot, 'gnome-extension/tokentracker@tokentracker.cc');
+  const extensionMeta = JSON.parse(fs.readFileSync(path.join(extensionDir, 'metadata.json'), 'utf8'));
+  const extensionReadme = fs.readFileSync(path.join(extensionDir, 'README.md'), 'utf8');
+  const oauth = fs.readFileSync(path.join(tauriDir, 'src/oauth.rs'), 'utf8');
+  const server = fs.readFileSync(path.join(tauriDir, 'src/server.rs'), 'utf8');
+  const bundler = fs.readFileSync(path.join(linuxRoot, 'scripts/bundle-node-linux.sh'), 'utf8');
+  const readme = fs.readFileSync(path.join(linuxRoot, 'README.md'), 'utf8');
+
+  assert.equal(conf.productName, 'TokenTracker Community');
+  assert.equal(conf.identifier, 'io.github.baozibao728cmd.tokentrackercommunity');
+  assert.equal(pkg.name, 'tokentracker-community-linux');
+  assert.equal(extensionMeta.uuid, 'tokentracker-community@tokentracker.cc');
+  assert.equal(extensionMeta.name, 'TokenTracker Community');
+  assert.match(extensionReadme, /extensions\/tokentracker-community@tokentracker\.cc/);
+  assert.match(extensionReadme, /gnome-extensions enable tokentracker-community@tokentracker\.cc/);
+  assert.doesNotMatch(extensionReadme, /gnome-extensions enable tokentracker@tokentracker\.cc/);
+  assert.match(cargo, /^name = "tokentracker-community-linux"$/m);
+  assert.match(cargo, /^\[\[bin\]\][\s\S]*?^name = "tokentracker-community-linux"$/m);
+  assert.match(desktop, /^Name=TokenTracker Community$/m);
+  assert.match(desktop, /^Exec=tokentracker-community-linux %u$/m);
+  assert.match(desktop, /^MimeType=x-scheme-handler\/tokentracker-community;$/m);
+  assert.match(oauth, /tokentracker-community-appimage\.desktop/);
+  assert.match(oauth, /x-scheme-handler\/tokentracker-community/);
+  assert.match(server, /const PREFERRED_PORT: u16 = 17681;/);
+  assert.match(
+    server,
+    /command\.env\(\s*"TOKENTRACKER_DATA_ROOT",\s*home\.join\("\.tokentracker-community"\),?\s*\);/,
+  );
+  assert.doesNotMatch(server, /PREFERRED_PORT: u16 = 17680/);
+  assert.match(bundler, /\.tmp\/release-client-config\.json/);
+  assert.match(bundler, /src\/lib\/release-client-config\.json/);
+  assert.match(readme, /TokenTracker-Community\/releases\/latest/);
+  assert.doesNotMatch(readme, /github\.com\/(?:xiufengsun|mm7894215)\/TokenTracker/);
 });

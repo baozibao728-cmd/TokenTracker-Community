@@ -13,6 +13,7 @@
 const fssync = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
+const { resolveTrackerRoot } = require("./tracker-paths");
 const crypto = require("node:crypto");
 const readline = require("node:readline");
 
@@ -570,7 +571,7 @@ function dayKeyToIsoBounds(from, to) {
 const CACHE = new Map();
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6h
 const CACHE_SCHEMA_VERSION = "skills-exec-v3";
-const DISK_CACHE_DIR = path.join(os.homedir(), ".tokentracker", "cache", "claude-categorizer");
+const DISK_CACHE_DIR = path.join(resolveTrackerRoot(), "cache", "claude-categorizer");
 
 function cacheKeyHash(key) {
   return crypto.createHash("sha1").update(key).digest("hex").slice(0, 32);

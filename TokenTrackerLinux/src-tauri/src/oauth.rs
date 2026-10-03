@@ -40,7 +40,7 @@ impl PendingAuthCode {
 
 pub fn parse_auth_callback(raw: &str) -> Option<String> {
     let url = Url::parse(raw).ok()?;
-    if url.scheme() != "tokentracker"
+    if url.scheme() != "tokentracker-community"
         || url.host_str() != Some("auth")
         || url.path() != "/callback"
         || url.fragment().is_some()
@@ -85,7 +85,7 @@ fn desktop_exec_quote(path: &Path) -> Option<String> {
 pub fn appimage_desktop_entry(appimage: &Path) -> Option<String> {
     let executable = desktop_exec_quote(appimage)?;
     Some(format!(
-        "[Desktop Entry]\nType=Application\nName=TokenTracker\nComment=Local AI token usage tracker\nExec={executable} %u\nIcon=tokentracker-linux\nTerminal=false\nCategories=Development;Utility;\nStartupNotify=true\nMimeType=x-scheme-handler/tokentracker;\nX-AppImage-Integrate=false\n"
+        "[Desktop Entry]\nType=Application\nName=TokenTracker Community\nComment=Community AI token usage tracker\nExec={executable} %u\nIcon=tokentracker-community-linux\nTerminal=false\nCategories=Development;Utility;\nStartupNotify=true\nMimeType=x-scheme-handler/tokentracker-community;\nX-AppImage-Integrate=false\n"
     ))
 }
 
@@ -168,7 +168,7 @@ pub fn ensure_appimage_protocol_registration() -> Result<bool, String> {
         .ok_or_else(|| "HOME/XDG_DATA_HOME is unavailable for protocol registration".to_string())?;
     fs::create_dir_all(&applications_dir)
         .map_err(|error| format!("failed to create {}: {error}", applications_dir.display()))?;
-    let desktop_name = "tokentracker-appimage.desktop";
+    let desktop_name = "tokentracker-community-appimage.desktop";
     let desktop_path = applications_dir.join(desktop_name);
     let content = appimage_desktop_entry(&appimage)
         .ok_or_else(|| "AppImage path cannot be represented in a desktop entry".to_string())?;
@@ -178,7 +178,11 @@ pub fn ensure_appimage_protocol_registration() -> Result<bool, String> {
         .map_err(|error| format!("failed to write {}: {error}", desktop_path.display()))?;
 
     let registration = run_command_with_timeout(
-        Command::new("xdg-mime").args(["default", desktop_name, "x-scheme-handler/tokentracker"]),
+        Command::new("xdg-mime").args([
+            "default",
+            desktop_name,
+            "x-scheme-handler/tokentracker-community",
+        ]),
         "xdg-mime registration",
         Duration::from_secs(3),
     )?;
@@ -191,7 +195,11 @@ pub fn ensure_appimage_protocol_registration() -> Result<bool, String> {
     }
 
     let query = run_command_with_timeout(
-        Command::new("xdg-mime").args(["query", "default", "x-scheme-handler/tokentracker"]),
+        Command::new("xdg-mime").args([
+            "query",
+            "default",
+            "x-scheme-handler/tokentracker-community",
+        ]),
         "xdg-mime verification",
         Duration::from_secs(3),
     )?;

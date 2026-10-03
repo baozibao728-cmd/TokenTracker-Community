@@ -24,8 +24,17 @@ $WinProjDir = Split-Path -Parent $ScriptDir
 $RepoRoot  = Split-Path -Parent $WinProjDir
 $EmbedDir  = Join-Path $WinProjDir 'EmbeddedServer'
 
+function Assert-ContainedPath([string]$Target, [string]$Root) {
+    $absoluteTarget = [System.IO.Path]::GetFullPath($Target)
+    $absoluteRoot = [System.IO.Path]::GetFullPath($Root).TrimEnd('\') + '\'
+    if (-not $absoluteTarget.StartsWith($absoluteRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Refusing filesystem operation outside the intended bundle directory.'
+    }
+}
+Assert-ContainedPath $EmbedDir $WinProjDir
+
 if ($Clean) {
-    if (Test-Path $EmbedDir) { Remove-Item -Recurse -Force $EmbedDir }
+    if (Test-Path $EmbedDir) { Remove-Item -LiteralPath $EmbedDir -Recurse -Force }
     Write-Host 'Cleaned EmbeddedServer\'
     exit 0
 }
@@ -34,7 +43,13 @@ if ($NodeVersion -ne $ExpectedNodeVersion) {
     Write-Error "Refusing to bundle Node v$NodeVersion; expected pinned v$ExpectedNodeVersion. Run npm test against the new Node first."
 }
 
-if (Test-Path $EmbedDir) { Remove-Item -Recurse -Force $EmbedDir }
+$releaseConfig = Join-Path $RepoRoot '.tmp\release-client-config.json'
+if (-not (Test-Path -LiteralPath $releaseConfig -PathType Leaf) -or
+    (Get-Item -LiteralPath $releaseConfig).Length -eq 0) {
+    throw "Release client config missing or empty: $releaseConfig. Run scripts/prepare-release-client-config.cjs before bundling."
+}
+
+if (Test-Path $EmbedDir) { Remove-Item -LiteralPath $EmbedDir -Recurse -Force }
 New-Item -ItemType Directory -Force -Path $EmbedDir | Out-Null
 
 # 1. Download Node.js win-x64
@@ -45,7 +60,8 @@ $url = "https://nodejs.org/dist/v$NodeVersion/$zipName"
 $cacheDir = $env:NODE_CACHE_DIR
 $tmp = if ($cacheDir -and (Test-Path $cacheDir)) { $cacheDir } else {
     $t = Join-Path ([System.IO.Path]::GetTempPath()) "ttnode-$NodeVersion"
-    if (Test-Path $t) { Remove-Item -Recurse -Force $t }
+    Assert-ContainedPath $t ([System.IO.Path]::GetTempPath())
+    if (Test-Path $t) { Remove-Item -LiteralPath $t -Recurse -Force }
     New-Item -ItemType Directory -Force -Path $t | Out-Null
     $t
 }
@@ -128,6 +144,7 @@ $ttDir = Join-Path $EmbedDir 'tokentracker'
 New-Item -ItemType Directory -Force -Path (Join-Path $ttDir 'bin') | Out-Null
 Copy-Item (Join-Path $RepoRoot 'bin\tracker.js') (Join-Path $ttDir 'bin\')
 Copy-Item (Join-Path $RepoRoot 'src') (Join-Path $ttDir 'src') -Recurse
+Copy-Item -LiteralPath $releaseConfig -Destination (Join-Path $ttDir 'src\lib\release-client-config.json')
 Copy-Item (Join-Path $RepoRoot 'package.json') $ttDir
 # The lockfile pins transitive versions; without it `npm install` resolves
 # whatever is newest at build time (undici 8.11.0 shipped in 1.0.2 this way).
@@ -161,7 +178,10 @@ if (Test-Path $nm) {
         -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
     Get-ChildItem $nm -Recurse -Directory -Include `
         'test','tests','__tests__','examples','example','docs','.github' `
-        -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+        -ErrorAction SilentlyContinue | ForEach-Object {
+            Assert-ContainedPath $_.FullName $nm
+            Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
+        }
 }
 
 $total = [math]::Round((Get-ChildItem $EmbedDir -Recurse -File | Measure-Object Length -Sum).Sum / 1MB, 1)

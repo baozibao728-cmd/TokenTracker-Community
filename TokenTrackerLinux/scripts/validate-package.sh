@@ -2,7 +2,7 @@
 set -euo pipefail
 
 if [[ $# -ne 1 ]]; then
-  echo "Usage: $0 <tokentracker-linux.pkg.tar.zst>" >&2
+  echo "Usage: $0 <tokentracker-community-linux.pkg.tar.zst>" >&2
   exit 2
 fi
 
@@ -18,7 +18,7 @@ if [[ ! -f "$PACKAGE_PATH" ]]; then
 fi
 
 PACKAGE_INFO="$(pacman -Qip "$PACKAGE_PATH")"
-grep -Eq '^Name[[:space:]]*:[[:space:]]*tokentracker-linux$' <<<"$PACKAGE_INFO"
+grep -Eq '^Name[[:space:]]*:[[:space:]]*tokentracker-community-linux$' <<<"$PACKAGE_INFO"
 grep -Eq "^Version[[:space:]]*:[[:space:]]*${EXPECTED_VERSION}-[0-9]+$" <<<"$PACKAGE_INFO"
 grep -Eq '^Architecture[[:space:]]*:[[:space:]]*x86_64$' <<<"$PACKAGE_INFO"
 
@@ -36,13 +36,14 @@ trap cleanup EXIT
 bsdtar -xf "$PACKAGE_PATH" -C "$TMPDIR_PACKAGE"
 
 required_paths=(
-  usr/bin/tokentracker-linux
-  usr/lib/tokentracker-linux/node
-  usr/lib/tokentracker-linux/tokentracker/bin/tracker.js
-  usr/lib/tokentracker-linux/tokentracker/dashboard/dist/index.html
-  usr/share/applications/tokentracker-linux.desktop
-  usr/share/icons/hicolor/512x512/apps/tokentracker-linux.png
-  usr/share/licenses/tokentracker-linux/LICENSE
+  usr/bin/tokentracker-community-linux
+  usr/lib/tokentracker-community-linux/node
+  usr/lib/tokentracker-community-linux/tokentracker/bin/tracker.js
+  usr/lib/tokentracker-community-linux/tokentracker/src/lib/release-client-config.json
+  usr/lib/tokentracker-community-linux/tokentracker/dashboard/dist/index.html
+  usr/share/applications/tokentracker-community-linux.desktop
+  usr/share/icons/hicolor/512x512/apps/tokentracker-community-linux.png
+  usr/share/licenses/tokentracker-community-linux/LICENSE
 )
 for required in "${required_paths[@]}"; do
   [[ -e "$TMPDIR_PACKAGE/$required" ]] || {
@@ -51,19 +52,19 @@ for required in "${required_paths[@]}"; do
   }
 done
 
-[[ -x "$TMPDIR_PACKAGE/usr/bin/tokentracker-linux" ]]
-[[ -x "$TMPDIR_PACKAGE/usr/lib/tokentracker-linux/node" ]]
-file "$TMPDIR_PACKAGE/usr/bin/tokentracker-linux" | grep -Eq 'ELF 64-bit.*x86-64'
-file "$TMPDIR_PACKAGE/usr/share/icons/hicolor/512x512/apps/tokentracker-linux.png" | grep -Fq 'PNG image data'
+[[ -x "$TMPDIR_PACKAGE/usr/bin/tokentracker-community-linux" ]]
+[[ -x "$TMPDIR_PACKAGE/usr/lib/tokentracker-community-linux/node" ]]
+file "$TMPDIR_PACKAGE/usr/bin/tokentracker-community-linux" | grep -Eq 'ELF 64-bit.*x86-64'
+file "$TMPDIR_PACKAGE/usr/share/icons/hicolor/512x512/apps/tokentracker-community-linux.png" | grep -Fq 'PNG image data'
 
-desktop_file="$TMPDIR_PACKAGE/usr/share/applications/tokentracker-linux.desktop"
+desktop_file="$TMPDIR_PACKAGE/usr/share/applications/tokentracker-community-linux.desktop"
 desktop-file-validate "$desktop_file"
-grep -Fxq 'Exec=tokentracker-linux %u' "$desktop_file"
-grep -Fxq 'Icon=tokentracker-linux' "$desktop_file"
-grep -Fxq 'MimeType=x-scheme-handler/tokentracker;' "$desktop_file"
+grep -Fxq 'Exec=tokentracker-community-linux %u' "$desktop_file"
+grep -Fxq 'Icon=tokentracker-community-linux' "$desktop_file"
+grep -Fxq 'MimeType=x-scheme-handler/tokentracker-community;' "$desktop_file"
 
-bundled_node="$TMPDIR_PACKAGE/usr/lib/tokentracker-linux/node"
-bundled_tracker="$TMPDIR_PACKAGE/usr/lib/tokentracker-linux/tokentracker/bin/tracker.js"
+bundled_node="$TMPDIR_PACKAGE/usr/lib/tokentracker-community-linux/node"
+bundled_tracker="$TMPDIR_PACKAGE/usr/lib/tokentracker-community-linux/tokentracker/bin/tracker.js"
 [[ "$($bundled_node -p 'process.versions.node')" == "$EXPECTED_NODE_VERSION" ]]
 
 PORT="$($bundled_node -e "const s=require('net').createServer();s.listen(0,'127.0.0.1',()=>{console.log(s.address().port);s.close()})")"
@@ -73,6 +74,7 @@ HOME="$RUNTIME_HOME" \
 XDG_CONFIG_HOME="$RUNTIME_HOME/config" \
 XDG_DATA_HOME="$RUNTIME_HOME/data" \
 XDG_STATE_HOME="$RUNTIME_HOME/state" \
+TOKENTRACKER_DATA_ROOT="$RUNTIME_HOME/.tokentracker-community" \
   "$bundled_node" "$bundled_tracker" serve \
     --port "$PORT" --no-open --no-sync \
     >"$TMPDIR_PACKAGE/server.out" 2>"$TMPDIR_PACKAGE/server.err" &
@@ -80,7 +82,7 @@ SERVER_PID=$!
 
 for _ in {1..100}; do
   if curl -fsS "http://127.0.0.1:${PORT}/functions/tokentracker-user-status" >/dev/null; then
-    printf 'Validated TokenTracker Linux package %s\n' "$PACKAGE_PATH"
+    printf 'Validated TokenTracker Community Linux package %s\n' "$PACKAGE_PATH"
     exit 0
   fi
   if ! kill -0 "$SERVER_PID" 2>/dev/null; then

@@ -566,7 +566,7 @@ internal sealed class TrayApplicationContext : ApplicationContext
     private static IEnumerable<(string Id, string Name)> InstalledCustomPets()
     {
         var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        var root = Path.Combine(home, ".tokentracker", "pets");
+        var root = Path.Combine(Constants.CliDataRoot, "pets");
         var legacyRoot = Path.Combine(home, ".codex", "pets");
         var migrationComplete = File.Exists(Path.Combine(root, ".migrated-v1"));
         // The tray can build its menu before the embedded Node server migrates
@@ -817,15 +817,15 @@ internal sealed class TrayApplicationContext : ApplicationContext
     }
 
     /// <summary>
-    /// Handle a <c>tokentracker://</c> deep link (forwarded from a second launch, or a
+    /// Handle a <c>tokentracker-community://</c> deep link (forwarded from a second launch, or a
     /// cold start argument). Currently only the OAuth callback
-    /// <c>tokentracker://auth/callback?insforge_code=…</c> is used; the code is routed
+    /// <c>tokentracker-community://auth/callback?insforge_code=…</c> is used; the code is routed
     /// into the dashboard WebView to finish the InsForge session exchange. Mirrors the
     /// macOS <c>application(_:open:)</c> → <c>handleAuthCallback</c> path.
     /// </summary>
     public void HandleDeepLink(string url)
     {
-        DiagLog($"HandleDeepLink url={url}");
+        OAuthDiagnostics.Navigation("tray", "HandleDeepLink received", url);
         string? code = null;
         try
         {
@@ -852,7 +852,7 @@ internal sealed class TrayApplicationContext : ApplicationContext
         });
     }
 
-    /// <summary>Diagnostics → %LOCALAPPDATA%\TokenTracker\windows-host.log (shared with ServerManager).</summary>
+    /// <summary>Diagnostics → %LOCALAPPDATA%\TokenTrackerCommunity\windows-host.log (shared with ServerManager).</summary>
     private static void DiagLog(string message) => Diag.Log("tray", message);
 
     private void OnToggleStartup(object? sender, EventArgs e)
@@ -1039,7 +1039,7 @@ internal sealed class TrayApplicationContext : ApplicationContext
                 // WebView2 can be disposed while a script is in flight. Keep
                 // timer/menu callbacks harmless and leave the last summary
                 // visible until the next successful pass.
-                DiagLog($"RefreshSummary failed: {ex}");
+                OAuthDiagnostics.Failure("tray", "WebView summary refresh failed", ex);
             }
         }
     }

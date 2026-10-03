@@ -15,6 +15,7 @@ REPO_ROOT="$(cd "$LINUX_DIR/.." && pwd)"
 EMBED_DIR="${TOKENTRACKER_LINUX_EMBED_DIR:-$LINUX_DIR/EmbeddedServer}"
 DASHBOARD_DIST="${TOKENTRACKER_DASHBOARD_DIST:-$REPO_ROOT/dashboard/dist}"
 TAURI_ICON="${TOKENTRACKER_TAURI_ICON:-$LINUX_DIR/src-tauri/icons/icon.png}"
+RELEASE_CLIENT_CONFIG="$REPO_ROOT/.tmp/release-client-config.json"
 
 TARGET_ARCH="${TARGET_ARCH:-x64}"
 if [[ "$TARGET_ARCH" != "x64" ]]; then
@@ -64,6 +65,20 @@ if [[ "${1:-}" == "--clean" ]]; then
   exit 0
 fi
 
+if [[ ! -s "$RELEASE_CLIENT_CONFIG" ]]; then
+  echo "Missing release client config. Run scripts/prepare-release-client-config.cjs before bundling." >&2
+  exit 1
+fi
+node - "$RELEASE_CLIENT_CONFIG" <<'NODE'
+const fs = require('node:fs');
+const config = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+if (config.baseUrl !== 'https://tc79bxhm.ap-southeast.insforge.app' ||
+    typeof config.anonKey !== 'string' || !config.anonKey.trim() ||
+    /^ik_/i.test(config.anonKey)) {
+  throw new Error('Release client config is missing the Community endpoint or anon key');
+}
+NODE
+
 node "$LINUX_DIR/scripts/sync-tauri-icon.mjs" "$REPO_ROOT/dashboard/public/icon-512.png" "$TAURI_ICON"
 
 rm -rf "$EMBED_DIR"
@@ -97,6 +112,7 @@ TT_DIR="$EMBED_DIR/tokentracker"
 mkdir -p "$TT_DIR/bin"
 cp "$REPO_ROOT/bin/tracker.js" "$TT_DIR/bin/"
 cp -R "$REPO_ROOT/src" "$TT_DIR/src"
+cp "$RELEASE_CLIENT_CONFIG" "$TT_DIR/src/lib/release-client-config.json"
 cp "$REPO_ROOT/package.json" "$TT_DIR/"
 cp "$REPO_ROOT/package-lock.json" "$TT_DIR/"
 
@@ -135,6 +151,6 @@ find "$TT_DIR/node_modules" -type d \( \
   -name ".github" \
 \) -exec rm -rf {} + 2>/dev/null || true
 
-printf 'Bundled TokenTracker Linux runtime at %s\n' "$EMBED_DIR"
+printf 'Bundled TokenTracker Community Linux runtime at %s\n' "$EMBED_DIR"
 printf 'Node: %s\n' "$("$EMBED_DIR/node" -p 'process.versions.node')"
 printf 'Size: %s\n' "$(du -sh "$EMBED_DIR" | cut -f1)"

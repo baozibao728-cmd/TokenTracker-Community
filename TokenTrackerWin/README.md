@@ -1,4 +1,4 @@
-# TokenTracker for Windows (tray app)
+# TokenTracker Community for Windows (tray app)
 
 The Windows counterpart of the macOS menu-bar app (`TokenTrackerBar/`). It is a
 thin native shell around the same cross-platform pieces — the Node CLI, the local
@@ -60,7 +60,7 @@ force-killed (Task Manager "End task" / crash), not just on a graceful Quit.
 ## Build
 
 ```powershell
-dotnet build -c Debug   # output: bin\Debug\net8.0-windows\TokenTracker.exe
+dotnet build -c Debug   # output: bin\Debug\net8.0-windows10.0.19041.0\TokenTrackerCommunity.exe
 ```
 
 The tray icon is committed at `assets\trayicon.ico`. To regenerate it:
@@ -82,7 +82,7 @@ Then point the app at system Node + the repo CLI via env vars and run it:
 ```powershell
 $env:TOKENTRACKER_NODE  = (Get-Command node).Source
 $env:TOKENTRACKER_ENTRY = "$PWD\..\bin\tracker.js"   # from TokenTrackerWin\
-.\bin\Debug\net8.0-windows\TokenTracker.exe
+.\bin\Debug\net8.0-windows10.0.19041.0\TokenTrackerCommunity.exe
 ```
 
 The exe runs in the tray (no console window). Right-click the tray icon to quit.
@@ -99,7 +99,7 @@ powershell -ExecutionPolicy Bypass -File scripts\bundle-node.ps1
 dotnet publish -c Release -r win-x64 --self-contained false
 ```
 
-> The published `EmbeddedServer\` must sit next to `TokenTracker.exe`. Wire it
+> The published `EmbeddedServer\` must sit next to `TokenTrackerCommunity.exe`. Wire it
 > into the publish output (copy step / installer) when packaging an installer.
 
 ## Not yet implemented (vs. the macOS app)

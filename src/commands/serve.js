@@ -4,7 +4,7 @@ const path = require("node:path");
 const fssync = require("node:fs");
 const cp = require("node:child_process");
 
-const { resolveTrackerPaths } = require("../lib/tracker-paths");
+const { resolveTrackerPaths, isIsolatedTrackerRuntime } = require("../lib/tracker-paths");
 const { createLocalApiHandler, resolveQueuePath } = require("../lib/local-api");
 const { ensurePricingLoaded } = require("../lib/pricing");
 const { serveStaticFile } = require("../lib/static-server");
@@ -61,7 +61,7 @@ async function cmdServe(argv) {
 
   // 0. First-time setup: if tracker dir doesn't exist, run init first
   const { trackerDir, binDir } = await resolveTrackerPaths();
-  if (!fssync.existsSync(path.join(trackerDir, "cursors.json"))) {
+  if (!isIsolatedTrackerRuntime() && !fssync.existsSync(path.join(trackerDir, "cursors.json"))) {
     process.stdout.write("First time? Setting up Token Tracker...\n\n");
     try {
       const { cmdInit } = require("./init");
@@ -71,17 +71,21 @@ async function cmdServe(argv) {
     }
   }
 
-  try {
-    const { installLocalTrackerApp, repairRuntimeIntegrations } = require("./init");
-    await installLocalTrackerApp({ appDir: path.join(trackerDir, "app") });
-    const repairResult = await repairRuntimeIntegrations({ trackerDir, binDir, safeMode: true });
-    for (const warning of repairResult?.warnings || []) {
-      process.stdout.write(
-        `Runtime integration repair warning (${warning.integration}): ${warning.error}\n`,
-      );
+  // Native Community releases read provider data passively. Running init or
+  // repair here would install global provider hooks owned by the upstream app.
+  if (!isIsolatedTrackerRuntime()) {
+    try {
+      const { installLocalTrackerApp, repairRuntimeIntegrations } = require("./init");
+      await installLocalTrackerApp({ appDir: path.join(trackerDir, "app") });
+      const repairResult = await repairRuntimeIntegrations({ trackerDir, binDir, safeMode: true });
+      for (const warning of repairResult?.warnings || []) {
+        process.stdout.write(
+          `Runtime integration repair warning (${warning.integration}): ${warning.error}\n`,
+        );
+      }
+    } catch (e) {
+      process.stdout.write(`Runtime refresh warning: ${e?.message || e}\n`);
     }
-  } catch (e) {
-    process.stdout.write(`Runtime refresh warning: ${e?.message || e}\n`);
   }
 
   // 1. Optional sync
@@ -453,6 +457,9 @@ function isTokenTrackerServeCommand(command) {
 }
 
 async function ensurePortFree(port) {
+  // Never terminate another TokenTracker process from the Community runtime.
+  // Native launchers choose a separate port; a collision must fail closed.
+  if (isIsolatedTrackerRuntime()) return;
   const pids = findPidOnPort(port);
   if (pids.length === 0) return;
 
@@ -612,6 +619,7 @@ function isRunningUnderWsl(env = process.env, readFileFn = fssync.readFileSync) 
 }
 
 function resolveDefaultPort(env = process.env, readFileFn) {
+  if (isIsolatedTrackerRuntime(env)) return 17681;
   return isRunningUnderWsl(env, readFileFn) ? WSL_DEFAULT_PORT : DEFAULT_PORT;
 }
 

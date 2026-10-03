@@ -11,18 +11,25 @@ const { resolveRuntimeConfig } = require("../lib/runtime-config");
 const POLL_INTERVAL_MS = 5_000;
 const ABSOLUTE_TIMEOUT_MS = 16 * 60 * 1000; // matches the 15-min server window with a small buffer
 
-function readBaseUrl(config) {
-  return resolveRuntimeConfig({
+function readBaseUrl(config, { baseUrl } = {}) {
+  const explicitBaseUrl =
+    baseUrl ||
+    process.env.TOKENTRACKER_BASE_URL ||
+    process.env.TOKENTRACKER_API_URL ||
+    process.env.TOKENTRACKER_INSFORGE_BASE_URL;
+  const resolvedBaseUrl = resolveRuntimeConfig({
     // Preserve device-login's explicit legacy override names and precedence,
-    // while routing persisted config through the shared retired-host filter.
-    cli: {
-      baseUrl:
-        process.env.TOKENTRACKER_BASE_URL ||
-        process.env.TOKENTRACKER_API_URL,
-    },
+    // while using the shared runtime config for persisted values and release defaults.
+    cli: { baseUrl: explicitBaseUrl },
     config: config || {},
-    env: {},
+    env: process.env,
   }).baseUrl;
+  if (!resolvedBaseUrl) {
+    throw new Error(
+      "InsForge base URL is not configured; set TOKENTRACKER_INSFORGE_BASE_URL or pass --base-url.",
+    );
+  }
+  return resolvedBaseUrl;
 }
 
 async function authorize({ baseUrl, clientInfo, machineId }) {
@@ -79,7 +86,7 @@ async function cmdDeviceLogin(argv = [], options = {}) {
   const { trackerDir } = await resolveTrackerPaths({ home });
   const configPath = path.join(trackerDir, "config.json");
   const config = (await readJson(configPath)) || {};
-  const baseUrl = opts.baseUrl || readBaseUrl(config);
+  const baseUrl = readBaseUrl(config, { baseUrl: opts.baseUrl });
 
   const clientInfo = `${os.platform()}-${os.arch()} ${os.hostname()}`;
   // Same machineId the local API serves to the dashboard — both login paths

@@ -1,21 +1,26 @@
-const DEFAULT_BASE_URL = "https://srctyff5.us-east.insforge.app";
-// InsForge projects this product has retired. b46ug8xu was production until
-// the 2026-04-19 migration to srctyff5 (0.5.67, commit 73f461b8); init
-// preserves any persisted config.baseUrl, so installs initialized before the
-// migration stayed pinned to it and kept uploading there until the old
-// project's backend went dark on 2026-07-27 (HTTP 503 on every request).
-// Persisted values naming these hosts must fall back to the current default.
-const LEGACY_INSFORGE_HOSTS = new Set(["b46ug8xu.us-east.insforge.app"]);
-const DEFAULT_DASHBOARD_URL = "https://www.tokentracker.cc";
+const OWN_BASE_URL = "https://tc79bxhm.ap-southeast.insforge.app";
+const LEGACY_INSFORGE_HOSTS = new Set([
+  "b46ug8xu.us-east.insforge.app",
+  "srctyff5.us-east.insforge.app",
+]);
+const DEFAULT_DASHBOARD_URL = "";
 const DEFAULT_HTTP_TIMEOUT_MS = 20_000;
-// Public InsForge anon key (JWT, role=anon). Mirrors dashboard/src/lib/insforge-config.ts
-// (PROD_INSFORGE_ANON_KEY) — public by design (ships in the browser bundle and
-// appears in .github/workflows/*.yml). The local server needs it to call the
-// cross-device `tokentracker-account-*` edge functions on the popover's behalf.
-// (Previously this mistakenly used the full-access `ik_*` API key, which has
-// admin access and must never be shipped to clients.)
-const DEFAULT_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3OC0xMjM0LTU2NzgtOTBhYi1jZGVmMTIzNDU2NzgiLCJlbWFpbCI6ImFub25AaW5zZm9yZ2UuY29tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNDU5NDd9.T0auta_IrVIh0uXW1bob5QSnzvsnJmN28r5XkSGEuQY";
+
+// Release packaging places this generated, gitignored client configuration in
+// the embedded runtime. It is never sourced from an upstream default or CLI
+// user credential. In a release it locks the backend even when an old config
+// file is present on the machine.
+let releaseClientConfig = null;
+if (require("node:fs").existsSync(require("node:path").join(__dirname, "release-client-config.json"))) {
+  const candidate = require("./release-client-config.json");
+  if (candidate?.baseUrl !== OWN_BASE_URL || typeof candidate.anonKey !== "string" || !candidate.anonKey.trim()
+    || /^(?:ik_|uak_|sk_|service[_-]?role)/i.test(candidate.anonKey)) {
+    throw new Error("Invalid Community release client configuration");
+  }
+  releaseClientConfig = candidate;
+}
+const DEFAULT_BASE_URL = releaseClientConfig?.baseUrl || null;
+const DEFAULT_ANON_KEY = releaseClientConfig?.anonKey || null;
 
 function resolveRuntimeConfig({ cli = {}, config = {}, env = process.env, defaults = {} } = {}) {
   // Older Windows test runs could leak their fixture HOME and persist
@@ -23,14 +28,14 @@ function resolveRuntimeConfig({ cli = {}, config = {}, env = process.env, defaul
   // isolation bug is fixed, but existing installs must recover instead of
   // backing off cloud uploads forever against the reserved placeholder host.
   const persistedBaseUrl = normalizePersistedBaseUrl(config.baseUrl);
-  const baseUrl = pickString(
+  const baseUrl = releaseClientConfig ? { value: OWN_BASE_URL, source: "release" } : pickString(
     cli.baseUrl,
     persistedBaseUrl,
     env?.TOKENTRACKER_INSFORGE_BASE_URL,
     defaults.baseUrl,
     DEFAULT_BASE_URL,
   );
-  const anonKey = pickString(
+  const anonKey = releaseClientConfig ? { value: releaseClientConfig.anonKey, source: "release" } : pickString(
     cli.anonKey,
     config.anonKey,
     env?.TOKENTRACKER_INSFORGE_ANON_KEY,

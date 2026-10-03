@@ -17,14 +17,14 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
-    <AssemblyName>TokenTracker</AssemblyName>
+    <AssemblyName>TokenTrackerCommunity</AssemblyName>
     <RootNamespace>TokenTrackerWin</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>assets\trayicon.ico</ApplicationIcon>
     <!-- Keep in sync with package.json / project.yml on release. -->
-    <Version>1.1.3</Version>
-    <Product>TokenTracker</Product>
-    <Company>TokenTracker</Company>
+    <Version>1.2.0</Version>
+    <Product>TokenTracker Community</Product>
+    <Company>baozibao728-cmd</Company>
     <!-- App UI strings live in TrayStrings/NativeLocalization (no .resx), so the
          self-contained publish only needs English framework satellite resources;
          the other ~35 framework locale folders are dead weight in the installer. -->

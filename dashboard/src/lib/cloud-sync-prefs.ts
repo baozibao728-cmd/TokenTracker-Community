@@ -30,6 +30,15 @@ export function isLocalDashboardHost(): boolean {
   return h === "localhost" || h === "127.0.0.1" || h === "::1" || h === "[::1]";
 }
 
+export function isOAuthRelayPath(pathname: string): boolean {
+  const path = pathname.replace(/\/+$/, "");
+  return path === "/auth/callback" || path === "/auth/native-callback";
+}
+
+function isOAuthRelayPage(): boolean {
+  return typeof window !== "undefined" && isOAuthRelayPath(window.location.pathname);
+}
+
 /**
  * 默认开启：已登录用户无需手动开启即同步到云端；显式关闭("0")仍被尊重。
  * Every consumer additionally gates on a signed-in session (refresh token /
@@ -73,10 +82,13 @@ export function setCloudSyncEnabled(enabled: boolean): void {
 }
 
 async function mirrorCloudSyncPrefToLocalServer(enabled: boolean): Promise<void> {
-  if (!isLocalDashboardHost()) return;
+  // The system browser has a separate store from the native WebView. A pure
+  // OAuth relay must never replace the native preference with its own default.
+  if (!isLocalDashboardHost() || isOAuthRelayPage()) return;
   try {
     const { getLocalApiAuthHeaders } = await import("./local-api-auth");
     const authHeaders = await getLocalApiAuthHeaders();
+    if (isOAuthRelayPage()) return;
     await fetch("/functions/tokentracker-cloud-sync-pref", {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json", ...authHeaders },
@@ -90,7 +102,7 @@ async function mirrorCloudSyncPrefToLocalServer(enabled: boolean): Promise<void>
 
 /**
  * Push the dashboard's current cloud-sync preference to the local CLI server
- * once on load, so the native popover's account view reflects the persisted
+ * once on entering a normal page, so the native popover reflects the persisted
  * toggle even when the user never re-toggles it this session. No-op off
  * localhost. Best-effort.
  */

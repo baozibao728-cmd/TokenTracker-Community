@@ -18,15 +18,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="../TokenTrackerWin/Constants.cs" Link="Constants.cs" />
     <Compile Include="../TokenTrackerWin/ChildProcessProxy.cs" Link="ChildProcessProxy.cs" />
     <Compile Include="../TokenTrackerWin/LocalSyncPublisher.cs" Link="LocalSyncPublisher.cs" />
     <Compile Include="../TokenTrackerWin/ResumableDownloader.cs" Link="ResumableDownloader.cs" />
     <Compile Include="../TokenTrackerWin/Diag.cs" Link="Diag.cs" />
+    <Compile Include="../TokenTrackerWin/OAuthDiagnostics.cs" Link="OAuthDiagnostics.cs" />
     <Compile Include="../TokenTrackerWin/ServerRecoveryPolicy.cs" Link="ServerRecoveryPolicy.cs" />
     <Compile Include="../TokenTrackerWin/DispatcherExceptionPolicy.cs" Link="DispatcherExceptionPolicy.cs" />
     <Compile Include="../TokenTrackerWin/UsagePoller.cs" Link="UsagePoller.cs" />
     <Compile Include="../TokenTrackerWin/AutoUpdatePolicy.cs" Link="AutoUpdatePolicy.cs" />
     <Compile Include="../TokenTrackerWin/UpdateIntegrity.cs" Link="UpdateIntegrity.cs" />
+    <Compile Include="../TokenTrackerWin/UpdateChecker.cs" Link="UpdateChecker.cs" />
   </ItemGroup>
 
 </Project>

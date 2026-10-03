@@ -59,13 +59,13 @@ mod tests {
     #[test]
     fn keeps_app_and_loopback_urls_inside_the_window() {
         for internal in [
-            "http://127.0.0.1:17680/dashboard",
-            "http://localhost:17680/",
-            "https://127.0.0.1:17680/",
+            "http://127.0.0.1:17681/dashboard",
+            "http://localhost:17681/",
+            "https://127.0.0.1:17681/",
             "http://tauri.localhost/index.html",
             "tauri://localhost/index.html",
             "about:blank",
-            "blob:http://127.0.0.1:17680/1234",
+            "blob:http://127.0.0.1:17681/1234",
         ] {
             assert!(is_internal_url(&url(internal)), "{internal}");
         }

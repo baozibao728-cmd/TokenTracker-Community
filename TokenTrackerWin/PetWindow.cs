@@ -895,9 +895,7 @@ internal sealed class PetWindow : Window
 
     // ── Placement persistence (native-settings.json) ───────────────────
 
-    private static readonly string SettingsPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "TokenTracker", "native-settings.json");
+    private static readonly string SettingsPath = Path.Combine(Constants.DataDirectory, "native-settings.json");
 
     /// <summary>
     /// The persisted pet visibility, or null when the user has never toggled it.
@@ -972,8 +970,7 @@ internal sealed class PetWindow : Window
         if (character is not (CharacterSprout or CharacterByte or CharacterEmber)) return false;
         try
         {
-            var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            var file = Path.Combine(home, ".tokentracker", "pets", HiddenBuiltinsFilename);
+            var file = Path.Combine(Constants.CliDataRoot, "pets", HiddenBuiltinsFilename);
             if (JsonNode.Parse(File.ReadAllText(file)) is not JsonArray ids) return false;
             return ids.Any(id => string.Equals(
                 id?.GetValue<string>()?.Trim(),

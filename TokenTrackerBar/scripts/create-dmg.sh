@@ -2,16 +2,14 @@
 set -euo pipefail
 
 # =============================================================================
-# create-dmg.sh — Create a professional DMG installer for TokenTracker
-# Usage: ./create-dmg.sh [path/to/TokenTracker.app]
+# create-dmg.sh — Create a professional DMG installer for TokenTracker Community
+# Usage: ./create-dmg.sh [path/to/TokenTracker Community.app]
 # Set CI=true to skip Finder/AppleScript customization (headless mode)
 # =============================================================================
 
-APP_NAME="TokenTracker"
-VOLUME_NAME="TokenTracker"
-# Keep the historical filename: the website and READMEs link to the stable
-# releases/latest/download/TokenTrackerBar.dmg URL.
-DMG_FILENAME="TokenTrackerBar.dmg"
+APP_NAME="TokenTracker Community"
+VOLUME_NAME="TokenTracker Community"
+DMG_FILENAME="TokenTrackerCommunity.dmg"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 BUILD_DIR="${PROJECT_DIR}/build"

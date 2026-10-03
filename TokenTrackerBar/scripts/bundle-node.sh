@@ -52,6 +52,12 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+RELEASE_CLIENT_CONFIG="$REPO_ROOT/.tmp/release-client-config.json"
+if [[ ! -s "$RELEASE_CLIENT_CONFIG" ]]; then
+  echo "❌ Missing prepared Community release client config; run scripts/prepare-release-client-config.cjs first." >&2
+  exit 1
+fi
+
 # ── Always start fresh ──
 rm -rf "$EMBED_DIR"
 mkdir -p "$EMBED_DIR"
@@ -150,6 +156,7 @@ mkdir -p "$TT_DIR/bin"
 
 cp "$REPO_ROOT/bin/tracker.js" "$TT_DIR/bin/"
 cp -R "$REPO_ROOT/src" "$TT_DIR/src"
+cp "$RELEASE_CLIENT_CONFIG" "$TT_DIR/src/lib/release-client-config.json"
 cp "$REPO_ROOT/package.json" "$TT_DIR/"
 # The lockfile pins transitive versions; without it `npm install` resolves
 # whatever is newest at build time (undici 8.11.0 shipped in 1.0.2 this way).

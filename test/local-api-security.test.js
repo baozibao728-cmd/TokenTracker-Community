@@ -4,7 +4,6 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { test } = require("node:test");
-const { DEFAULT_BASE_URL } = require("../src/lib/runtime-config");
 
 function createRequest({ method = "GET", headers = {}, body } = {}) {
   const req = new EventEmitter();
@@ -818,7 +817,7 @@ test("local sync scopes relayed device token cache by InsForge base URL", async 
   const fixture = createRelayedLoginFixture("tt-local-sync-auto-cache-base-url-");
   const prevFetch = global.fetch;
   const fetchCalls = [];
-  const defaultRoot = DEFAULT_BASE_URL.replace(/\/$/, "");
+  const defaultRoot = "https://second-cloud.example";
   const tokensByRoot = new Map([
     ["https://cloud.example", "cloud-device-token"],
     [defaultRoot, "default-device-token"],
@@ -872,10 +871,13 @@ test("local sync scopes relayed device token cache by InsForge base URL", async 
     );
     assert.equal(firstRes.statusCode, 200);
 
+    // Changing the configured backend must invalidate the old endpoint's
+    // device-token cache; no production fallback exists in the fork.
+    process.env.TOKENTRACKER_INSFORGE_BASE_URL = defaultRoot;
     const secondReq = createRequest({
       method: "POST",
       headers: { "x-tokentracker-local-auth": localAuthToken },
-      body: JSON.stringify({ insforgeBaseUrl: DEFAULT_BASE_URL }),
+      body: JSON.stringify({ insforgeBaseUrl: defaultRoot }),
     });
     const secondRes = createResponse();
     assert.equal(

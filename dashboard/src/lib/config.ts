@@ -1,17 +1,17 @@
 import { getInsforgeRemoteUrl } from "./insforge-config";
 
-export const STATUSPAGE_URL = "https://tokentracker.statuspage.io/";
+export const STATUSPAGE_URL = "https://github.com/baozibao728-cmd/TokenTracker-Community/issues";
 
-export const REPO_URL = "https://github.com/xiufengsun/TokenTracker";
+export const REPO_URL = "https://github.com/baozibao728-cmd/TokenTracker-Community";
 export const PRIVACY_URL = `${REPO_URL}/blob/main/docs/PRIVACY.md`;
 // The releases page lists every asset (used for the "other platforms" link and
 // as the fallback when we can't detect the OS).
 export const RELEASES_URL = `${REPO_URL}/releases/latest`;
 // Stable, version-less asset names so these deep links survive version bumps.
-// macOS: TokenTrackerBar.dmg (already stable). Windows: TokenTracker-Setup.exe
+// macOS: TokenTrackerCommunity.dmg. Windows: TokenTracker-Community-Setup.exe
 // (the per-user installer; release-windows.yml uploads this alias every release).
-export const MAC_DMG_URL = `${RELEASES_URL}/download/TokenTrackerBar.dmg`;
-export const WIN_SETUP_URL = `${RELEASES_URL}/download/TokenTracker-Setup.exe`;
+export const MAC_DMG_URL = `${RELEASES_URL}/download/TokenTrackerCommunity.dmg`;
+export const WIN_SETUP_URL = `${RELEASES_URL}/download/TokenTracker-Community-Setup.exe`;
 
 /**
  * 仪表盘/用量等：本地 localhost 一律用空字符串（相对路径走 CLI 内置 API），不访问云端。
@@ -22,17 +22,8 @@ export function getBackendBaseUrl() {
     (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
   if (isLocalhost) return "";
 
-  // Non-localhost (tokentracker.cc): dashboard usage data comes from the
-  // cloud. Delegate to getInsforgeRemoteUrl so the hardcoded prod fallback
-  // applies when VITE_* env wasn't injected at build time — otherwise this
-  // returned "" and usage API calls hit the Vercel host (no edge functions
-  // there) → 404 → an empty dashboard after login.
-  const env = typeof import.meta !== "undefined" ? import.meta.env : undefined;
-  return (
-    env?.VITE_TOKENTRACKER_BACKEND_BASE_URL ||
-    env?.VITE_INSFORGE_BASE_URL ||
-    getInsforgeRemoteUrl()
-  ).trim();
+  // Cloud usage requires explicit build configuration; there is no official fallback.
+  return getInsforgeRemoteUrl();
 }
 
 /**

@@ -1,6 +1,6 @@
 name: TokenTrackerBar
 options:
-  bundleIdPrefix: com.tokentracker
+  bundleIdPrefix: com.tokentracker.community
   deploymentTarget:
     macOS: "12.0"
   xcodeVersion: "16.0"
@@ -31,14 +31,13 @@ targets:
       - package: Vortex
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.tokentracker.bar
+        PRODUCT_BUNDLE_IDENTIFIER: com.tokentracker.community
         # App bundle / process / permission-dialog name. Target & scheme stay
-        # "TokenTrackerBar"; the shipped DMG keeps the stable TokenTrackerBar.dmg
-        # filename (download URLs depend on it).
-        PRODUCT_NAME: TokenTracker
+        # "TokenTrackerBar"; the Community DMG uses its own stable filename.
+        PRODUCT_NAME: TokenTracker Community
         INFOPLIST_VALUES: |
           LSUIElement = YES
-        MARKETING_VERSION: "1.1.3"
+        MARKETING_VERSION: "1.2.0"
         CURRENT_PROJECT_VERSION: "1"
         SWIFT_EMIT_LOC_STRINGS: "YES"
         CODE_SIGN_STYLE: Automatic
@@ -49,17 +48,17 @@ targets:
       path: TokenTrackerBar/Info.plist
       properties:
         LSUIElement: true
-        CFBundleDisplayName: TokenTracker
+        CFBundleDisplayName: TokenTracker Community
         # Keep in sync with CFBundleDisplayName: the app menu title uses CFBundleName.
-        CFBundleName: TokenTracker
+        CFBundleName: TokenTracker Community
         CFBundleIconFile: AppIcon
         CFBundleIconName: AppIcon
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleURLTypes:
-          - CFBundleURLName: com.tokentracker.bar.auth
+          - CFBundleURLName: com.tokentracker.community.auth
             CFBundleURLSchemes:
-              - tokentracker
+              - tokentracker-community
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
           NSAllowsArbitraryLoads: true
@@ -77,6 +76,8 @@ targets:
     entitlements:
       path: TokenTrackerBar/TokenTrackerBar.entitlements
       properties:
+        com.apple.security.application-groups:
+          - group.com.tokentracker.community
         com.apple.security.network.client: true
 
   TokenTrackerWidget:
@@ -87,9 +88,9 @@ targets:
       - path: Shared
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.tokentracker.bar.widget
+        PRODUCT_BUNDLE_IDENTIFIER: com.tokentracker.community.widget
         PRODUCT_NAME: TokenTrackerWidget
-        MARKETING_VERSION: "1.1.3"
+        MARKETING_VERSION: "1.2.0"
         CURRENT_PROJECT_VERSION: "1"
         MACOSX_DEPLOYMENT_TARGET: "14.0"
         SWIFT_EMIT_LOC_STRINGS: "YES"
@@ -103,7 +104,7 @@ targets:
     info:
       path: TokenTrackerWidget/Info.plist
       properties:
-        CFBundleDisplayName: TokenTracker Widgets
+        CFBundleDisplayName: TokenTracker Community Widgets
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         NSExtension:
@@ -111,6 +112,8 @@ targets:
     entitlements:
       path: TokenTrackerWidget/TokenTrackerWidget.entitlements
       properties:
+        com.apple.security.application-groups:
+          - group.com.tokentracker.community
         com.apple.security.app-sandbox: true
         com.apple.security.network.client: true
 
@@ -138,6 +141,7 @@ targets:
       - path: TokenTrackerBar/Models/CompanionAnimationPolicy.swift
       - path: TokenTrackerBar/Models/ServerHealthCheckPolicy.swift
       - path: TokenTrackerBar/Utilities/DateHelpers.swift
+      - path: TokenTrackerBar/Utilities/Constants.swift
       - path: TokenTrackerBar/Utilities/TokenFormatter.swift
       - path: TokenTrackerBar/Models/AutoUpdatePolicy.swift
       # WeeklyLimitResetDetector's window labels come from Strings, which
@@ -147,5 +151,5 @@ targets:
       - path: Shared
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.tokentracker.bar.tests
+        PRODUCT_BUNDLE_IDENTIFIER: com.tokentracker.community.tests
         GENERATE_INFOPLIST_FILE: YES

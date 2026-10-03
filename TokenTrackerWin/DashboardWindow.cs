@@ -161,7 +161,7 @@ internal sealed class DashboardWindow : Window
             // WPF async event handlers are async-void. Never let a WebView2 runtime,
             // profile, or GPU initialization failure escape to the dispatcher and
             // terminate the tray host; the retry path below is deliberately bounded.
-            Log($"webview initialization failed: {ex}");
+            OAuthDiagnostics.Failure("dashboard", "webview initialization failed", ex);
         }
     }
 
@@ -266,14 +266,14 @@ internal sealed class DashboardWindow : Window
             catch (Exception ex) when (attempt < 3)
             {
                 lastError = ex;
-                Log($"webview initialization attempt {attempt} failed: {ex.Message}");
+                OAuthDiagnostics.Failure("dashboard", $"webview initialization attempt {attempt} failed", ex);
                 ReplaceWebViewControl();
                 await Task.Delay(TimeSpan.FromMilliseconds(300 * attempt));
             }
             catch (Exception ex)
             {
                 lastError = ex;
-                Log($"webview initialization attempt {attempt} failed: {ex.Message}");
+                OAuthDiagnostics.Failure("dashboard", $"webview initialization attempt {attempt} failed", ex);
             }
         }
 
@@ -308,9 +308,7 @@ internal sealed class DashboardWindow : Window
 
         // WebView2 needs a writable user-data folder; the exe dir may be read-only
         // (Program Files). Persist under LocalAppData so login/cookies survive restarts.
-        var userDataFolder = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "TokenTracker", "WebView2");
+        var userDataFolder = Path.Combine(Constants.DataDirectory, "WebView2");
         Directory.CreateDirectory(userDataFolder);
 
         // Make the WebView2 composition surface itself transparent. Must be set before
@@ -376,7 +374,7 @@ internal sealed class DashboardWindow : Window
         // Top-level navigations away from the local server go to the system browser.
         core.NavigationStarting += (_, e) =>
         {
-            Log($"nav starting uri={e.Uri}");
+            OAuthDiagnostics.Navigation("dashboard", "nav starting", e.Uri);
             if (Uri.TryCreate(e.Uri, UriKind.Absolute, out var uri)
                 && uri.Scheme is "http" or "https"
                 && uri.Host is not ("127.0.0.1" or "localhost"))
@@ -390,7 +388,7 @@ internal sealed class DashboardWindow : Window
         {
             try
             {
-                Log($"nav completed uri={_webView.CoreWebView2.Source}");
+                OAuthDiagnostics.Navigation("dashboard", "nav completed", _webView.CoreWebView2.Source);
                 if (_oauthInFlight
                     && Uri.TryCreate(_webView.CoreWebView2.Source, UriKind.Absolute, out var completedUri)
                     && completedUri.AbsolutePath is "/" or "/dashboard")
@@ -403,7 +401,7 @@ internal sealed class DashboardWindow : Window
             {
                 // Navigation callbacks are async-void event handlers too. A page
                 // transition must never bring down the native tray process.
-                Log($"navigation completion handler failed: {ex.Message}");
+                OAuthDiagnostics.Failure("dashboard", "navigation completion handler failed", ex);
             }
         };
 
@@ -411,7 +409,7 @@ internal sealed class DashboardWindow : Window
         // does, so we can observe the callback page's client-side redirect to /dashboard.
         core.HistoryChanged += (_, _) =>
         {
-            try { Log($"history changed uri={_webView.CoreWebView2.Source}"); } catch { }
+            try { OAuthDiagnostics.Navigation("dashboard", "history changed", _webView.CoreWebView2.Source); } catch { }
         };
 
         // The injected script posts setting changes, and the injected title bar
@@ -426,8 +424,8 @@ internal sealed class DashboardWindow : Window
             // provider authorize URL. Open it in the system browser (where the user has
             // saved Google/GitHub sessions, and where Google permits OAuth — embedded
             // webviews are blocked). The browser redirects back to the whitelisted
-            // 127.0.0.1:17680/auth/callback, whose page deep-links the code to us via the
-            // tokentracker:// scheme. Mirrors the macOS nativeOAuth handler.
+            // 127.0.0.1:17681/auth/callback, whose page deep-links the code to us via the
+            // tokentracker-community:// scheme.
             if (msg.Length > 0 && msg[0] == '{')
             {
                 try
@@ -437,7 +435,7 @@ internal sealed class DashboardWindow : Window
                     if (t.GetString() == "oauth"
                         && doc.RootElement.TryGetProperty("url", out var u) && u.GetString() is { } url)
                     {
-                        Log($"oauth open url={url}");
+                        OAuthDiagnostics.Navigation("dashboard", "oauth open", url);
                         BeginNativeOAuth();
                         OpenInBrowser(url);
                     }
@@ -625,7 +623,7 @@ internal sealed class DashboardWindow : Window
         {
             // Keep the window/tray alive even when the runtime itself is unavailable;
             // the next dashboard open can trigger a fresh recovery attempt.
-            Log($"WebView2 recovery failed: {ex.Message}");
+            OAuthDiagnostics.Failure("dashboard", "WebView2 recovery failed", ex);
         }
         finally
         {
@@ -973,14 +971,14 @@ internal sealed class DashboardWindow : Window
             try
             {
                 var path = await _webView.CoreWebView2.ExecuteScriptAsync("location.pathname");
-                Log($"post-callback path={path} → reloading /?app=1");
+                Log("post-callback route checked → reloading home");
             }
             catch { /* window closed / page navigating */ }
             NavigateWhenServerReady("/?app=1");
         });
     }
 
-    /// <summary>Diagnostics → %LOCALAPPDATA%\TokenTracker\windows-host.log (shared with ServerManager).</summary>
+    /// <summary>Diagnostics → %LOCALAPPDATA%\TokenTrackerCommunity\windows-host.log (shared with ServerManager).</summary>
     private static void Log(string message) => Diag.Log("dashboard", message);
 
     /// <summary>

@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Questions / showcase / general discussion
-    url: https://github.com/xiufengsun/TokenTracker/discussions
-    about: Use Discussions for questions, ideas, and showing off how you use TokenTracker.
+    url: https://github.com/baozibao728-cmd/TokenTracker-Community/issues
+    about: Use the Community issue tracker for questions and feedback.
   - name: Security report
-    url: https://github.com/xiufengsun/TokenTracker/security/advisories/new
-    about: Report a security vulnerability privately. Please don't open a public issue for these.
+    url: https://github.com/baozibao728-cmd/TokenTracker-Community/security/policy
+    about: Review the repository security policy before reporting a vulnerability.

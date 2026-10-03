@@ -21,7 +21,7 @@ impl TempDir {
     fn new(label: &str) -> Self {
         let unique = COUNTER.fetch_add(1, Ordering::Relaxed);
         let path = std::env::temp_dir().join(format!(
-            "tokentracker-linux-{label}-{}-{unique}",
+            "tokentracker-community-linux-{label}-{}-{unique}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&path);
@@ -59,7 +59,9 @@ fn index_of(candidates: &[PathBuf], needle: &Path) -> Option<usize> {
 #[test]
 fn appimage_resource_dir_is_probed_first() {
     let roots = RuntimeRoots {
-        resource_dir: Some(PathBuf::from("/tmp/.mount_abc123/usr/lib/TokenTracker")),
+        resource_dir: Some(PathBuf::from(
+            "/tmp/.mount_abc123/usr/lib/TokenTracker Community",
+        )),
         appdir: Some(PathBuf::from("/tmp/.mount_abc123")),
         exe_dir: Some(PathBuf::from("/tmp/.mount_abc123/usr/bin")),
         project_dir: Some(PathBuf::from("/repo/TokenTrackerLinux")),
@@ -70,7 +72,7 @@ fn appimage_resource_dir_is_probed_first() {
     assert_eq!(
         candidates.first(),
         Some(&PathBuf::from(
-            "/tmp/.mount_abc123/usr/lib/TokenTracker/EmbeddedServer"
+            "/tmp/.mount_abc123/usr/lib/TokenTracker Community/EmbeddedServer"
         )),
         "Tauri's own resource directory is authoritative for bundled builds"
     );
@@ -91,18 +93,24 @@ fn appimage_appdir_is_probed_when_no_resource_dir_is_available() {
     // product-name variant must be probed and must come before the Arch name.
     let product = index_of(
         &candidates,
-        &PathBuf::from("/tmp/.mount_xyz789/usr/lib/TokenTracker/EmbeddedServer"),
+        &PathBuf::from("/tmp/.mount_xyz789/usr/lib/TokenTracker Community/EmbeddedServer"),
     )
     .expect("the productName layout must be a candidate");
     let arch = index_of(
         &candidates,
-        &PathBuf::from("/tmp/.mount_xyz789/usr/lib/tokentracker-linux"),
+        &PathBuf::from("/tmp/.mount_xyz789/usr/lib/tokentracker-community-linux"),
     )
     .expect("the Arch-style name must remain a candidate");
 
     assert!(
         product < arch,
         "AppImage bundles use productName; got {candidates:?}"
+    );
+    assert!(
+        !candidates.contains(&PathBuf::from(
+            "/tmp/.mount_xyz789/usr/lib/TokenTracker/EmbeddedServer"
+        )),
+        "Community must not probe the official client's product directory"
     );
 }
 
@@ -112,7 +120,7 @@ fn appimage_appdir_is_probed_when_no_resource_dir_is_available() {
 fn appimage_resolves_from_appdir_without_a_resource_dir() {
     let temp = TempDir::new("appimage");
     let appdir = temp.path().join("mount");
-    install_runtime(&appdir.join("usr/lib/TokenTracker/EmbeddedServer"));
+    install_runtime(&appdir.join("usr/lib/TokenTracker Community/EmbeddedServer"));
 
     let resolved = resolve_runtime_paths_from(&RuntimeRoots {
         resource_dir: None,
@@ -124,7 +132,7 @@ fn appimage_resolves_from_appdir_without_a_resource_dir() {
 
     assert_eq!(
         resolved,
-        runtime_paths_in(&appdir.join("usr/lib/TokenTracker/EmbeddedServer"))
+        runtime_paths_in(&appdir.join("usr/lib/TokenTracker Community/EmbeddedServer"))
     );
 }
 
@@ -140,11 +148,14 @@ fn exe_relative_prefix_is_probed_before_the_absolute_install_path() {
     let candidates = candidate_runtime_roots(&roots);
     let relative = index_of(
         &candidates,
-        &PathBuf::from("/opt/tokentracker/bin/../lib/tokentracker-linux"),
+        &PathBuf::from("/opt/tokentracker/bin/../lib/tokentracker-community-linux"),
     )
     .expect("exe-relative prefix should be a candidate");
-    let absolute = index_of(&candidates, Path::new("/usr/lib/tokentracker-linux"))
-        .expect("Arch install path should always be a candidate");
+    let absolute = index_of(
+        &candidates,
+        Path::new("/usr/lib/tokentracker-community-linux"),
+    )
+    .expect("Arch install path should always be a candidate");
 
     assert!(
         relative < absolute,
@@ -157,7 +168,7 @@ fn exe_relative_prefix_is_probed_before_the_absolute_install_path() {
 fn arch_install_path_is_always_a_candidate() {
     let candidates = candidate_runtime_roots(&RuntimeRoots::default());
     assert!(
-        candidates.contains(&PathBuf::from("/usr/lib/tokentracker-linux")),
+        candidates.contains(&PathBuf::from("/usr/lib/tokentracker-community-linux")),
         "the Arch package layout must never be dropped; got {candidates:?}"
     );
 }
@@ -280,7 +291,10 @@ fn resolution_reports_every_checked_location_when_nothing_is_found() {
     // AppImage and development locations, not just one of them.
     assert!(error.contains("appdir"), "got {error}");
     assert!(error.contains("project"), "got {error}");
-    assert!(error.contains("/usr/lib/tokentracker-linux"), "got {error}");
+    assert!(
+        error.contains("/usr/lib/tokentracker-community-linux"),
+        "got {error}"
+    );
 }
 
 #[test]

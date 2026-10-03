@@ -5,6 +5,7 @@ const fs = require("node:fs");
 const net = require("node:net");
 const os = require("node:os");
 const path = require("node:path");
+const { resolveTrackerRoot } = require("./tracker-paths");
 
 const QODER_SITES = {
   international: {
@@ -313,7 +314,7 @@ function qoderActivityCachePath({ home = os.homedir(), namespace } = {}) {
   const file = namespace
     ? `qoder-${namespace}-activity-cache.json`
     : QODER_ACTIVITY_CACHE_FILE;
-  return path.join(home, ".tokentracker", "tracker", file);
+  return path.join(resolveTrackerRoot({ home }), "tracker", file);
 }
 
 function readQoderActivityCache({
@@ -367,7 +368,7 @@ function qoderLimitsCachePath({ home = os.homedir(), namespace } = {}) {
   const file = namespace
     ? `qoder-${namespace}-usage-limits-cache.json`
     : QODER_LIMITS_CACHE_FILE;
-  return path.join(home, ".tokentracker", "tracker", file);
+  return path.join(resolveTrackerRoot({ home }), "tracker", file);
 }
 
 function qoderCachedWindow(window, { cachedAtMs, nowMs } = {}) {

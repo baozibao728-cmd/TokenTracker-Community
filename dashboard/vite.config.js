@@ -1261,8 +1261,13 @@ function localDataApiPlugin() {
   };
 }
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, ROOT_DIR, "VITE_");
+  if (command === "build") {
+    const require = createRequire(import.meta.url);
+    const { validateReleaseClientConfig } = require("../scripts/prepare-release-client-config.cjs");
+    validateReleaseClientConfig({ ...env, ...process.env });
+  }
   const fallbackVersion = loadAppVersion();
   const define = {};
 

@@ -64,7 +64,7 @@ const {
   upsertOmpHook,
   probeOmpHookState,
 } = require("../lib/omp-hook");
-const { resolveTrackerPaths } = require("../lib/tracker-paths");
+const { resolveTrackerPaths, isIsolatedTrackerRuntime } = require("../lib/tracker-paths");
 const {
   resolveOmpAgentDir,
   resolvePiAgentDir,
@@ -109,8 +109,6 @@ const ASCII_LOGO = [
 ].join("\n");
 
 const DIVIDER = "----------------------------------------------";
-const DEFAULT_DASHBOARD_URL = "https://www.tokentracker.cc";
-
 // Single source of truth for the welcome screen's provider count + sample list.
 // test/discovery-metadata.test.js keeps this aligned with public tool copy.
 const SUPPORTED_PROVIDERS = [
@@ -336,6 +334,9 @@ function shouldUseBrowserAuth({ deviceToken, opts }) {
 async function buildDryRunSummary({ opts, home, trackerDir, notifyPath, runtime }) {
   const deviceToken = runtime?.deviceToken || null;
   const pendingBrowserAuth = shouldUseBrowserAuth({ deviceToken, opts });
+  if (isIsolatedTrackerRuntime()) {
+    return { summary: [], pendingBrowserAuth, deviceToken };
+  }
   const context = buildIntegrationTargets({ home, trackerDir, notifyPath });
   const summary = await previewIntegrations({ context });
   return { summary, pendingBrowserAuth, deviceToken };
@@ -383,15 +384,19 @@ async function runSetup({
   await writeJson(configPath, config);
   await chmod600IfPossible(configPath);
 
-  await writeNotifyHandler({ trackerDir, notifyPath });
-
-  const summary = await applyIntegrationSetup({
-    home,
-    trackerDir,
-    notifyPath,
-    notifyOriginalPath,
-    dryRun: Boolean(opts.dryRun),
-  });
+  // Community's native runtime reads provider files passively. Shared global
+  // hooks may belong to the upstream app and must not be rewritten by init.
+  let summary = [];
+  if (!isIsolatedTrackerRuntime()) {
+    await writeNotifyHandler({ trackerDir, notifyPath });
+    summary = await applyIntegrationSetup({
+      home,
+      trackerDir,
+      notifyPath,
+      notifyOriginalPath,
+      dryRun: Boolean(opts.dryRun),
+    });
+  }
 
   return {
     summary,

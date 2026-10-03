@@ -11,6 +11,7 @@ const repoRoot = path.resolve(__dirname, "..");
 const linuxDir = path.join(repoRoot, "TokenTrackerLinux");
 const bundleScript = path.join(linuxDir, "scripts", "bundle-node-linux.sh");
 const canonicalIcon = path.join(repoRoot, "dashboard", "public", "icon-512.png");
+const releaseConfig = path.join(repoRoot, ".tmp", "release-client-config.json");
 
 function sha256(buffer) {
   return createHash("sha256").update(buffer).digest("hex");
@@ -18,6 +19,27 @@ function sha256(buffer) {
 
 function writeExecutable(file, contents) {
   fs.writeFileSync(file, contents, { mode: 0o755 });
+}
+
+function withReleaseConfig(action) {
+  const hadConfig = fs.existsSync(releaseConfig);
+  if (!hadConfig) {
+    fs.mkdirSync(path.dirname(releaseConfig), { recursive: true });
+    fs.writeFileSync(
+      releaseConfig,
+      JSON.stringify({ baseUrl: "https://tc79bxhm.ap-southeast.insforge.app", anonKey: "test-anon-key" }),
+    );
+  }
+  try {
+    return action();
+  } finally {
+    if (!hadConfig) {
+      fs.rmSync(releaseConfig, { force: true });
+      try {
+        fs.rmdirSync(path.dirname(releaseConfig));
+      } catch {}
+    }
+  }
 }
 
 // realpath: macOS os.tmpdir() sits under the /var symlink, which the bundle script's guard refuses.
@@ -81,7 +103,7 @@ chmod +x "$destination/node-v22.22.2-linux-x64/bin/node"
 `);
     writeExecutable(path.join(toolsDir, "npm"), "#!/usr/bin/env bash\nexit 0\n");
 
-    const bundleResult = spawnSync("bash", [bundleScript], {
+    const bundleResult = withReleaseConfig(() => spawnSync("bash", [bundleScript], {
       cwd: repoRoot,
       env: {
         ...process.env,
@@ -94,7 +116,7 @@ chmod +x "$destination/node-v22.22.2-linux-x64/bin/node"
       encoding: "utf8",
       timeout: 30_000,
       maxBuffer: 1024 * 1024,
-    });
+    }));
     assert.equal(
       bundleResult.status,
       0,
@@ -106,6 +128,7 @@ chmod +x "$destination/node-v22.22.2-linux-x64/bin/node"
       "node",
       "tokentracker/bin/tracker.js",
       "tokentracker/package.json",
+      "tokentracker/src/lib/release-client-config.json",
       "tokentracker/dashboard/dist/index.html",
     ]) {
       assert.equal(fs.existsSync(path.join(embeddedServer, requiredFile)), true, `missing ${requiredFile}`);

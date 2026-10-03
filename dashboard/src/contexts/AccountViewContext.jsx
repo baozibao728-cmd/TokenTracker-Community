@@ -5,7 +5,6 @@ import {
   getCloudSyncEnabled,
   getCloudUsageReady,
   isLocalDashboardHost,
-  syncCloudSyncPrefToLocalServer,
 } from "../lib/cloud-sync-prefs";
 
 /**
@@ -47,9 +46,8 @@ export function AccountViewProvider({ children }) {
 
   useEffect(() => {
     setLocalHost(isLocalDashboardHost());
-    // Mirror the persisted cloud-sync toggle to the local CLI server so the
-    // native popover's cross-device view tracks the same preference.
-    syncCloudSyncPrefToLocalServer();
+    // The Router child initializes the mirror on its first non-OAuth page.
+    // This provider also mounts in the system browser's callback relay.
   }, []);
 
   useEffect(() => {

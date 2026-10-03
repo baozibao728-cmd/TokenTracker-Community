@@ -12,7 +12,7 @@ const WORKFLOW_PATH = path.join(
 );
 
 function loadWorkflow() {
-  return fs.readFileSync(WORKFLOW_PATH, "utf8");
+  return fs.readFileSync(WORKFLOW_PATH, "utf8").replace(/\r\n/g, "\n");
 }
 
 test("release-dmg workflow file exists", () => {
@@ -87,7 +87,7 @@ test("workflow creates the release up front and uploads the DMG asset", () => {
   // can attach in parallel); the build job then uploads the DMG with --clobber.
   assert.ok(content.includes("gh release create"));
   assert.ok(content.includes("gh release upload"));
-  assert.ok(content.includes("TokenTrackerBar.dmg"));
+  assert.ok(content.includes("TokenTrackerCommunity.dmg"));
 });
 
 test("workflow has correct step order: dashboard → bundle → xcode → dmg → upload", () => {
@@ -245,14 +245,32 @@ test("checksum notes are appended to the generated release notes, not replacing 
   );
 });
 
-test("homebrew tap is notified only after publish (not mid-build)", () => {
+test("Community release does not dispatch to the upstream Homebrew tap", () => {
   const content = loadWorkflow();
-  // The dispatch must come AFTER the un-draft, so the tap fetches a public,
-  // fully-populated release — never a draft or an asset-less one.
-  const undraft = content.indexOf("--draft=false");
-  const dispatch = content.indexOf("homebrew-tokentracker/dispatches");
-  assert.ok(undraft > 0 && dispatch > 0, "both un-draft and dispatch must exist");
-  assert.ok(dispatch > undraft, "homebrew dispatch must come after un-drafting");
+  assert.doesNotMatch(content, /homebrew-tokentracker\/dispatches/);
+});
+
+test("Community backend configuration is validated before draft release creation", () => {
+  const content = loadWorkflow();
+  const configScript = fs.readFileSync(
+    path.join(__dirname, "..", "scripts", "prepare-release-client-config.cjs"),
+    "utf8",
+  );
+  const preflight = content.indexOf("node scripts/prepare-release-client-config.cjs");
+  const create = content.indexOf("gh release create");
+  assert.ok(preflight >= 0, "release preflight must validate backend configuration");
+  assert.ok(create > preflight, "configuration must fail before a draft release is created");
+  assert.match(content, /vars\.TOKENTRACKER_COMMUNITY_INSFORGE_BASE_URL/);
+  assert.match(content, /secrets\.TOKENTRACKER_COMMUNITY_INSFORGE_ANON_KEY/);
+  assert.match(configScript, /https:\/\/tc79bxhm\.ap-southeast\.insforge\.app/);
+  assert.doesNotMatch(content, /https:\/\/[^\s'"`]*insforge\.app/);
+  assert.doesNotMatch(content, /eyJ[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/);
+});
+
+test("macOS app and DMG use Community names", () => {
+  const content = loadWorkflow();
+  assert.match(content, /TokenTracker Community\.app/);
+  assert.match(content, /TokenTrackerCommunity\.dmg/);
 });
 
 test("workflow has concurrency guard", () => {

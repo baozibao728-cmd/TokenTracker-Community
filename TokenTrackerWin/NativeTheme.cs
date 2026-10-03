@@ -11,10 +11,7 @@ internal static class NativeTheme
     public const string LightPreference = "light";
     public const string DarkPreference = "dark";
 
-    private static readonly string SettingsPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "TokenTracker",
-        "native-settings.json");
+    private static readonly string SettingsPath = Path.Combine(Constants.DataDirectory, "native-settings.json");
 
     public static string CurrentPreference => ReadStoredPreference() ?? DarkPreference;
 

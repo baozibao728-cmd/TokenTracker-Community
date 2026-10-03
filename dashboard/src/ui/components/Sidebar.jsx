@@ -189,7 +189,7 @@ function IconButton({ as = "button", buttonRef, title, onClick, href, children, 
  * Refined GitHub Star pill — Linear "Free plan" style: bordered, tight, with text + count.
  * `glassChrome`: Mac 侧栏毛玻璃上：gray-500 描边 — 亮色 /20 更淡，暗色 dark:/30 保持可见。
  */
-function StarPill({ repo = "xiufengsun/TokenTracker", glassChrome = false }) {
+function StarPill({ repo = "baozibao728-cmd/TokenTracker-Community", glassChrome = false }) {
   const [stars, setStars] = useState(null);
   useEffect(() => {
     if (typeof window === "undefined") return;

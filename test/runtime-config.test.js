@@ -35,7 +35,7 @@ test("resolveRuntimeConfig recovers from the leaked Windows test base URL", () =
     env: {},
   });
 
-  assert.equal(recovered.baseUrl, "https://srctyff5.us-east.insforge.app");
+  assert.equal(recovered.baseUrl, null);
   assert.equal(recovered.sources.baseUrl, "default");
 
   const explicit = resolveRuntimeConfig({

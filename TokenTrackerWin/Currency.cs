@@ -35,10 +35,7 @@ internal static class Currency
 
     // ── Native cache (native-settings.json) ────────────────────────────
 
-    private static readonly string SettingsPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "TokenTracker",
-        "native-settings.json");
+    private static readonly string SettingsPath = Path.Combine(Constants.DataDirectory, "native-settings.json");
 
     /// <summary>Cache the live currency symbol + USD→currency rate so a cold-launched pet
     /// matches the app's last-used unit before the dashboard WebView exists.</summary>

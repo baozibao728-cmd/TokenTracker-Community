@@ -22,13 +22,14 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { computeRowCost } = require("./pricing");
+const { resolveTrackerRoot } = require("./tracker-paths");
 
 function resolveOutcomesPath() {
-  return path.join(os.homedir(), ".tokentracker", "tracker", "outcomes.jsonl");
+  return path.join(resolveTrackerRoot(), "tracker", "outcomes.jsonl");
 }
 
 function resolveAutoOutcomesPath() {
-  return path.join(os.homedir(), ".tokentracker", "tracker", "auto-outcomes.jsonl");
+  return path.join(resolveTrackerRoot(), "tracker", "auto-outcomes.jsonl");
 }
 
 // The ONLY fields ever lifted off an outcome record. Anything not on this list

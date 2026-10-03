@@ -92,7 +92,7 @@ fn local_capability_covers_core_and_open_oauth() {
     );
 }
 
-/// The server prefers port 17680 but falls back to an OS-assigned port, so the
+/// The server prefers port 17681 but falls back to an OS-assigned port, so the
 /// remote URL pattern has to match an arbitrary port. A pattern that omits the
 /// port matches only the scheme default (port 80 for http) and would reject
 /// every real dashboard origin.
@@ -118,7 +118,7 @@ fn remote_urls_match_any_loopback_port() {
 
     // The preferred fixed port and an arbitrary fallback port both matter.
     for allowed in [
-        "http://127.0.0.1:17680/",
+        "http://127.0.0.1:17681/",
         "http://127.0.0.1:39215/",
         "http://127.0.0.1:1/",
         "http://127.0.0.1:65535/auth/callback?insforge_code=abc&app=1",
@@ -128,8 +128,8 @@ fn remote_urls_match_any_loopback_port() {
 
     // ...and the grant must not leak beyond loopback http.
     for denied in [
-        "https://127.0.0.1:17680/",
-        "http://127.0.0.2:17680/",
+        "https://127.0.0.1:17681/",
+        "http://127.0.0.2:17681/",
         "http://evil.example.com/",
         "http://127.0.0.1.evil.com/",
     ] {
@@ -142,7 +142,7 @@ fn remote_urls_match_any_loopback_port() {
 #[test]
 fn a_portless_pattern_would_not_match_the_dashboard() {
     let portless: RemoteUrlPattern = "http://127.0.0.1".parse().expect("parses");
-    let dashboard = "http://127.0.0.1:17680/".parse().expect("valid URL");
+    let dashboard = "http://127.0.0.1:17681/".parse().expect("valid URL");
 
     assert!(
         !portless.test(&dashboard),

@@ -2,7 +2,7 @@ import CFNetwork
 import Foundation
 
 enum LocalAPIConfiguration {
-    /// The local dashboard API lives on `http://localhost:7680`. A system-wide
+    /// The local dashboard API lives on `http://localhost:7682`. A system-wide
     /// proxy — or a VPN in TUN / "enhanced" mode whose bypass list omits
     /// localhost — otherwise intercepts these loopback requests and the app
     /// declares the server unreachable while `curl` (which reads `no_proxy`)

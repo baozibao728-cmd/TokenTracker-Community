@@ -17,12 +17,9 @@ import { isNativeEmbed, isNativeWindowsApp } from "./native-bridge.js";
  *   OFF (fail-closed).
  */
 
-// Public project write key (phc_*) — ships in every browser bundle by design
-// and cannot read any data. Hardcoded rather than injected via VITE_ env so
-// release builds (Vercel, DMG / Windows embedded dashboard, npm package)
-// can't silently lose analytics to a missing CI env var.
-const POSTHOG_KEY =
-  import.meta.env.VITE_POSTHOG_KEY || "phc_nXhUfFbyrW9gNvp8iBL83eWPUhAuAYJgcgqUJxwUbBgj";
+// The fork has no analytics project configured. Never emit to upstream's
+// project; analytics can only be enabled with an explicit build configuration.
+const POSTHOG_KEY = import.meta.env.VITE_POSTHOG_KEY || "";
 const POSTHOG_HOST = "https://us.i.posthog.com";
 
 export function resolveAnalyticsShell() {
@@ -52,6 +49,7 @@ async function startPosthog(shell) {
 
 export function initAnalytics() {
   if (typeof window === "undefined") return;
+  if (!POSTHOG_KEY) return;
   // Vite dev server (5173 mock mode) and vitest must never emit events.
   if (import.meta.env.DEV || import.meta.env.MODE === "test") return;
 
