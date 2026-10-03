@@ -1,10 +1,10 @@
 # TokenTracker-Community Release Ownership Cutover Report
 
-更新日期：2026-10-04（Asia/Taipei）。当前定位：**三平台技术预览；Release Readiness 材料 READY FOR REVIEW。稳定发布仍 NOT_READY；merge/tag/公开发布尚待独立授权。**
+更新日期：2026-10-04（Asia/Taipei）。当前定位：**三平台技术预览已公开发布；原八文件匿名下载回核 PASS。稳定版仍 NOT_READY。**
 
-Ownership Cutover 已完成；同步偏好及管理 API key 处置 review 接受 **PASS**。固定源码 `0a143a05b975854365294201d9f690f6f70c0059` 的普通 CI、三平台 **BUILD/PACKAGE**、下载回核和最终 Windows 安装版/便携版实机验收均已接受。macOS/Linux **GUI/RUNTIME NOT_TESTED**，Windows 未签名、macOS ad-hoc、完整下载升级链未验证。依据本轮 review，这些范围将明确披露在三平台技术预览中，不缩减发布平台，也不将预览称为稳定版。本轮仅准备文档、PR 摘要及后续操作方案，无产品/云端改动或重建包。
+Ownership Cutover 已完成；同步偏好及管理 API key 处置 review 接受 **PASS**。固定源码 `0a143a05b975854365294201d9f690f6f70c0059` 的普通 CI、三平台 **BUILD/PACKAGE**、下载回核和最终 Windows 安装版/便携版实机验收均已接受。macOS/Linux **GUI/RUNTIME NOT_TESTED**，Windows 未签名、macOS ad-hoc、完整下载升级链未验证。依据本轮 review，这些范围将明确披露在三平台技术预览中，不缩减发布平台，也不将预览称为稳定版。第 16 节为已审定方案，首次公开发布及交付实证见第 17 节；没有产品/云端改动或重建包。
 
-第 1–15 节保留各轮历史事实与当时阻塞，不作为当前未解决问题的重复清单。最新首发定位和 readiness 见第 16 节及 [发布方案](RELEASE_READINESS_PLAN.md)。官方自身更新的隔离例外继续保留，不宣称全过程所有官方文件相同。
+第 1–16 节保留各轮历史事实与当时阻塞，不作为当前未解决问题的重复清单。最新发布结果见第 17 节，审定 readiness 见第 16 节及 [发布方案](RELEASE_READINESS_PLAN.md)。官方自身更新的隔离例外继续保留，不宣称全过程所有官方文件相同。
 
 ## 1. Collision & Ownership Audit
 
@@ -1057,3 +1057,108 @@ Review 已接受最终 Windows 安装版与便携版 PASS，并确认首发定�
 **结论：三平台技术预览材料 READY FOR REVIEW，发布执行尚待授权；稳定发行 NOT_READY。** Windows 实机 PASS；macOS/Linux GUI/RUNTIME NOT_TESTED、Windows 未签名、macOS ad-hoc/non-notarized、完整下载升级 NOT_TESTED、两个 Dashboard 全量基线失败与 macOS notify 不稳定性保持披露。无新产品、后端、migration、源码/版本变动；不合入 upstream，不 merge main，不创建 tag/Release、不上传 Release assets、不启用自动发布流程。
 
 文档 commit 会形成新的 PR head；新 head 的普通 CI 状态单独记录在 PR 和收尾回复，不作为固定 `0a143a05…` 六包的打包证据。本轮只做文档敏感信息/path scan、版本一致性及 diff 检查；没有重复已接受的 Windows/Community 验收或全量测试。
+
+## 17. 首次三平台技术预览实际发布（2026-10-04）
+
+**三平台技术预览已发布；稳定版仍 NOT_READY。** 用户已明确授权执行审定方案。公开时间为台北时间 **2026-10-04 01:45:50**（UTC `2026-10-03T17:45:50Z`）；匿名八文件回核完成于台北时间 **01:54:19**。本节记录实际 Git/Release/交付操作；第 1–16 节继续作为各轮历史证据，不将先前的“尚待授权”作为当前状态。
+
+### 17.1 固定源码、合并与普通 CI
+
+| 项目 | 实际值 / 结果 |
+|---|---|
+| 自有 Repository | `baozibao728-cmd/TokenTracker-Community` |
+| 审定 PR head | `12e24064dcfdd1271549d3c73bea7c157f172aee`；[PR #1](https://github.com/baozibao728-cmd/TokenTracker-Community/pull/1) 已标 ready，并使用 merge commit 合入 main |
+| 合并前 main | `6a9c47160d350bb793e9d99e2cfc3d150f69fda3` |
+| 实际发布 main merge SHA | `432fd3d9bb4db6f2b017cd55c68060117b7549f0`；发布完成时本地与 origin/main 一致，后续纯文档提交另计 |
+| 固定包 source / checkout SHA | `0a143a05b975854365294201d9f690f6f70c0059` |
+| 审定文档 CI | [37138837832](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37138837832)，attempt 1、4/4 SUCCESS；PR 旧的进行中摘要已更正 |
+| 发布 merge 后 CI | [37140269485](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37140269485)，attempt 1、4/4 SUCCESS；run head 为实际发布 merge SHA |
+| 原 artifact | [11272578871](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37119385283/artifacts/11272578871)；原六包与两份原元数据，不重建、不重压缩、不重新签名 |
+
+发布 merge commit 的两个父提交分别为合并前 main 与审定 PR head；PR head 和固定包源码均为发布完成时 main 的祖先。`0a143a05b975854365294201d9f690f6f70c0059` 到实际发布 merge SHA 的差异**只有审定的三个发布文档**：`RELEASE_NOTES_DRAFT.md`、`RELEASE_OWNERSHIP_CUTOVER_REPORT.md`、`RELEASE_READINESS_PLAN.md`。产品、版本、运行源码、workflow 与包来源没有额外差异；没有 squash、rebase、force push 或合入 upstream。后续发布记录入库的纯文档提交不改变固定包源码、tag 或公开资产。
+
+| main CI job | Job ID / 实际 run | 结果 |
+|---|---|---|
+| macOS unit tests | [111253076935](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37140269485/job/111253076935) | SUCCESS |
+| Windows build | [111253077057](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37140269485/job/111253077057) | SUCCESS |
+| test + validate + build | [111253077060](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37140269485/job/111253077060) | SUCCESS |
+| Linux client (Rust) | [111253077071](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37140269485/job/111253077071) | SUCCESS |
+
+### 17.2 Annotated tag 与 Release 参数
+
+| 参数 | 实际值 |
+|---|---|
+| 公开 Release | [TokenTracker Community 1.2.0 — Three-platform Technical Preview 1](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/tag/v1.2.0-preview.1) |
+| Release ID | 402619253 |
+| tag | `v1.2.0-preview.1` |
+| annotated tag object SHA | `b6f216a8357f213d37042fb8e378a773276cc2fa` |
+| 本地与远端 peeled commit | 均为 `0a143a05b975854365294201d9f690f6f70c0059`；对象类型均为 annotated tag |
+| 包内版本 / manifest.version | `1.2.0` |
+| target_commitish | `0a143a05b975854365294201d9f690f6f70c0059` |
+| 创建请求 | `draft=true`、`prerelease=true`、`make_latest="false"`、`generate_release_notes=false` |
+| 公开请求 / 最终状态 | 八文件草稿回核全部通过后设置 `draft=false`、`prerelease=true`、`make_latest="false"`；最终 API 确认非草稿、仍为预览 |
+| 公告 | 使用审定公告，仅移除草稿提示/“尚未创建”；没有自动生成上游公告，验证限制完整保留 |
+
+操作异常与处理：本地 `git tag -a` 两次遇到 Git object 写入 `Permission denied`，没有成功创建 tag；临时 bare Git 路径的配置写入也受限。没有改 ACL、移动/覆盖 tag 或改变目标 commit。改用 GitHub Git API 创建正式 annotated tag object 和同名 ref，再 fetch 到本地；实际远端、本地 object type 与 peeled commit 都核对通过。本记录不将失败的本地 tag 命令记为成功，也不推测权限错误根因。
+
+### 17.3 原八文件上传与两次下载回核
+
+上传前逐文件核对原文件名、size、SHA-256、manifest/source 与 tag。八个原文件全部上传 HTTP 201、state=uploaded；草稿资产 API 下载到独立新目录，各 HTTP 200、大小和 SHA-256 全部一致，且八文件完整性及原 manifest 来源通过，才公开预览。
+
+公开后下载过程**未加载或发送 GitHub 认证凭据**：指定 tag 页面 HTTP 200，预览标签与完整公告一致；以下八个实际 Release assets 均匿名 HTTP 200，size 与 SHA-256 对原 artifact 严格一致。GitHub 自动生成的 source ZIP/TAR 另计，不纳入八个上传资产。原 `SHA256SUMS` 和 `RC_MANIFEST.json` 字节未重新生成。
+
+| 文件 | Asset ID | bytes | 实际 SHA-256 | 匿名 HTTP / 回核 |
+|---|---:|---:|---|---|
+| `TokenTracker-Community-win-x64.zip` | 608235500 | 114892518 | `2e913bb78c18aec0f1b96d71edf9854521e4d678a842eed9e29619dd751c4f4e` | 200 / PASS |
+| `TokenTracker-Community-Setup.exe` | 608236594 | 80741452 | `9660c2ddeda46f88f9da10329560a393dfe284ff9615fbdeca77af13acfb008d` | 200 / PASS |
+| `TokenTrackerCommunity.dmg` | 608237352 | 61896126 | `5c850f0dba9d72d8cbe544cf244b8b2985c8783386ef27e73e50ef448e177441` | 200 / PASS |
+| `TokenTracker-Community-linux-x86_64.AppImage` | 608238242 | 127486456 | `aabac8decd202a9f3d3c41048508daca324ed4acd412e15699da5d09ed8fdc63` | 200 / PASS |
+| `TokenTracker-Community-linux-x86_64.deb` | 608239588 | 56989076 | `39ce996cbf1982f0b0e0a254a85a561c4e1e064c98e8c28298598f9967241add` | 200 / PASS |
+| `TokenTracker-Community-linux-x86_64.rpm` | 608240112 | 56975561 | `d14b8c7e763d812f10504b011080840cc403a9778b1cbdeccbd24a8ab6150125` | 200 / PASS |
+| `SHA256SUMS` | 608240679 | 615 | `a28307bb0c1d6859673e6f933542e6ace47e7d4c65c284080bb63b15328b5ee8` | 200 / PASS |
+| `RC_MANIFEST.json` | 608240792 | 1598 | `a1d63763c6350a6ae51453f4d7629abc3e0b7b4ee1ccd78340b8491e8dc5bacd` | 200 / PASS |
+
+现有 `scripts/rc/artifacts.cjs verify` 对公开后实际下载六包再验证 PASS；原 manifest 的 source_sha 和 checkout_sha 均为固定包源码、version=1.2.0。没有只依赖服务端 digest、外层 Actions ZIP 或名字判断。两个元数据自身 size/hash 同样已核对。
+
+匿名 `GET /repos/baozibao728-cmd/TokenTracker-Community/releases/latest` 的实际结果为 **HTTP 404**：目前无稳定版，预览没有被选为 latest。该结果不能代表完整 updater 下载升级链 PASS；用户仍从指定 tag 页面手动取得预览。
+
+### 17.4 Workflow 保护与本轮边界
+
+PR 的 `ready_for_review` 会满足旧 PR 全量打包 diff。为避免重复构建，先通过标准 API 临时暂停唯一的 build-only RC workflow；CI 保持启用。PR ready/merge 完成后立即恢复 RC。没有 dispatch 发布流程，也没有以新的构建产物替换原 artifact。最终状态如下，两个发布 workflow 及其他八个继承 workflow 都为 `disabled_manually`：
+
+| Workflow | ID | 发布后状态 |
+|---|---:|---|
+| `ci.yml` | 369909803 | `active` |
+| `codeql.yml` | 369909806 | `disabled_manually` |
+| `labeler.yml` | 369909810 | `disabled_manually` |
+| `leaderboard-anticheat.yml` | 369909815 | `disabled_manually` |
+| `leaderboard-freshness.yml` | 369909820 | `disabled_manually` |
+| `leaderboard-moderation-audit.yml` | 369909821 | `disabled_manually` |
+| `lock-closed.yml` | 369909824 | `disabled_manually` |
+| `npm-publish.yml` | 369909825 | `disabled_manually` |
+| `rc-build-only.yml` | 373836111 | `active` |
+| `release-dmg.yml` | 369909826 | `disabled_manually` |
+| `release-windows.yml` | 369909827 | `disabled_manually` |
+| `stale.yml` | 369909828 | `disabled_manually` |
+
+本轮没有修改产品、版本、数据库、migration、Edge、Auth provider 或凭据，没有操作官方项目；没有重复 Windows/Community/云端生命周期或全量本地回归。仅执行合并自动触发的普通 CI 和发布交付检查。原资产与不可覆盖的安全基线保留，临时 tag/下载/helper 目录在安全核对后清理；认证值、headers 和敏感响应不进入文档。
+
+发布完成时只读查询从该轮 preflight 开始的 Actions runs，实际只有发布 merge 的 main push 普通 CI `37140269485`，没有重新打包、自动发布、npm/Homebrew 或运营 run。PR #1 的发布摘要更新成功，head 为审定 SHA，merge_commit_sha 为上述实际发布 merge SHA；后续纯文档 PR 的检查与合并另计。
+
+发布完成时，仅本报告和发布方案状态有本地文档修改，留供发布后 review；当时未追加 main commit，main 为上述已通过 CI 的实际发布 merge SHA。PR #1 的摘要已同步为实际发布结果，不再称为 Draft/尚未发布。
+
+发布 review 已接受“三平台技术预览已发布 / PASS；稳定版仍 NOT_READY”。本次记录入库采用 `codex/release-preview-closeout` 独立纯文档分支与 PR，仅提交本报告和 `RELEASE_READINESS_PLAN.md`，通过普通 CI 后以 merge commit 合并。后续文档 commit、PR、merge 和检查结果以对应 PR/Git 记录为准，不为回填文档自身 SHA 反复追加提交，也不将后续 main HEAD 冒充实际发布 merge SHA。全部平台、签名、升级及既有测试限制继续保留。
+
+### 17.5 当前结论与稳定版条件
+
+| 范围 | 当前结论 |
+|---|---|
+| 三平台技术预览 / 八文件交付 | **已公开发布 / PASS**；原 artifact 字节、草稿回核、匿名回核、固定 tag/manifest 均一致 |
+| Windows Setup 与 portable 原生验收 | 既有实机 **PASS**，本轮复用；仍未签名 |
+| macOS DMG | **BUILD/PACKAGE PASS；GUI/RUNTIME NOT_TESTED**；仅 ad-hoc，不是 Developer ID/notarization |
+| Linux AppImage / deb / rpm | 各格式 **BUILD/PACKAGE PASS；GUI/RUNTIME NOT_TESTED**，不以 Windows 或包内容验证替代 |
+| 完整 updater 下载升级 | **NOT_TESTED**；预览不进入 latest，同版本覆盖安装不等于升级 |
+| 全球 Dashboard 全量基线失败 / macOS notify | 既有两个基线失败及 notify 不稳定性如实保留，本轮未修改或宣称通过 |
+| 稳定版 | **NOT_READY**；仍需对应桌面实机证据、签名/公证决策、真实更高版本升级验收及稳定风险 review |
+
+Community 排行 basis 继续为 `client_reported_tokens`，automatic anticheat 未启用；最新排行需要将用量同步到自有云端。稳定版按审定方案独立准备 1.2.1 或更高版本，不移动本预览 tag、不覆盖公开资产，也不原地改成 latest。
