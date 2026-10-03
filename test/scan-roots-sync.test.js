@@ -26,11 +26,18 @@ const { cmdSync } = require("../src/commands/sync");
 const { cmdStatus } = require("../src/commands/status");
 
 const { withCommunityHome } = require("./helpers/with-community-home");
-async function withTempSyncEnv(fn) {
-  const home = await fsp.mkdtemp(path.join(os.tmpdir(), "tt-scan-roots-sync-"));
+async function withTempSyncEnv(fn, { aliasHome = false } = {}) {
+  const temp = await fsp.mkdtemp(path.join(os.tmpdir(), "tt-scan-roots-sync-"));
+  let home = temp;
+  if (aliasHome) {
+    const real = path.join(temp, "real-home");
+    home = path.join(temp, "home-alias");
+    await fsp.mkdir(real);
+    await fsp.symlink(real, home, process.platform === "win32" ? "junction" : "dir");
+  }
   const restore = withCommunityHome(home);
   try { return await fn(home); }
-  finally { restore(); await fsp.rm(home, { recursive: true, force: true }); }
+  finally { restore(); await fsp.rm(temp, { recursive: true, force: true }); }
 }
 
 const trackerDir = (home) => path.join(home, ".tokentracker-community", "tracker");
@@ -214,7 +221,7 @@ test("Codex directory aliases and shared sessions do not create duplicate cursor
       assert.deepEqual(Object.keys(store.shards["2026-06-30"]), [file]);
       assert.equal(await latestTotals(home, "codex"), 19);
     }
-  });
+  }, { aliasHome: true });
 });
 
 test("configured Codex root: scanned, sharded by every producer, stable across CODEX_HOME alternation", async () => {

@@ -626,7 +626,9 @@ async function cmdSync(argv, context = {}) {
       config,
       base: { codex: [codexNativeValue], claude: [path.join(home, ".claude")] },
     });
-    const codexCursorRoots = scanRoots.codex.flatMap((entry) => [entry.path, entry.realPath]);
+    const codexCursorRoots = scanRoots.codex.flatMap((entry) => [
+      entry.path, entry.realPath, canonicalScanRoot(entry.path, home),
+    ]);
     const cursorStore = await openCursorStore({
       trackerDir,
       cursorsPath,

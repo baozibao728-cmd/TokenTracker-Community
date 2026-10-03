@@ -60,6 +60,10 @@ candidate now preserves the established HOME spelling while canonicalizing
 provider aliases inside it, and reports one known failure rather than adding a
 generic missing-directory warning. A symlinked-HOME fixture pins this behavior;
 existing cursor/path and permission assertions were retained unchanged.
+The next macOS run isolated the combined HOME-alias/provider-alias case: cursor
+classification also needs the HOME-preserving canonical path, alongside the
+configured spelling and filesystem realpath. The end-to-end alias test now
+uses both aliases and checks the same per-day shard after every alternation.
 
 New acceptance tests use disposable HOME/USERPROFILE, explicit provider roots,
 Community data roots and native-only discovery. Existing source-layout
