@@ -1,8 +1,8 @@
 # TokenTracker Community — 首次三平台技术预览发布方案
 
-日期：2026-10-04（Asia/Taipei）。**READY FOR REVIEW：三平台技术预览材料已准备；尚未授权或执行 merge、tag、Release 或 Release assets 上传。稳定发布仍 NOT_READY。**
+日期：2026-10-04（Asia/Taipei）。**审定方案已获授权并执行：三平台技术预览已公开，八文件匿名回核 PASS；稳定版仍 NOT_READY。实际 merge/tag/Release/asset IDs 及工作流状态见 [发布记录第 17 节](RELEASE_OWNERSHIP_CUTOVER_REPORT.md#17-首次三平台技术预览实际发布2026-10-04)。**
 
-本轮只更新文档和 Draft PR 描述，沿用已接受的普通 CI、三平台 BUILD/PACKAGE、下载回核、最终 Windows 安装版/便携版及 Community/Auth/隔离证据。没有重新构建包、重复生命周期或全量回归。历史 run、失败/重试、隔离例外和凭据处置详见 [Ownership Cutover Report](RELEASE_OWNERSHIP_CUTOVER_REPORT.md)；完整对外公告见 [Release Notes Draft](RELEASE_NOTES_DRAFT.md)。
+以下保留原审定准备方案的参数和步骤；实际执行结果以发布记录第 17 节为准。准备阶段只更新文档和 Draft PR 描述，沿用已接受的普通 CI、三平台 BUILD/PACKAGE、下载回核、最终 Windows 安装版/便携版及 Community/Auth/隔离证据。没有重新构建包、重复生命周期或全量回归。历史 run、失败/重试、隔离例外和凭据处置详见 [Ownership Cutover Report](RELEASE_OWNERSHIP_CUTOVER_REPORT.md)；完整对外公告见 [Release Notes Draft](RELEASE_NOTES_DRAFT.md)。
 
 ## 1. 发布定位与已接受证据
 
@@ -194,7 +194,7 @@ GitHub 允许用 draft 暂存并通过更新 Release 公开；上述参数依据
 
 - 公告：`RELEASE_NOTES_DRAFT.md`，正确区分创建生成邀请码、加入邀请码、已同步云端排行和最新用量所需同步。
 - 操作材料：本文件，含参数、固定 source SHA、8 文件资产、合并后差异检查、上传及两次下载回核、稳定条件。
-- 验收证据：`RELEASE_OWNERSHIP_CUTOVER_REPORT.md`；历史记录保留，当前状态见新增首发定位节。
+- 验收证据：`RELEASE_OWNERSHIP_CUTOVER_REPORT.md`；历史记录保留，实际发布结果见报告第 17 节。
 - Draft PR 描述重写为最终实现、有效验证及预览限制；旧 run/修复历史留在报告，不混用过时阻塞。
 
-**下一步待 review 的具体授权：** 是否按 `v1.2.0-preview.1`、tag=`0a143a05b975854365294201d9f690f6f70c0059`、prerelease=true/make_latest=false、原 8 文件资产执行 PR merge → tag → draft 上传/下载回核 → 公开 → 匿名回核。本轮只准备材料及必要文档 commit/push/PR 更新，不执行这些发布操作。
+**原审定授权已执行：** 用户已批准按固定 v1.2.0-preview.1、固定包源码、prerelease=true/make_latest="false" 及原八文件执行 PR merge → annotated tag → draft 上传/下载回核 → 公开 → 匿名回核；全部完成。结果见发布记录第 17 节，稳定版仍 NOT_READY。
