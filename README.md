@@ -400,6 +400,25 @@ Supported providers for WSL auto-discovery and aggregation:
 
 ---
 
+### Extra scan roots (multiple profiles, agent harnesses)
+
+TokenTracker Community reads provider sessions passively. `CODEX_HOME` replaces the native `~/.codex` root for that process; `CLAUDE_CONFIG_DIR` adds to `~/.claude`. Existing native/WSL selection still applies. For additional profiles or agent homes, add `scanRoots` to the existing Community `tracker/config.json` (packaged default: `~/.tokentracker-community/tracker/config.json`; with `TOKENTRACKER_DATA_ROOT`, use `<data-root>/tracker/config.json`). Preserve the other config fields. Background sync, CLI, status, diagnostics, doctor and the session browser read this configuration:
+
+```json
+{
+  "scanRoots": {
+    "codex": ["~/.local/share/my-agent/codex"],
+    "claude": ["~/.local/share/my-agent/claude", "~/.claude-work"]
+  }
+}
+```
+
+Absolute paths, `~`, and paths relative to the user home are accepted; relative paths never depend on the launch directory. Persist roots needed by every entry point instead of relying on a launcher-only environment variable. No provider hooks are installed or repaired.
+
+Each Codex root is expected to hold `sessions/` (and optionally `archived_sessions/`), each Claude root a `projects/` directory. Roots are de-duplicated by resolved path, so a profile whose `projects/` is a symlink to another profile's is read once. `tokentracker status` and `tokentracker doctor` list the extra roots and flag any that are missing.
+
+When a configured root is unavailable or directory discovery is incomplete, Claude history repair is deferred. A partial session inventory does not replace the last complete sidecar; a forced refresh may return partial rows without persisting them. Previously observed directories that disappear remain protected until they return. An empty optional child in a new profile is allowed.
+
 ## 🛠️ Development
 
 ```bash

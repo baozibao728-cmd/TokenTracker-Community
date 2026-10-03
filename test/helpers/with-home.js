@@ -13,19 +13,28 @@ function withHome(dir) {
   const prev = {
     HOME: process.env.HOME,
     USERPROFILE: process.env.USERPROFILE,
+    CODEX_HOME: process.env.CODEX_HOME,
     DSH_HOME: process.env.DSH_HOME,
     TOKENTRACKER_DSH_HOME: process.env.TOKENTRACKER_DSH_HOME,
+    CLAUDE_CONFIG_DIR: process.env.CLAUDE_CONFIG_DIR,
   };
   process.env.HOME = dir;
   process.env.USERPROFILE = dir;
+  // Codex harnesses also export their real home to child test processes.
+  delete process.env.CODEX_HOME;
   // The DeepSeek Harness exports DSH_HOME to every child process, so running
   // the suite inside a dsh session would otherwise leak the real ~/.dsh past
   // this isolation. Clear both harness-home overrides so the dsh parser
   // resolves to the isolated HOME's `.dsh` instead.
   delete process.env.DSH_HOME;
   delete process.env.TOKENTRACKER_DSH_HOME;
+  // CLAUDE_CONFIG_DIR is an implicit Claude Code scan root (#657), so a suite
+  // run inside a Claude Code session with a relocated config dir would scan
+  // the developer's real transcripts past this isolation. Clear it the same
+  // way; a test that wants it sets it explicitly after withHome().
+  delete process.env.CLAUDE_CONFIG_DIR;
   return function restoreHome() {
-    for (const key of ["HOME", "USERPROFILE", "DSH_HOME", "TOKENTRACKER_DSH_HOME"]) {
+    for (const key of ["HOME", "USERPROFILE", "CODEX_HOME", "DSH_HOME", "TOKENTRACKER_DSH_HOME", "CLAUDE_CONFIG_DIR"]) {
       if (prev[key] === undefined) delete process.env[key];
       else process.env[key] = prev[key];
     }
