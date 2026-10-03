@@ -19,7 +19,7 @@ let navigate;
 function Screen() {
   navigate = useNavigate();
   useCloudUsageSync();
-  return <span>normal router child</span>;
+  return null;
 }
 function mount(path) {
   window.history.replaceState({}, "", path);
