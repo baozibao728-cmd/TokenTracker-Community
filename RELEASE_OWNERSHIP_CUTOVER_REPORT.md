@@ -1,8 +1,10 @@
 # TokenTracker-Community Release Ownership Cutover Report
 
-日期：2026-10-03。结论：**BLOCKED（正式发布条件尚未全部满足）**。
+更新日期：2026-10-04（Asia/Taipei）。当前定位：**三平台技术预览；Release Readiness 材料 READY FOR REVIEW。稳定发布仍 NOT_READY；merge/tag/公开发布尚待独立授权。**
 
-Ownership Cutover、本地 Windows RC 构建及真实安装共存检查已完成。同步偏好修复和定向原生回调/重启验收 **PASS**；管理 API key 处置 **PASS**（第 12 节）。固定候选的普通 CI 与三平台正式 build-only RC **BUILD/PACKAGE PASS**，六个正式包仅交付为 Actions artifacts，源码、checkout、内容检查和下载回核证据见第 14 节。第 15 节已使用最终 CI 原字节完成 Windows 同版本覆盖安装、原生页面/会话/关闭偏好/重启及 portable smoke **PASS**，未重建客户端。保护对照保留官方自身更新造成的实际差异，不宣称全过程所有官方文件不变。没有修改数据库、migration、Edge 或产品业务逻辑；没有 merge main、tag、GitHub Release 或正式发布。macOS/Linux 安装与真实运行、正式代码签名及完整下载升级链仍未完成，正式发布保持 **BLOCKED**。
+Ownership Cutover 已完成；同步偏好及管理 API key 处置 review 接受 **PASS**。固定源码 `0a143a05b975854365294201d9f690f6f70c0059` 的普通 CI、三平台 **BUILD/PACKAGE**、下载回核和最终 Windows 安装版/便携版实机验收均已接受。macOS/Linux **GUI/RUNTIME NOT_TESTED**，Windows 未签名、macOS ad-hoc、完整下载升级链未验证。依据本轮 review，这些范围将明确披露在三平台技术预览中，不缩减发布平台，也不将预览称为稳定版。本轮仅准备文档、PR 摘要及后续操作方案，无产品/云端改动或重建包。
+
+第 1–15 节保留各轮历史事实与当时阻塞，不作为当前未解决问题的重复清单。最新首发定位和 readiness 见第 16 节及 [发布方案](RELEASE_READINESS_PLAN.md)。官方自身更新的隔离例外继续保留，不宣称全过程所有官方文件相同。
 
 ## 1. Collision & Ownership Audit
 
@@ -1031,3 +1033,27 @@ Git 阶段无已知阻塞，可交 review。171 个 PR 变更文件的 key/JWT/p
 Windows 未签名、macOS ad-hoc 与 Developer ID/notarization 的区别、macOS notify 不稳定性以及两个既有 Dashboard 全球排行榜基线失败继续保留。本轮无产品改动，复用固定 source `0a143a05b975854365294201d9f690f6f70c0059` 已通过的普通 CI 与三平台 BUILD/PACKAGE 证据，没有重跑全量本地测试或重新打包。报告提交会形成新的文档 head；其普通 CI/实际 checkout 与 report-only RC gate 状态在 Draft PR #1 和交付回复另行记录，不能把打包 source 的绿色结果代替新 head。
 
 本轮仅报告更新可 commit/push；原 Draft PR 保持 Draft。RC 产物、快照和安全状态证据留在忽略目录，临时 helpers 清理；敏感信息/path scan 和 git diff --check 通过后提交。main、云端资源、凭据与发布工作流保持本轮授权边界。正式发布仍 **BLOCKED**，交 review，不执行 merge、tag、Release 或发布资产上传。
+
+## 16. Release Readiness — 三平台技术预览材料（2026-10-04）
+
+Review 已接受最终 Windows 安装版与便携版 PASS，并确认首发定位为三平台技术预览；此前的普通 CI、三平台 BUILD/PACKAGE、下载回核、Community/Auth/隔离、同步偏好和管理 key 处置证据继续有效。本轮不重复原生/云端生命周期，不重新打包，不运行全量回归。
+
+开始本轮时，工作区 clean，开发分支 `chore/release-ownership-cutover` 的本地/远端 PR head 为 `2500aabc42da8cc3bb95a021e9492e157833aa4a`。自有 main 仍为 `6a9c47160d350bb793e9d99e2cfc3d150f69fda3`，Draft PR #1 open/draft，origin 为自有仓库。包源码 `0a143a05b975854365294201d9f690f6f70c0059` 是该 head 的祖先；当时二者仅有本报告差异。该文档 head 普通 CI run `37133392957` SUCCESS；RC gate `37133392960` SUCCESS，沿用已记录的文档更新不打包结论。
+
+只读 API 再核对：artifact `11272578871` 未过期，名称 `community-rc-0a143a05b975854365294201d9f690f6f70c0059`，所属 build-only run `37119385283` completed/success、attempt 1、head/source 为固定包源码。到期时间为台北时间 `2026-11-02 19:32:54`；已有本机下载回核副本继续保留，未重建。当前仅 CI/build-only RC active，其余 10 个 workflow disabled_manually，Release 列表为空；本轮不改变这些配置。
+
+本轮交付范围仅三个文档：
+
+| 文档 | 更新目的 |
+|---|---|
+| `RELEASE_NOTES_DRAFT.md` | 完整三平台技术预览公告；更正“创建生成邀请码、凭码加入”，说明榜单取已同步到自有云端的用量，最新用量需开启同步；列明独立安装/数据/更新、各平台实测范围和签名/升级限制 |
+| `RELEASE_READINESS_PLAN.md` | 拟定 tag/version/完整 commit、prerelease/latest 参数，8 个原文件资产及摘要，merge 后源码差异 guard、原样上传/下载回核、发布后最小检查和稳定版条件 |
+| 本报告 | 更新当前定位，保留历史验收、失败与隔离例外，不把过时阻塞混入最终 PR 描述 |
+
+推荐 `v1.2.0-preview.1`，tag 解引用指向 **`0a143a05b975854365294201d9f690f6f70c0059`**；包内仍 `1.2.0`，prerelease=true、make_latest="false"，先 draft 再经授权公开。资产为六个原包、原 SHA256SUMS 和原 RC_MANIFEST.json。两个元数据自身摘要本轮只读核对分别为 `a28307bb0c1d6859673e6f933542e6ace47e7d4c65c284080bb63b15328b5ee8`、`a1d63763c6350a6ae51453f4d7629abc3e0b7b4ee1ccd78340b8491e8dc5bacd`；六包 byte/hash 验收沿用第 14、15 节，不宣称新打包或新增安装测试。
+
+当前 release workflow 会创建稳定 tag、重新三平台构建并自动公开/latest，与“原样复用既有六包的 preview”操作不适配；本轮不改 workflow、不 dispatch。公告明确预览只通过指定 tag 页面手动下载，latest 更新器不推送 preview。未来稳定首版推荐 1.2.1 或更高；同包内 1.2.0 的稳定改名不会形成可识别升级，不移动预览 tag 或覆盖公开资产。
+
+**结论：三平台技术预览材料 READY FOR REVIEW，发布执行尚待授权；稳定发行 NOT_READY。** Windows 实机 PASS；macOS/Linux GUI/RUNTIME NOT_TESTED、Windows 未签名、macOS ad-hoc/non-notarized、完整下载升级 NOT_TESTED、两个 Dashboard 全量基线失败与 macOS notify 不稳定性保持披露。无新产品、后端、migration、源码/版本变动；不合入 upstream，不 merge main，不创建 tag/Release、不上传 Release assets、不启用自动发布流程。
+
+文档 commit 会形成新的 PR head；新 head 的普通 CI 状态单独记录在 PR 和收尾回复，不作为固定 `0a143a05…` 六包的打包证据。本轮只做文档敏感信息/path scan、版本一致性及 diff 检查；没有重复已接受的 Windows/Community 验收或全量测试。
