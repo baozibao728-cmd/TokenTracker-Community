@@ -2,7 +2,7 @@
 
 日期：2026-10-03。结论：**BLOCKED（正式发布条件尚未全部满足）**。
 
-Ownership Cutover、本地 Windows RC 构建及真实安装共存检查已完成。最新同步偏好修复和定向原生回调/重启验收 **PASS**；管理 API key 已完成轮换、同源码环境刷新及旧 key 到期拒绝验证（第 12 节 PASS）。第 13 节的自有分支提交、Draft PR、Actions 配置和普通 CI 已完成，固定源码提交四个 job **PASS**；此前 RC 来自基于 `6a9c47160d350bb793e9d99e2cfc3d150f69fda3` 的工作区，未在本轮重建。没有修改数据库 schema、已执行 migration、Edge 源码或 Community 业务契约；没有 merge main、tag、GitHub Release 或正式发布。各阶段历史证据保留，最新 Git/Actions 状态以第 13 节为准，正式三平台 build-only 打包属于下一阶段。
+Ownership Cutover、本地 Windows RC 构建及真实安装共存检查已完成。同步偏好修复和定向原生回调/重启验收 **PASS**；管理 API key 处置 **PASS**（第 12 节）。本轮固定候选的普通 CI 与三平台正式 build-only RC **BUILD/PACKAGE PASS**，六个正式包仅交付为 Actions artifacts，最新源码、checkout、内容检查和下载回核证据见第 14 节。此前已接受的本机 Windows 原生验收继续有效，本轮未重建或覆盖安装本机客户端；不把 runner 包内容检查等同于新包真实安装/GUI 验收。没有修改数据库、migration、Edge 或产品业务逻辑；没有 merge main、tag、GitHub Release 或正式发布。macOS/Linux 安装与真实运行、正式代码签名及完整下载升级链仍未完成，正式发布保持 **BLOCKED**。
 
 ## 1. Collision & Ownership Audit
 
@@ -12,7 +12,7 @@ Ownership Cutover、本地 Windows RC 构建及真实安装共存检查已完成
 | Linux 更新 | 尚无应用内自动更新器；下载链接及打包身份属于上游 | 保持无自动更新器，下载/发布资产指向 fork，独立包、桌面项、协议与扩展 UUID |
 | 原生安装身份 | 原 Windows AppId/目录、macOS bundle/App Group、Linux app/package/desktop identity 会共享资源 | 三个平台均改为独立产品身份；Windows 已实际完成安装/覆盖/卸载/重装测试 |
 | 后端默认值 | Dashboard、CLI、DevicePage 与 Actions 有官方 URL/客户端 credential 默认值 | 移除默认值；正式构建必须显式提供自有项目配置。打包 CLI 锁定自有地址，拒绝旧配置/环境/CLI 参数将其改到上游 |
-| Actions | 上游 npm/Homebrew 发布及官方 leaderboard 运营 workflows | 本地 workflow 禁用这些上游操作；远端已仅保留普通 CI 启用，其余 10 个 workflow 手动禁用，详情及实际 runner 结果见第 13 节 |
+| Actions | 上游 npm/Homebrew 发布及官方 leaderboard 运营 workflows | 远端仅普通 CI 和专用 build-only RC 启用，其余 10 个 workflow 保持手动禁用，详情见第 13、14 节 |
 | 支持/下载 metadata | repository、homepage、issues、下载、Star、原生支持入口属于上游 | 更新到 fork；没有独立官网，因此 homepage 为 fork GitHub 仓库；Issue 模板改为本仓库入口 |
 | 遥测归属 | Dashboard 硬编码上游 PostHog public write key | 删除该默认 key；无显式 `VITE_POSTHOG_KEY` 时不启动 analytics。未配置或启用新的遥测项目 |
 | 分享/公开 profile 链接 | 分享意图和 profile modal 可将 fork 用户引到官方网站 | 分享产品链接改为 fork 仓库，profile 访问改为当前应用 origin；尚无 Community 独立公开网站，localhost profile URL 不承诺可供其他机器访问 |
@@ -827,3 +827,101 @@ Git 阶段无已知阻塞，可交 review。171 个 PR 变更文件的 key/JWT/p
 2. 三个 job 先执行现有 version/client-config guard，公开客户端配置来自已验证的 repository Variable/Secret。Windows 使用 .NET 8 正式 self-contained win-x64 publish、既有 bundle-node.ps1 与 Inno Setup；macOS 使用既有 bundle-node.sh、xcodegen/icon patch、Release Xcode build、现有 ad-hoc sign 与 create-dmg；Linux 使用现有 bundle:node、Tauri build 与包内容校验，产出 x86_64 AppImage/deb/rpm。
 3. 复用打包脚本与原 release workflow 的构建步骤，不能直接调用有 tag/Release 上传副作用的 release-windows.yml。仅以 Actions artifacts 收集三平台产物、大小/架构/SHA-256 和构建日志，不授予 contents:write，不设置 publish job，不调用 gh release/git tag/npm publish/Homebrew 或自动更新渠道。
 4. 等三个 build-only job 完成后单独 review 产物及平台安装/运行验证范围；macOS ad-hoc 签名不等于 Apple Developer 签名/notarization，Windows 未签名不改写成已签名。正式 tag/Release、资产上传、自动更新及任何签名凭据配置仍需后续明确授权。
+
+## 14. Three-platform Build-only RC（2026-10-03）
+
+**普通 CI：PASS；三平台正式 BUILD/PACKAGE：PASS；上传后下载回核：PASS。正式发布仍为 BLOCKED。** 本节取代第 13.4 节尚未执行的计划状态。已验收基线为 `43b84199484d401ee3213551a455937007902ecd`，继续在 `chore/release-ownership-cutover` 和 [Draft PR #1](https://github.com/baozibao728-cmd/TokenTracker-Community/pull/1) 工作，没有 merge main。已有 Community、Auth、同步偏好、安装隔离及管理 key 处置证据保持有效，本轮未重跑生命周期或云端验证，未重建/安装本机 RC。
+
+### 14.1 Workflow、范围及远端保护
+
+新增 `.github/workflows/rc-build-only.yml`，只允许自有仓库的同仓库 `pull_request` 指向 main；权限仅 `contents: read`。没有 dispatch 现有 release workflows，也没有调用它们作为 reusable workflow。Windows/macOS/Linux 复用已有正式 bundle、编译、签名及打包步骤，新增检查作用于实际产物。
+
+触发范围限定为构建相关 workflow、版本/client-config 脚本、依赖清单、CLI/Dashboard 与三端源文件。由于 PR paths 会比较整个 PR，另有轻量 candidate job 对本次 synchronize 的 before/head 范围做检查；仅更新报告时应跳过三个打包 job。candidate、三个平台与 delivery 均显式 checkout `github.event.pull_request.head.sha`，由 `checkout.cjs` 检查实际完整 40 位 SHA，禁止在 job 内 pull/rebase。
+
+本阶段源码范围只新增以下 11 个文件（731 行）；收尾另更新本报告：
+
+| 文件 | 目的 |
+|---|---|
+| `.github/workflows/rc-build-only.yml` | 三平台正式 build-only、配置/版本门禁及六包 artifact 汇总 |
+| `scripts/rc/checkout.cjs` | 自有仓库与候选完整 SHA 核对 |
+| `scripts/rc/changes.cjs` | 本次改动范围判断，避免报告更新重复打包 |
+| `scripts/rc/windows.ps1` | win-x64 正式 publish、ZIP/Setup 与实际 payload 检查 |
+| `scripts/rc/macos.sh` | universal Release、完整 ad-hoc 签名、DMG 挂载检查 |
+| `scripts/rc/linux.sh` | 三种 Linux 格式分别严格解包及内容检查 |
+| `scripts/rc/verify-runtime.cjs` | 实际嵌入 runtime、版本、自有配置和 updater 归属核对 |
+| `scripts/rc/linux-package.cjs` | deb/rpm 实际包名、版本、架构校验 |
+| `scripts/rc/pick-one.cjs` | 每种正式格式必须恰好一个产物 |
+| `scripts/rc/artifacts.cjs` | 实际字节 checksum/size、汇总及下载回核 |
+| `test/rc-build-only.test.js` | workflow/触发范围/格式清单、配置、元数据及防篡改回归 |
+
+没有修改产品功能、Auth/同步偏好、Parser/Cost Engine/Provider、Community/Foundation、Edge、schema 或 migration；没有依赖升级或改版本。`ci.yml` 沿用第 13 节已通过覆盖，root suite 会实际执行新增 RC 测试。
+
+远端复查：Actions enabled；仅 `CI` 和 `Community build-only RC` active。CodeQL、Labeler、三个 leaderboard 运营 workflow、Lock closed issues、npm publish、release-dmg、release-windows、Stale 共 10 个仍为 `disabled_manually`。main 保持 `6a9c47160d350bb793e9d99e2cfc3d150f69fda3`，PR 始终 Draft。没有 tag/Release/release asset、npm/Homebrew 通知、自动更新发布、云端部署、migration 或凭据轮换。
+
+各平台首先执行 `validate-versions.cjs` 和 `prepare-release-client-config.cjs`。Repository Variable 的实际值仍为 `https://tc79bxhm.ap-southeast.insforge.app`；public anon Secret 沿用上一阶段安全配置。本轮不读取/输出 Secret 值。所有实际包均检查 staged CLI 配置与构建注入值相同、Dashboard 含自有 client config、runtime resolution 指向自有项目，并检查 native binary 不含官方 backend/updater repo。客户端仅使用公开 anon 配置，没有管理凭据。Linux 没有应用内自动更新器，检查范围为独立包身份/协议和实际 runtime；不宣称其升级链已通过。
+
+### 14.2 固定源码与普通 CI
+
+**最终打包候选、三个平台及 delivery 的实际 checkout 均为：**
+
+`0a143a05b975854365294201d9f690f6f70c0059`
+
+对应普通 [CI run 37119385289](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37119385289)，attempt 1 全部 SUCCESS。普通 CI 使用 PR merge ref，四个 runner 实际 checkout 均为 `359c80ff102dcb234e748d7266c668777dbabc5b`；这是测试 merge ref，不是 main 已合并。不可将它与上述正式包的 source/checkout SHA 混用。
+
+| 普通 CI job | 结果 | 实际证据 |
+|---|---|---|
+| test + validate + build | PASS；root RC 测试、既有精选 Dashboard/Auth/prefs/upload gate、typecheck/build/copy/i18n/guardrails 等原门禁保留 | [111192377928](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37119385289/job/111192377928) |
+| Windows build | PASS；实际 SDK 8.0.425、原日志/Auth/updater/identity tests 与 .NET 8 build | [111192377921](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37119385289/job/111192377921) |
+| macOS unit tests | PASS；既有 Node/identity/Xcode tests，未修复 notify 产品逻辑 | [111192377819](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37119385289/job/111192377819) |
+| Linux client (Rust) | PASS；既有 fmt/clippy/test 门禁保留 | [111192377940](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37119385289/job/111192377940) |
+
+本机新增 RC 与 release-client-config 定向测试 15/15 PASS；版本仍全部为 1.2.0；Bash syntax 和 PowerShell parser 检查 PASS。没有新增 skip、continue-on-error、删除失败检查或放宽产品权限。Node 测试日志中的 `aaaaaaaa...` SHA 属于合成防篡改夹具，不能用作真实 artifact 证据；真实证据来自下一节固定候选的打包/delivery 与下载字节。
+
+### 14.3 三平台实际打包与内容检查
+
+[Build-only RC run 37119385283](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37119385283)，attempt 1，candidate、Windows、macOS、Linux、delivery 全部 SUCCESS。
+
+| 平台/job | 实际 BUILD/PACKAGE 结果与检查范围 |
+|---|---|
+| [Windows 111192403724](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37119385283/job/111192403724) | PASS；固定实际 SDK 8.0.425/rollForward=disable；既有 bundle-node.ps1；正式 self-contained win-x64 publish；Inno Setup。展开实际 ZIP，在隔离 runner 目录静默安装实际 Setup，不启动 GUI；逐文件比较 ZIP 与安装 payload 的全部相同字节，检查 x64 PE、coreclr/hostfxr/System.Private.CoreLib/WebView2Loader、版本/product/publisher/独立 uninstall identity。两份实际 runtime 均检查 Node 22.22.2、CLI/Dashboard、自有 backend/updater。runner 静默安装属于包内容验证，不代替本机新包 GUI 验收。 |
+| [macOS 111192403683](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37119385283/job/111192403683) | PASS；既有 bundle-node.sh、xcodegen/icon patch、Release Xcode universal build。完整按内层 Node/dylib/so/node → widget（既有 entitlements）→ app（既有 entitlements）ad-hoc 签名；deep/strict 验证签名，widget sandbox=true。create-dmg 后只读挂载实际 DMG，核对 app/widget/Node 均 arm64+x86_64、1.2.0、bundle `com.tokentracker.community` / widget 独立 ID、`tokentracker-community` 协议、自有配置与 updater。实际 `Signature=adhoc`，没有 Developer ID 或 notarization。 |
+| [Linux 111192403692](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37119385283/job/111192403692) | PASS；既有 bundle:node/Tauri 正式 build。AppImage、deb、rpm 三个实际文件分别解包验证 x86_64 native executable、原始可执行权限、Node 22.22.2、CLI/Dashboard runtime、1.2.0、自有 backend及独立身份。deb/rpm 元数据严格为 `token-tracker-community`、1.2.0、amd64/x86_64，desktop Exec `%u` 与 `x-scheme-handler/tokentracker-community` 验证通过；rpm 以 libarchive 成功解包，不忽略退出码，不 chmod 修补提取出的权限。AppImage 的 Tauri desktop 不包含 deb/rpm 模板，检查实际二进制中的独立协议注册声明与 desktop 名称；实际启动注册尚 NOT_TESTED。没有用 AppImage 通过代替 deb/rpm。 |
+| [delivery 111194071651](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37119385283/job/111194071651) | PASS；下载三个已经上传的 Actions artifacts，拒绝容器 digest mismatch，重新核对每个实际安装包的 size/hash/source/checkout/version 和格式清单，再汇总六包。产出 SHA256SUMS/RC_MANIFEST.json，最终再次核对实际字节，仅上传 Actions artifact。 |
+
+### 14.4 六个正式交付物与上传后回核
+
+全部版本 **1.2.0**，source_sha = checkout_sha = `0a143a05b975854365294201d9f690f6f70c0059`。最终 [六包 Actions artifact 11272578871](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37119385283/artifacts/11272578871)，名称 `community-rc-0a143a05b975854365294201d9f690f6f70c0059`；保留 30 天，下载通常需要 GitHub 登录。其内容为以下六个正式包、`SHA256SUMS` 和 `RC_MANIFEST.json`。
+
+| filename | architecture | bytes | 安装包本身 SHA-256 |
+|---|---|---:|---|
+| TokenTrackerCommunity.dmg | arm64+x86_64 | 61,896,126 | `5c850f0dba9d72d8cbe544cf244b8b2985c8783386ef27e73e50ef448e177441` |
+| TokenTracker-Community-win-x64.zip | x86_64 | 114,892,518 | `2e913bb78c18aec0f1b96d71edf9854521e4d678a842eed9e29619dd751c4f4e` |
+| TokenTracker-Community-Setup.exe | x86_64 | 80,741,452 | `9660c2ddeda46f88f9da10329560a393dfe284ff9615fbdeca77af13acfb008d` |
+| TokenTracker-Community-linux-x86_64.AppImage | x86_64 | 127,486,456 | `aabac8decd202a9f3d3c41048508daca324ed4acd412e15699da5d09ed8fdc63` |
+| TokenTracker-Community-linux-x86_64.deb | x86_64 | 56,989,076 | `39ce996cbf1982f0b0e0a254a85a561c4e1e064c98e8c28298598f9967241add` |
+| TokenTracker-Community-linux-x86_64.rpm | x86_64 | 56,975,561 | `d14b8c7e763d812f10504b011080840cc403a9778b1cbdeccbd24a8ab6150125` |
+
+已从 GitHub 下载最终上传的 artifact，外层容器 498,984,638 bytes/digest 核对成功；解开后运行 `node scripts/rc/artifacts.cjs verify <download-directory> 0a143a05b975854365294201d9f690f6f70c0059`，六个实际安装包的 size/SHA-256、版本、source/checkout SHA、完整格式清单及 SHA256SUMS 一致，**上传后本机回核 PASS**。上表 checksum 来自实际安装包字节，绝非 Actions 外层下载 ZIP 的 checksum。下载与安全证据只留忽略目录，不提交 RC 产物、临时 helper 或本机路径。
+
+### 14.5 失败、修复与候选记录
+
+所有候选的普通 CI 均 attempt 1 全部 PASS；以下失败来自真实打包检查，逐项保留，没有把它们当作已知 Dashboard 基线或掩盖失败。
+
+| 候选/source SHA | 普通 CI / build-only RC | 实际失败及最小处理 |
+|---|---|---|
+| `2f32839fd9446dbbeff4fde46317ec9fab82b391` | [37116591750](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37116591750) PASS / [37116591853](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37116591853) FAIL | Windows PASS。macOS 签名后 codesign entitlement 默认输出不是 XML，PlistBuddy 拒绝；改用明确 `--xml`。Linux payload checker 错要求 Windows opt-in quota.html；核对既有 Vite 实际输入后，main/share 全平台、pet/quota 仅 Windows，未删除真实平台必需入口。 |
+| `2b4dcc4049a0b19a66952642b6d5b1cb33f6ad2b` | [37117351215](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37117351215) PASS / [37117351211](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37117351211) FAIL | Windows/macOS PASS；Linux AppImage PASS 后 deb 包名检查失败。原 checker 错把 Cargo 可执行文件名当包名；按实际 metadata 与 locked Tauri CLI 2.11.3 productName→kebab-case 契约严格校验 `token-tracker-community`，没有改产品名或包身份。此候选包含 `859bd8e3efba7d58dc1cd9e2405b9de3a2a8847a` 的触发/entitlement 修复。 |
+| `56b0006b883378ec51904e90990d54f35b763d50` | [37118344116](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37118344116) PASS / [37118344166](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37118344166) FAIL | Windows/macOS、Linux AppImage/deb PASS；rpm metadata PASS 后检查步骤 exit 1，旧日志未定位 GNU extraction 或紧接的 executable 检查哪一步失败，不声称已证明底层原因。改用严格 libarchive 解包，新增原始 mode 错误诊断；禁止沿用旧 workflow 的 extractor-warning 后继续策略。另将单格式恰好一包改为明确失败校验。新候选真实 rpm 解包和原始权限/runtime/protocol 全部 PASS。 |
+| `0a143a05b975854365294201d9f690f6f70c0059` | [37119385289](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37119385289) PASS / [37119385283](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37119385283) PASS | 三平台、六种交付、delivery 与下载回核全部 PASS；未 rerun-failed、未跳过任何格式或降低门禁。 |
+
+相关正式依据：[Apple codesign XML entitlement 格式](https://developer.apple.com/documentation/xcode/creating-distribution-signed-code-for-the-mac/)、locked [Tauri CLI 2.11.3 deb 包名](https://github.com/tauri-apps/tauri/blob/tauri-cli-v2.11.3/crates/tauri-bundler/src/bundle/linux/debian.rs) / [rpm 包名](https://github.com/tauri-apps/tauri/blob/tauri-cli-v2.11.3/crates/tauri-bundler/src/bundle/linux/rpm.rs)。没有改变产品业务行为来规避上述检查。
+
+### 14.6 交 review 状态与限制
+
+本阶段 **BUILD/PACKAGE PASS**，可交 review；正式发布 **BLOCKED**。Windows 未签名；macOS 仅 ad-hoc，未配置 Developer ID/notarization。macOS/Linux 正式包的实际安装、真实 GUI/Auth/本地采集/重启/协议回调尚 **NOT_TESTED**；AppImage 实际启动后的协议注册亦未验收。Windows runner 静默安装/内容校验不代表本机最终六包候选重新完成原生验收；此前已接受 Windows 原生、共存、updater 与 OAuth 证据保留，未无理由重复。
+
+完整下载升级链仍 **NOT_TESTED**，不创建临时 Release 取得升级证据。Dashboard 两个既有全球排行榜失败（period changes cache timeout、Preloaded User missing）仍单独保留，没有运行完整 Dashboard suite 或修复它们。macOS notify 已知不稳定性仍保留，本阶段各候选普通 CI 首次均 PASS，不据此宣称该问题被修复。
+
+收尾只提交本报告，形成与打包候选不同的最终 PR head；该文档 head 必须独立等待普通 CI，不能把 `0a143a...` 的绿色结果代替新 head。报告固定记录已验证的 source/checkout SHA 与包字节；最终文档 head、普通 CI run/merge checkout 及报告-only 打包跳过的实际结果记录在 [Draft PR #1](https://github.com/baozibao728-cmd/TokenTracker-Community/pull/1) 和交付回复，避免自引用 commit SHA。12 个本阶段最终文件的 key/JWT/private-key/个人路径 scan 零命中，版本检查 1.2.0 和 git diff --check PASS；product/backend diff 为空。远端 branch/head 与 clean 工作区在文档 push 后复核；临时 credential-handling helpers 清理，安全 count/hash/status 与下载产物保留在忽略目录。
+
+下一阶段仅待 review 决定针对这些固定字节进行 macOS/Linux 安装和真实运行验收、是否需要 Windows 新候选定向验收及正式签名策略。不会擅自收缩为 Windows-only；merge、tag/Release、资产上传及自动更新发布仍需后续明确授权。
