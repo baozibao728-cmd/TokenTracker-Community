@@ -59,7 +59,9 @@ fn index_of(candidates: &[PathBuf], needle: &Path) -> Option<usize> {
 #[test]
 fn appimage_resource_dir_is_probed_first() {
     let roots = RuntimeRoots {
-        resource_dir: Some(PathBuf::from("/tmp/.mount_abc123/usr/lib/TokenTracker Community")),
+        resource_dir: Some(PathBuf::from(
+            "/tmp/.mount_abc123/usr/lib/TokenTracker Community",
+        )),
         appdir: Some(PathBuf::from("/tmp/.mount_abc123")),
         exe_dir: Some(PathBuf::from("/tmp/.mount_abc123/usr/bin")),
         project_dir: Some(PathBuf::from("/repo/TokenTrackerLinux")),
