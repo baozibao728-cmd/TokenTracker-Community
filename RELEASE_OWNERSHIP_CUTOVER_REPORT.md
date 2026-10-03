@@ -2,7 +2,7 @@
 
 日期：2026-10-03。结论：**BLOCKED（正式发布条件尚未全部满足）**。
 
-Ownership Cutover、本地 Windows RC 构建及真实安装共存检查已完成。同步偏好修复和定向原生回调/重启验收 **PASS**；管理 API key 处置 **PASS**（第 12 节）。本轮固定候选的普通 CI 与三平台正式 build-only RC **BUILD/PACKAGE PASS**，六个正式包仅交付为 Actions artifacts，最新源码、checkout、内容检查和下载回核证据见第 14 节。此前已接受的本机 Windows 原生验收继续有效，本轮未重建或覆盖安装本机客户端；不把 runner 包内容检查等同于新包真实安装/GUI 验收。没有修改数据库、migration、Edge 或产品业务逻辑；没有 merge main、tag、GitHub Release 或正式发布。macOS/Linux 安装与真实运行、正式代码签名及完整下载升级链仍未完成，正式发布保持 **BLOCKED**。
+Ownership Cutover、本地 Windows RC 构建及真实安装共存检查已完成。同步偏好修复和定向原生回调/重启验收 **PASS**；管理 API key 处置 **PASS**（第 12 节）。固定候选的普通 CI 与三平台正式 build-only RC **BUILD/PACKAGE PASS**，六个正式包仅交付为 Actions artifacts，源码、checkout、内容检查和下载回核证据见第 14 节。第 15 节已使用最终 CI 原字节完成 Windows 同版本覆盖安装、原生页面/会话/关闭偏好/重启及 portable smoke **PASS**，未重建客户端。保护对照保留官方自身更新造成的实际差异，不宣称全过程所有官方文件不变。没有修改数据库、migration、Edge 或产品业务逻辑；没有 merge main、tag、GitHub Release 或正式发布。macOS/Linux 安装与真实运行、正式代码签名及完整下载升级链仍未完成，正式发布保持 **BLOCKED**。
 
 ## 1. Collision & Ownership Audit
 
@@ -924,4 +924,110 @@ Git 阶段无已知阻塞，可交 review。171 个 PR 变更文件的 key/JWT/p
 
 收尾只提交本报告，形成与打包候选不同的最终 PR head；该文档 head 必须独立等待普通 CI，不能把 `0a143a...` 的绿色结果代替新 head。报告固定记录已验证的 source/checkout SHA 与包字节；最终文档 head、普通 CI run/merge checkout 及报告-only 打包跳过的实际结果记录在 [Draft PR #1](https://github.com/baozibao728-cmd/TokenTracker-Community/pull/1) 和交付回复，避免自引用 commit SHA。12 个本阶段最终文件的 key/JWT/private-key/个人路径 scan 零命中，版本检查 1.2.0 和 git diff --check PASS；product/backend diff 为空。远端 branch/head 与 clean 工作区在文档 push 后复核；临时 credential-handling helpers 清理，安全 count/hash/status 与下载产物保留在忽略目录。
 
-下一阶段仅待 review 决定针对这些固定字节进行 macOS/Linux 安装和真实运行验收、是否需要 Windows 新候选定向验收及正式签名策略。不会擅自收缩为 Windows-only；merge、tag/Release、资产上传及自动更新发布仍需后续明确授权。
+第 15 节继续对这些固定字节完成了 Windows 实机定向验收。下一阶段待 review 决定 macOS/Linux 安装和真实运行验收及正式签名策略，不会擅自收缩为 Windows-only；merge、tag/Release、资产上传及自动更新发布仍需后续明确授权。
+
+## 15. 最终 CI Windows 实机定向验收（2026-10-03，原生与 portable smoke PASS）
+
+固定 source SHA `0a143a05b975854365294201d9f690f6f70c0059`，artifact `11272578871`。本轮直接使用第 14.4 节下载回核的实际字节，不重建、不重新打包。Setup SHA-256 `9660c2ddeda46f88f9da10329560a393dfe284ff9615fbdeca77af13acfb008d`；portable ZIP SHA-256 `2e913bb78c18aec0f1b96d71edf9854521e4d678a842eed9e29619dd751c4f4e`，版本均 1.2.0。安装版及 portable 原生定向 smoke 已完成；本轮不是完整升级链或三平台 GUI 验收。
+
+### 15.1 安装前保护与同版本覆盖
+
+安装前两版原生应用均未运行。保存不可覆盖的 pre snapshot：逐文件相对路径、size、完整文件内容 SHA-256，稳定排序后计算 scope aggregate；原始配置/凭据值没有写入摘要或报告。另保存 protocol/uninstall/startup 注册内容，比较时只输出 count/hash/equality。
+
+| 保护范围 | 文件/记录数 | 安装前 = 安装后、首次启动前 SHA-256 |
+|---|---:|---|
+| 官方安装目录 | 1658 | `e163c930abced2f6cbadf490e1b83fb69acac3a74048dacd999e984ce5ae18f9` |
+| 官方 native/WebView/cache/log | 1397 | `915d67b0c41ad9aa4f47dd89c31c9c03f62e3fd82d62a2ce3bdea90bc5d4014f` |
+| 官方 CLI 数据 | 1095 | `a5e025554287152e165d900d2bb2cc046eceea6d2fbe3389f67243bac75f0a1e` |
+| 官方 protocol/uninstall/startup | 28 | `f47696b15e8ed6babf61e8c0f7b2424b511798054b6a388cfe9f63f693b20c20` |
+| Claude/Codex/Gemini 现有配置/hooks 配置 | 4 个现有文件 | `debc94a9d55f917110ba424c5abd9e7619523aa953d8d298c30ea93b378deae5` |
+| Community CLI 数据 | 15 | `cbfd436bcd80c13df5712348729c26c4ea7cc13b5bf4f03a5c76ed14314fb47e` |
+| Community native/WebView/cache/log | 851 | `1327d240282dd0e05ffc19888d6b91ccca492aa34e5b00ed68dda72c368872d4` |
+
+安装前及首次启动前 Community 云同步均 false；queue 1858 行、1769 个最新桶、total_tokens=`4263808502`，覆盖安装没有改变。官方 queue 2321 行、1739 桶、total_tokens=`3760484034`，相同。
+
+已使用上述固定 Setup 对独立 Community 目录进行同版本覆盖，Inno exit 0。与最终 portable ZIP 的全部 944 个文件逐一 SHA-256 比较相同，包括 native exe/DLL、Node、CLI 和 Dashboard；没有启动 installer 的 postinstall GUI、没有删除用户数据。旧 dashboard/dist 清理仅作用于自己的 Community `{app}`。官方独立安装与受保护内容在覆盖安装前后、首次启动前均保持一致；当时官方卸载注册的 DisplayVersion 为 1.1.8，不能据此代替原运行进程的版本证据。
+
+### 15.2 当前原生实机证据
+
+用户从开始菜单启动最终安装版，确认现有账号仍已登录。实际 exe 为 `%LOCALAPPDATA%/Programs/TokenTrackerCommunity/TokenTrackerCommunity.exe`，Node 子进程为同目录 `EmbeddedServer/node.exe`，父子关系核对正常；loopback 17681 服务正常，Dashboard 与 `/communities` HTML HTTP 200。以上相对安装路径不代表 Vite 页或源码 checkout 的 Node。
+
+实际本地 preference API HTTP 200，enabled=false、account_available=true；本地 usage-summary HTTP 200。启动后的正常原生后台采集读取真实现有工具使用记录，2026-10-03T12:29:25.894Z 本地总计为 `4342200126`；这与覆盖安装前冻结数值的差异发生在应用启动后，不归因于 installer，也不称为构造的云端样本。最终对照及 runtime 差异分类见第 15.4 节。
+
+自有项目本轮只读 GET 均确认：hourly 1 行、total_tokens=`130`；Community 三表 0/0/0。使用必要本机管理 link 只做计数，没有用管理会话代替前端登录验收，没有上传 Token、创建社区或修改云端资源。
+
+用户已确认最终 CI 安装版现有会话保留、云同步关闭、社区正常、刷新正常；原生截图总计显示 43.4 亿，与上述本地 API 数值的显示精度一致。随后用户通过托盘正常退出，再从开始菜单启动，确认会话、关闭偏好及页面仍正常；重启进程的实际 exe/Node 路径仍来自正式 Community 安装目录。
+
+用户在该最终包手动检查更新，截图为“检查更新失败／无法连接到更新服务器，请稍后重试或前往 GitHub 手动下载”。已核对固定包更新目标为本 fork；单独访问本 fork releases/latest 的只读 HTTP 结果为 404。当前原生诊断日志没有本次检查的新增 HTTP 状态记录，因此不将旧日志冒充本轮请求证据，也不宣称已捕获本次原生请求的 HTTP 结果。完整 updater 下载升级仍 NOT_TESTED，同版本覆盖安装不能替代升级链验证。
+
+本轮曾按用户要求暂停；不可覆盖的 pre 与首次启动前 post 快照、固定安装包及安全计数/hash 证据保留，恢复后沿用同一 baseline。已有 Google 回调、Community 双用户生命周期、同步偏好补修及管理 key 处置证据继续有效，未重复全流程。
+
+2026-10-03 台北时间 22:15 恢复本轮验收：Setup 与 portable ZIP checksum 再核对一致，pre snapshot 文件 checksum 仍为 `5501278b3e38bb152ca4bb3820fec1a3b677cedb0a5b6bc589de045a9f3b49ca`。从固定 ZIP 解压目录启动 portable，实际 exe 与 Node 父子进程均来自该解压目录；Community 协议注册也已指向 portable exe。loopback 17681 的 Dashboard 和 Community HTML 均 HTTP 200，本地偏好 enabled=false、account_available=true；22:17:30 本地 usage-summary HTTP 200、total_tokens=`4347529888`。用户随后确认原生页面、会话及关闭偏好正常，portable GUI smoke PASS。
+
+22:19 再次只读确认自有项目 hourly 1 行、total_tokens=`130`，Community 三表仍 0/0/0。官方 queue 有 2427 行、1800 桶、total_tokens=`3962932363`，安装前完整 741876 bytes 的 prefix SHA-256 严格保持，仅存在追加；最终对照见第 15.4 节。
+
+用户确认 portable 原生仪表盘、社区、现有会话及关闭偏好正常，portable GUI smoke **PASS**；随后正常退出 portable。23:00 启动同一 CI 正式安装版，实际 exe/Node 均回到正式安装目录，`tokentracker-community` 协议严格匹配正式安装 exe；本地 preference HTTP 200、enabled=false、account_available=true。协议恢复 **PASS**。清理临时 portable 解压目录时首次遇到 `mscordbi.dll` 文件被占用，未停止其他程序或修改权限；重新检查无 portable 进程且正式协议已恢复后重试，第二次删除成功。固定六包与快照证据保留，用户数据未删除。
+
+23:03 最终云端只读核对仍为 hourly 1 行、total_tokens=`130` 与 Community 0/0/0。用户确认恢复后的正式安装版正常，并通过托盘退出。随后确认两版原生程序均已停止，23:14 生成不可覆盖的全范围 post fingerprint 并完成下述差异分类。本轮没有修改产品代码、重建包、重跑完整双用户或全量本地测试；收尾只提交本报告及更新原 Draft PR 的验证摘要。
+
+### 15.3 固定 macOS/Linux 包的交接验收清单
+
+当前只有 Windows 桌面。本节四种包的 **BUILD/PACKAGE PASS** 沿用第 14 节；对应安装、GUI/RUNTIME 仍全部 **NOT_TESTED**。不得以 Windows 结果、解包检查或无界面测试代替。测试者使用 artifact `11272578871` 中的原文件，先按第 14.4 节核对各文件 SHA-256，记录硬件架构、OS/发行版版本与测试时间，不重建或虚构 Release。
+
+**macOS — TokenTrackerCommunity.dmg（arm64+x86_64）：**
+
+1. 核对 DMG SHA-256；挂载并确认产品名 TokenTracker Community、1.2.0、bundle `com.tokentracker.community`。签名仅 ad-hoc，不等于 Developer ID/notarization；若系统阻止启动，记录实际提示及 BLOCKED，不关闭系统安全策略来取得 PASS。
+2. 安装到独立 Community app，保留官方 app 和两边数据；保存官方安装/配置/协议及数据的安全 count/hash baseline。确认实际 app/内嵌 Node 来自该 DMG，menu bar、Dashboard、本地服务正常。
+3. 读取已有本地用量并刷新；正常用户登录由测试者手动完成，云同步保持关闭，Community 列表页正常且只访问自有 InsForge。不保存/发送密码、授权码或 token，不构造云端样本。
+4. 退出再启动，确认会话和关闭偏好；正常 logout 后 Community 登录门禁。用现有 OAuth 入口确认 `tokentracker-community://` 正常回调，记录实际结果，不新增登录方式。
+5. 手动检查更新，只访问本 fork Releases；没有 Release 时记录 HTTP/UI，完整下载升级保持 NOT_TESTED。结束后比较官方保护范围并保留用户数据，汇报 GUI/RUNTIME PASS/BLOCKED 及未测项。
+
+**Linux — 三种格式必须分别记录结果：**
+
+| 包 | 安装/启动及身份核对 | 当前 GUI/RUNTIME |
+|---|---|---|
+| TokenTracker-Community-linux-x86_64.AppImage | 核对本文件 checksum；从可执行 AppImage 启动，确认实际 AppImage/extracted runtime 路径、x86_64、1.2.0。实际启动后检查独立 `tokentracker-community-appimage.desktop` 与协议注册；包内声明通过不能替代这一步。记录桌面/FUSE或运行依赖的真实失败。 | NOT_TESTED |
+| TokenTracker-Community-linux-x86_64.deb | 在支持 deb 的桌面发行版安装这一个固定包；确认 package `token-tracker-community`、1.2.0、amd64、独立 executable/desktop 与 `%u` 协议入口；核对实际 installed runtime。 | NOT_TESTED |
+| TokenTracker-Community-linux-x86_64.rpm | 在支持 rpm 的桌面发行版安装这一个固定包；确认 package `token-tracker-community`、1.2.0、x86_64、独立 executable/desktop 与 `%u` 协议入口；核对实际 installed runtime。不得用 deb 结果代替。 | NOT_TESTED |
+
+每种 Linux 格式各执行：保存官方与 Community 安装/数据/配置 baseline → 启动实际包并检查 tray/Dashboard/local service → 读取已有本地用量/刷新 → 正常手动登录、保持云同步关闭、打开 Community 页 → 退出重启/会话与偏好/logout 门禁 → 在该格式上验证既有协议/OAuth 入口的实际回调 → 对照官方保护数据。没有应用内 Linux updater，不要求或宣称该能力；发布下载链接应指向自有仓库。格式冲突时分开安装或使用独立测试环境，不因一包通过填写其他两包 PASS。
+
+全平台测试都不得上传本地用量、创建新云端样本、修改 Edge/schema/migration/credentials；只清理测试者明确产生的临时解压目录，保留原用户数据。没有对应桌面/硬件的项目保留 NOT_TESTED，三平台发布范围不缩减。
+
+### 15.4 最终隔离对照与官方正常更新的例外
+
+安装前快照未覆盖，checksum 仍为 `5501278b3e38bb152ca4bb3820fec1a3b677cedb0a5b6bc589de045a9f3b49ca`。最终 post 的范围、排序和算法与 pre 相同；下表直接记录实际结果，不把 runtime 变化写成 pre=post。
+
+| 范围 | pre → final 文件数 | final scope SHA-256 | 与 pre 比较 |
+|---|---:|---|---|
+| 官方安装目录 | 1658 → 1709 | `fbafb4a63fa3f1a21d3ae05c8f1d5dfbc1b73770045eea2ac211f519704c5ff3` | 不同：官方自身升级至 1.1.10，68 个新增/变更文件，无删除 |
+| 官方 native/WebView/cache/log | 1397 → 1399 | `e14ca440a19bfff675de94cf31523dc2d904125c651f088b22e4c061cddc6952` | 不同：更新包、native settings、日志和浏览器维护数据 |
+| 官方 CLI 数据及缓存 runtime | 1095 → 1472 | `ca34fc9662ec043aabcdaae933b79ed7e1579756d439e3eb6c063596c7ab27a0` | 不同：app runtime 更新、采集追加、cursor/cache 状态；无文件删除 |
+| Provider 配置/hooks 配置 | 4 → 4 | `debc94a9d55f917110ba424c5abd9e7619523aa953d8d298c30ea93b378deae5` | 完全相同 |
+| Community CLI 数据 | 15 → 17 | `f85988bcd395987cff5fa2bb982cde8ce472bd8d7160d8e6e1431e18c11599b2` | 正常本地采集/偏好镜像与缓存变化；无文件删除 |
+| Community native/WebView/cache/log | 851 → 880 | `3fc960193a426cfd48f67e6f641fff8e4d02d1f146a08624b1c0944c1d65dd55` | 原生启动、页面刷新、会话及浏览器维护变化 |
+
+官方更新的直接本地证据（台北时间）：20:36:53 官方更新器记录 current=1.1.9、latest=1.1.10；20:37:32 下载 `TokenTracker-Setup-1.1.10.exe`；20:37:34 校验成功，并记录启动官方 silent installer、relaunch `TokenTracker.exe`；20:37:55 原官方进程记录 current=latest=1.1.10。最终官方 exe 版本为 1.1.10.0。读取日志时只提取事件、时间及版本，不输出原始日志、URL 或凭据。这个独立官方更新流程解释了安装目录/runtime 与 uninstall 注册的变化，不能算作 Community updater 下载升级通过，也不需要回滚或重新操作官方版。
+
+官方 uninstall 的 24 个字段中只发现 DisplayVersion、EstimatedSize、InstallDate 三项变化：注册版本由 1.1.8 变为 1.1.10；该旧注册值不等于日志中原运行版本 1.1.9。独立安装身份、安装路径、publisher 等其余字段不变。官方协议 3 条记录的 pre=final SHA-256 为 `35784ae1b63d87977f6d67bbf9042de84d4ea4cbf98c9224559cc38145e8c8da`；官方启动项 pre=final 为 `f5c1aeb1f7b22df9de3a3108a910045d6245c37d7e2776c56956e3755d9266a5`。Community 协议恢复后 3 条记录与原正式安装版相同，SHA-256 为 `b61f51eb5950aa53a037ec88ebee7fd0cd03e6dccad2e0aababe06f23a63dba4`。
+
+两边旧 Token 数据前缀均严格保留：官方 queue 原 741876 bytes SHA-256 为 `a96dd6c9a58eccabe19e9b730606803e9d664c7e85233552743a4e84cb8b7e5e`，final 前缀一致；Community queue 原 599868 bytes SHA-256 为 `7176f72c0798c3eb7bc1f68a7c0e49ce183ff1b7fc0253ff1c131db17802a6ab`，final 前缀一致。官方最终 queue 2427 行、1800 桶、total_tokens=`3962932363`；Community 最终 queue 1908 行、1801 桶、total_tokens=`4353645478`、云同步 false。总量增加来自正常现有工具采集，原记录未被改写或删除，不是人为云端样本。
+
+隔离结论：Community 覆盖安装的即时全范围对照完全一致；本轮启动、portable 切换和清理均限定在 Community 路径，协议已恢复，Provider 配置/hooks 不变。全时段官方文件完全不变这一条件**不成立**，已单独保留官方自身更新/runtime 的差异。包括 `native-settings.json` 在内的官方维护文件只保存过完整 hash，没有字段级旧值，因此不宣称所有官方设置字段语义逐项不变。助手没有执行官方 installer、直接修改官方 registry/hooks 或调用官方后端；未尝试用覆盖安装恢复旧版本。最终云端只读计数仍为自有项目原 130 Token、Community 0/0/0。
+
+### 15.5 本轮交付与剩余未验证项
+
+| 项目 | 状态与证据边界 |
+|---|---|
+| 最终 CI Setup 同版本覆盖安装 | PASS；固定安装器 hash、Inno exit 0、944 个安装文件与 CI ZIP 全部字节一致 |
+| 安装版原生 tray/Dashboard/本地服务、已有用量读取/刷新 | PASS；真实安装路径/内嵌 Node、HTTP 200、用户原生 UI 确认 |
+| 现有会话、Community 页面、同步关闭及退出重启 | PASS；用户确认、preference API false；未重新收集登录凭据或重跑社区生命周期 |
+| portable ZIP 解压启动及 GUI | PASS；独立进程路径、本地服务、用户确认；正式协议恢复及临时目录清理完成 |
+| 安装即时保护及全时段差异对照 | 完成；即时保护 PASS，官方自身更新/runtime 例外如第 15.4 节，不伪造全时段一致 |
+| 自有更新源与无正式 Release 时 UI | 固定包自有仓库指向已核对；手动 UI 检查失败；独立 releases/latest GET 404。本次原生请求 HTTP 状态未单独捕获 |
+| 完整 updater 下载升级 | NOT_TESTED；同版本安装、官方自更新和 404 UI 均不替代此项 |
+| macOS DMG / Linux AppImage、deb、rpm GUI/RUNTIME | NOT_TESTED；固定包简短人工清单见第 15.3 节，三平台发布范围保留 |
+
+Windows 未签名、macOS ad-hoc 与 Developer ID/notarization 的区别、macOS notify 不稳定性以及两个既有 Dashboard 全球排行榜基线失败继续保留。本轮无产品改动，复用固定 source `0a143a05b975854365294201d9f690f6f70c0059` 已通过的普通 CI 与三平台 BUILD/PACKAGE 证据，没有重跑全量本地测试或重新打包。报告提交会形成新的文档 head；其普通 CI/实际 checkout 与 report-only RC gate 状态在 Draft PR #1 和交付回复另行记录，不能把打包 source 的绿色结果代替新 head。
+
+本轮仅报告更新可 commit/push；原 Draft PR 保持 Draft。RC 产物、快照和安全状态证据留在忽略目录，临时 helpers 清理；敏感信息/path scan 和 git diff --check 通过后提交。main、云端资源、凭据与发布工作流保持本轮授权边界。正式发布仍 **BLOCKED**，交 review，不执行 merge、tag、Release 或发布资产上传。
