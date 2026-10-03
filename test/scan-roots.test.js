@@ -21,6 +21,7 @@ const path = require("node:path");
 
 const {
   appendUniqueDirs,
+  canonicalScanRoot,
   dedupeDirsByRealpath,
   describeScanRootOrigin,
   extraScanRootPaths,
@@ -41,6 +42,19 @@ function tmpdir(t) {
   t.after(() => { restore(); fs.rmSync(dir, { recursive: true, force: true }); });
   return dir;
 }
+
+test("canonical roots preserve a symlinked HOME spelling and normalize only provider aliases", (t) => {
+  const actualHome = tmpdir(t);
+  const outer = tmpdir(t);
+  const aliasHome = path.join(outer, "home-alias");
+  const actualProvider = path.join(actualHome, "profiles", "codex");
+  fs.mkdirSync(actualProvider, { recursive: true });
+  const type = process.platform === "win32" ? "junction" : "dir";
+  fs.symlinkSync(actualHome, aliasHome, type);
+  fs.symlinkSync(actualProvider, path.join(actualHome, "provider-alias"), type);
+  assert.equal(canonicalScanRoot(path.join(aliasHome, "profiles", "codex"), aliasHome), path.join(aliasHome, "profiles", "codex"));
+  assert.equal(canonicalScanRoot(path.join(aliasHome, "provider-alias"), aliasHome), path.join(aliasHome, "profiles", "codex"));
+});
 
 test("normalizeScanRootsConfig tolerates junk and accepts a single string", () => {
   assert.deepEqual(normalizeScanRootsConfig(undefined), { codex: [], claude: [] });

@@ -122,8 +122,17 @@ function realpathOrSelf(target, deps) {
   }
 }
 
-function canonicalScanRoot(target) {
-  return realpathOrSelf(target, {});
+function canonicalScanRoot(target, home = os.homedir()) {
+  const real = realpathOrSelf(target, {});
+  const realHome = realpathOrSelf(home, {});
+  const relative = path.relative(realHome, real);
+  // Preserve the established HOME spelling (macOS /var -> /private/var is
+  // a system alias), while resolving provider aliases inside that home.
+  // Otherwise upgrading would move every existing cursor key on macOS.
+  if (relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative))) {
+    return path.resolve(home, relative);
+  }
+  return real;
 }
 
 function identityKey(target, deps) {
@@ -232,7 +241,7 @@ function appendUniqueDirs(baseDirs, extraDirs, deps = {}) {
 function extraScanRootPaths(entries) {
   return (Array.isArray(entries) ? entries : [])
     .filter((entry) => entry && entry.origin !== "native" && entry.exists)
-    .map((entry) => entry.realPath || entry.path);
+    .map((entry) => canonicalScanRoot(entry.path));
 }
 
 function hasAnyScanChild(root, children, deps = {}) {

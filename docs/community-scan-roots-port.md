@@ -42,7 +42,7 @@ upstream dependency was needed.
 
 ## Local verification (Windows, Node 24.16.0)
 
-- Four scan-root test files: **37 tests, 34 PASS, 0 FAIL, 3 platform skips**.
+- Four scan-root test files: **38 tests, 35 PASS, 0 FAIL, 3 platform skips**.
   The three original chmod tests require POSIX permission enforcement; all
   equivalent injected root/projects/nested EACCES cases passed on Windows.
 - Eighteen affected background, cursor-store, session, path, isolation,
@@ -53,6 +53,13 @@ upstream dependency was needed.
   The diagnostics Grok override slash assertion also fails identically on
   baseline and candidate on Windows. None was weakened or skipped to pass.
 - `git diff --check`, version consistency and architecture guardrails passed.
+
+The first CI run exposed system HOME aliases on macOS (`/var` versus
+`/private/var`) and duplicate reporting of one unavailable directory. The
+candidate now preserves the established HOME spelling while canonicalizing
+provider aliases inside it, and reports one known failure rather than adding a
+generic missing-directory warning. A symlinked-HOME fixture pins this behavior;
+existing cursor/path and permission assertions were retained unchanged.
 
 New acceptance tests use disposable HOME/USERPROFILE, explicit provider roots,
 Community data roots and native-only discovery. Existing source-layout

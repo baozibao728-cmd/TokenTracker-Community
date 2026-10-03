@@ -677,7 +677,7 @@ async function cmdSync(argv, context = {}) {
     const claudeProjectsDirs = appendUniqueDirs(
       claudeInstallHomes.map((h) => path.join(h, "projects")),
       extraScanRootPaths(scanRoots.claude).map((h) => path.join(h, "projects")),
-    ).map(canonicalScanRoot);
+    ).map((dir) => canonicalScanRoot(dir, home));
     const xdgDataHome = process.env.XDG_DATA_HOME || path.join(home, ".local", "share");
     const kiloHome = process.env.KILO_HOME || path.join(xdgDataHome, "kilo");
 

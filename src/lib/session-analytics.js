@@ -1264,12 +1264,12 @@ async function discoverSessionFiles(home, env = process.env, deps = {}) {
   const requestedCodexRoots = providerRoots(home, ".codex", env, { ...deps, extraRoots: extraRootsFor("codex") });
   const claudeRoots = requestedClaudeRoots.filter((root) => scanRootDirState(root).exists);
   const codexRoots = dedupeDirsByRealpath(requestedCodexRoots.filter((root) => scanRootDirState(root).exists))
-    .map(canonicalScanRoot);
+    .map((root) => canonicalScanRoot(root, home));
   // Two distinct roots may share one projects/ dir through a symlink; dedupe
   // the derived projects dirs by realpath (as sync does) so the browser never
   // lists the same transcript twice under two spellings.
   const claudeProjectsDirs = dedupeDirsByRealpath(claudeRoots.map((r) => path.join(r, "projects")))
-    .map(canonicalScanRoot);
+    .map((root) => canonicalScanRoot(root, home));
   // listClaudeProjectFiles / listRolloutFilesDeep turn a listing error into an
   // empty result, so a root whose projects/ (or sessions/) exists but cannot be
   // read would look like "no sessions" and get cached as such. Report those
@@ -1324,9 +1324,9 @@ async function discoverSessionFiles(home, env = process.env, deps = {}) {
   }
   // Only hashes reach metadata: directory paths remain local in memory.
   const directoryKeys = [...discovery.directories].map((dir) =>
-    crypto.createHash("sha256").update(canonicalScanRoot(dir)).digest("hex"));
+    crypto.createHash("sha256").update(canonicalScanRoot(dir, home)).digest("hex"));
   const currentDirectoryKeys = new Set(directoryKeys);
-  if ((deps.previousDirectoryKeys || []).some((key) => !currentDirectoryKeys.has(key))) {
+  if (incomplete.length === 0 && (deps.previousDirectoryKeys || []).some((key) => !currentDirectoryKeys.has(key))) {
     incomplete.push({ path: "previously discovered session directory", error: "ENOENT" });
   }
   return { claude, codex: groupCodexFiles([...codex, ...archived]), grok, incomplete, directoryKeys };
