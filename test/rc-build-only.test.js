@@ -6,6 +6,8 @@ const os = require("node:os");
 const path = require("node:path");
 const { names, record, assemble, verify } = require("../scripts/rc/artifacts.cjs");
 const { requiresBuild } = require("../scripts/rc/changes.cjs");
+const { verifyRuntime, requiredRuntimeFiles } = require("../scripts/rc/verify-runtime.cjs");
+const { OWN_BASE_URL } = require("../scripts/prepare-release-client-config.cjs");
 const sha = "a".repeat(40);
 
 test("RC workflow is own-repo PR-only, read-only, with explicit head checkout on every runner", () => {
@@ -26,6 +28,32 @@ test("RC checks this push's changes instead of rebuilding for documentation-only
   const workflow = fs.readFileSync(path.join(__dirname, "../.github/workflows/rc-build-only.yml"), "utf8");
   assert.match(workflow, /github\.event\.before \|\| github\.event\.pull_request\.base\.sha/);
   assert.equal((workflow.match(/needs\.candidate\.outputs\.build == 'true'/g) || []).length, 3);
+});
+
+test("packaged runtime validation requires actual Vite entries and fails on a missing Windows quota surface", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "community-rc-runtime-"));
+  const previous = [process.env.VITE_INSFORGE_BASE_URL, process.env.VITE_INSFORGE_ANON_KEY];
+  try {
+    process.env.VITE_INSFORGE_BASE_URL = OWN_BASE_URL;
+    process.env.VITE_INSFORGE_ANON_KEY = "synthetic-public-client";
+    for (const file of requiredRuntimeFiles("windows").filter(file => !file.endsWith("quota.html"))) {
+      const target = path.join(root, "tokentracker", file);
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.writeFileSync(target, "synthetic payload");
+    }
+    assert.throws(() => verifyRuntime(root, path.join(root, "missing.dll"), "windows"), /quota\.html/);
+    for (const platform of ["linux", "macos"]) {
+      assert.ok(requiredRuntimeFiles(platform).includes("dashboard/dist/share.html"));
+      assert.ok(!requiredRuntimeFiles(platform).some(file => /(?:quota|pet)\.html$/.test(file)));
+    }
+    const vite = fs.readFileSync(path.join(__dirname, "../dashboard/vite.config.js"), "utf8");
+    assert.match(vite, /if \(process\.env\.TOKENTRACKER_BUILD_PET === "1"\) \{\s*rollupInput\.pet[\s\S]*?rollupInput\.quota/);
+  } finally {
+    for (const [i, key] of ["VITE_INSFORGE_BASE_URL", "VITE_INSFORGE_ANON_KEY"].entries()) {
+      if (previous[i] === undefined) delete process.env[key]; else process.env[key] = previous[i];
+    }
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
 
 async function fixture(fn) {

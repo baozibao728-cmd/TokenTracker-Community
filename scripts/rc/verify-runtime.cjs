@@ -10,13 +10,20 @@ function walk(root) {
     return entry.isDirectory() ? walk(file) : entry.isFile() ? [file] : [];
   });
 }
+function requiredRuntimeFiles(platform) {
+  if (!["windows", "macos", "linux"].includes(platform)) throw new Error("Unknown runtime platform.");
+  const required = ["bin/tracker.js", "package.json", "src/lib/runtime-config.js",
+    "src/lib/release-client-config.json", "dashboard/dist/index.html", "dashboard/dist/share.html"];
+  // Vite's pet/quota entries are opt-in for Windows only; neither macOS nor
+  // Linux uses these standalone surfaces. Require the actual build inputs.
+  if (platform === "windows") required.push("dashboard/dist/pet.html", "dashboard/dist/quota.html");
+  return required;
+}
 function verifyRuntime(root, nativeBinary, platform) {
   const expected = validateReleaseClientConfig();
   const version = require("../../package.json").version;
   const tracker = path.join(root, "tokentracker");
-  const required = ["bin/tracker.js", "package.json", "src/lib/runtime-config.js",
-    "src/lib/release-client-config.json", "dashboard/dist/index.html", "dashboard/dist/quota.html"];
-  if (platform === "windows") required.push("dashboard/dist/pet.html");
+  const required = requiredRuntimeFiles(platform);
   for (const file of required) {
     if (!fs.statSync(path.join(tracker, file)).isFile()) throw new Error(`Missing runtime payload: ${file}`);
   }
@@ -51,4 +58,4 @@ if (require.main === module) {
   try { verifyRuntime(...process.argv.slice(2)); }
   catch (error) { console.error(error.message); process.exitCode = 1; }
 }
-module.exports = { verifyRuntime };
+module.exports = { verifyRuntime, requiredRuntimeFiles };
