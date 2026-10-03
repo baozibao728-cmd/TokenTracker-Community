@@ -8,7 +8,9 @@ const { names, record, assemble, verify } = require("../scripts/rc/artifacts.cjs
 const { requiresBuild } = require("../scripts/rc/changes.cjs");
 const { verifyRuntime, requiredRuntimeFiles } = require("../scripts/rc/verify-runtime.cjs");
 const { OWN_BASE_URL } = require("../scripts/prepare-release-client-config.cjs");
+const { verifyLinuxPackageMetadata } = require("../scripts/rc/linux-package.cjs");
 const sha = "a".repeat(40);
+const version = require("../package.json").version;
 
 test("RC workflow is own-repo PR-only, read-only, with explicit head checkout on every runner", () => {
   const workflow = fs.readFileSync(path.join(__dirname, "../.github/workflows/rc-build-only.yml"), "utf8");
@@ -53,6 +55,16 @@ test("packaged runtime validation requires actual Vite entries and fails on a mi
       if (previous[i] === undefined) delete process.env[key]; else process.env[key] = previous[i];
     }
     fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("Linux validates Tauri package metadata independently from the Cargo executable name", () => {
+  for (const [format, architecture] of [["deb", "amd64"], ["rpm", "x86_64"]]) {
+    verifyLinuxPackageMetadata(format, "token-tracker-community", version, architecture);
+    for (const name of ["tokentracker", "tokentracker-community-linux"])
+      assert.throws(() => verifyLinuxPackageMetadata(format, name, version, architecture), /identity\/version\/architecture mismatch/);
+    assert.throws(() => verifyLinuxPackageMetadata(format, "token-tracker-community", "0.0.0", architecture), /mismatch/);
+    assert.throws(() => verifyLinuxPackageMetadata(format, "token-tracker-community", version, "arm64"), /mismatch/);
   }
 });
 

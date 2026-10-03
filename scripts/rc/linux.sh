@@ -41,19 +41,16 @@ shopt -s nullglob
 image="$(pick_one "$bundle"/appimage/*.AppImage)"
 deb="$(pick_one "$bundle"/deb/*.deb)"
 rpm_pkg="$(pick_one "$bundle"/rpm/*.rpm)"
+test "$(basename "$image")" = "TokenTracker Community_${version}_amd64.AppImage"
 cp "$image" "$work/app.AppImage"
 chmod +x "$work/app.AppImage"
 (cd "$work" && ./app.AppImage --appimage-extract >/dev/null)
 verify_payload AppImage "$work/squashfs-root"
-test "$(dpkg-deb -f "$deb" Version)" = "$version"
-test "$(dpkg-deb -f "$deb" Package)" = 'tokentracker-community-linux'
-test "$(dpkg-deb -f "$deb" Architecture)" = amd64
+node scripts/rc/linux-package.cjs deb "$(dpkg-deb -f "$deb" Package)" "$(dpkg-deb -f "$deb" Version)" "$(dpkg-deb -f "$deb" Architecture)"
 mkdir -p "$work/deb"
 dpkg-deb -x "$deb" "$work/deb"
 verify_payload deb "$work/deb"
-test "$(rpm -qp --qf '%{NAME}' "$rpm_pkg")" = 'tokentracker-community-linux'
-test "$(rpm -qp --qf '%{VERSION}' "$rpm_pkg")" = "$version"
-test "$(rpm -qp --qf '%{ARCH}' "$rpm_pkg")" = x86_64
+node scripts/rc/linux-package.cjs rpm "$(rpm -qp --qf '%{NAME}' "$rpm_pkg")" "$(rpm -qp --qf '%{VERSION}' "$rpm_pkg")" "$(rpm -qp --qf '%{ARCH}' "$rpm_pkg")"
 mkdir -p "$work/rpm"
 rpm_abs="$(realpath "$rpm_pkg")"
 (cd "$work/rpm" && rpm2cpio "$rpm_abs" | cpio -idm --quiet)
