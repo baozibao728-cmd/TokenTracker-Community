@@ -775,7 +775,7 @@ Schema/function/ACL aggregate SHA-256：`911cc85523ad7e1acce23875d78ac93b0b0198b
 GitHub REST 重新核对发现 repository Actions 已 enabled=true，远端 11 个 workflow 全部 active，不能沿用前期页面“未启用”结论，也不能假设本地禁用已影响 main。已先在自有仓库逐项手动禁用 10 个非普通 CI workflow：CodeQL、Labeler、三个 leaderboard 运营任务、Lock closed issues、npm publish、两个 release workflows、Stale；复查全部 disabled_manually。没有正在运行的非授权 workflow 需要取消。只保留 `CI` active；不 dispatch 发布 workflow，不恢复继承定时任务。
 
 - Repository Variable `TOKENTRACKER_COMMUNITY_INSFORGE_BASE_URL` 已设置，并 GET 确认实际值为 `https://tc79bxhm.ap-southeast.insforge.app`。
-- Repository Secret `TOKENTRACKER_COMMUNITY_INSFORGE_ANON_KEY` 已从自有项目公开 ANON_KEY 安全取得，在进程内以 GitHub public encryption key/LibSodium sealed box 加密后设置；未使用管理 key 或 CLI user key作为客户端值，未输出/保存 Secret 值。只核对 metadata 存在，实际 runner build 验证仍待下节记录。
+- Repository Secret `TOKENTRACKER_COMMUNITY_INSFORGE_ANON_KEY` 已从自有项目公开 ANON_KEY 安全取得，在进程内以 GitHub public encryption key/LibSodium sealed box 加密后设置；未使用管理 key 或 CLI user key作为客户端值，未输出/保存 Secret 值。Ubuntu/macOS 的实际 own client-config 校验与 Dashboard build 成功，配置有效性有 runner 证据，未仅凭 Secret metadata 判定。
 - 本机 GitHub 认证复用正常 Git credential helper，值仅留进程内，不记录在参数、文件、报告或源码。
 
 ### 13.3 固定提交与实际 CI
@@ -790,7 +790,13 @@ GitHub REST 重新核对发现 repository Actions 已 enabled=true，远端 11 �
 - 最小修复仅为 Rust 格式和测试夹具/契约：明确注入 mock URL/public credential 并恢复环境，保留 token/count/cache/header/error/backoff 断言；GNOME 验证文档所规定的安装 symlink destination 与独立 UUID；macOS 验证固定 7682 同端口并拒绝系统 CLI fallback；运营门禁改为明确禁止自动触发、backend URL/credentials、网络/SQL/GitHub 写入，原 upstream SQL/Edge 的原子 reconciliation 断言继续保留。没有跳过失败、重启官方任务、放宽权限或改产品算法。
 - 本机定向 121 项 fixture 回归为 120 PASS/1 FAIL：Reasonix 测试读取到本机现有 DSH 样本，首次两台 clean runner 没有该失败；没有为此改 Provider。另 Windows CRLF checkout 使原未修改的 upstream total-rollup 静态断言失败，首次 clean runner 同项通过；没有转换 Foundation 源码或弱化断言。GNOME/macOS 定向 3/3 PASS。最终 gate 以修复后真实 clean runner 为准。
 
-修复提交及后续 CI 结果待实际运行后补充；后续 docs-only head 如产生，将与实际已测试源码 SHA 分别记录。
+第一次修复提交：`a5556fd724b610a004da9ae4e7032a65d7966ae1`（`fix: align cutover CI fixtures and Rust formatting`），已非 force push。第二轮 CI：[37112511257](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37112511257)，PR head 为此 SHA，runner checkout PR merge SHA 为 `2cd2646642ec9e969836dace74a8ae54fcbfc73a`。
+
+- Windows 再次 PASS。Ubuntu/macOS 的 root suite 原 16 个失败全部关闭，仅新增 1 个静态 identity 断言失败：`TOKENTRACKER_DATA_ROOT` 与目录须位于同一行的旧正则不适应 rustfmt 换行。Ubuntu 3207 PASS/1 FAIL/6 既有平台 skip；macOS 3211 PASS/1 FAIL/2 既有平台 skip。
+- Linux fmt/clippy PASS；实际 Rust 测试暴露 2 个 AppImage 路径夹具仍使用官方 `TokenTracker` 产品目录，未对齐已确定的 `TokenTracker Community` 目录。没有将它们标为平台环境故障，也没有修改实际路径查找逻辑来兼容官方目录。
+- 第二次最小修复只改测试：正则精确匹配环境变量调用及独立目录，允许格式换行；AppImage 夹具使用 Community 产品名，并增加不能自动探测官方产品目录的断言。Node identity/workflow 定向 12/12 PASS；本机没有 Rust 工具链，Rust 结果等待真实 Linux runner，不代写 PASS。
+
+后续 CI 结果待实际运行后补充；后续 docs-only head 如产生，将与实际已测试源码 SHA 分别记录。
 
 ### 13.4 下一阶段边界
 

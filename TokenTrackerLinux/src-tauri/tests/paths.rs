@@ -59,7 +59,7 @@ fn index_of(candidates: &[PathBuf], needle: &Path) -> Option<usize> {
 #[test]
 fn appimage_resource_dir_is_probed_first() {
     let roots = RuntimeRoots {
-        resource_dir: Some(PathBuf::from("/tmp/.mount_abc123/usr/lib/TokenTracker")),
+        resource_dir: Some(PathBuf::from("/tmp/.mount_abc123/usr/lib/TokenTracker Community")),
         appdir: Some(PathBuf::from("/tmp/.mount_abc123")),
         exe_dir: Some(PathBuf::from("/tmp/.mount_abc123/usr/bin")),
         project_dir: Some(PathBuf::from("/repo/TokenTrackerLinux")),
@@ -70,7 +70,7 @@ fn appimage_resource_dir_is_probed_first() {
     assert_eq!(
         candidates.first(),
         Some(&PathBuf::from(
-            "/tmp/.mount_abc123/usr/lib/TokenTracker/EmbeddedServer"
+            "/tmp/.mount_abc123/usr/lib/TokenTracker Community/EmbeddedServer"
         )),
         "Tauri's own resource directory is authoritative for bundled builds"
     );
@@ -91,7 +91,7 @@ fn appimage_appdir_is_probed_when_no_resource_dir_is_available() {
     // product-name variant must be probed and must come before the Arch name.
     let product = index_of(
         &candidates,
-        &PathBuf::from("/tmp/.mount_xyz789/usr/lib/TokenTracker/EmbeddedServer"),
+        &PathBuf::from("/tmp/.mount_xyz789/usr/lib/TokenTracker Community/EmbeddedServer"),
     )
     .expect("the productName layout must be a candidate");
     let arch = index_of(
@@ -104,6 +104,12 @@ fn appimage_appdir_is_probed_when_no_resource_dir_is_available() {
         product < arch,
         "AppImage bundles use productName; got {candidates:?}"
     );
+    assert!(
+        !candidates.contains(&PathBuf::from(
+            "/tmp/.mount_xyz789/usr/lib/TokenTracker/EmbeddedServer"
+        )),
+        "Community must not probe the official client's product directory"
+    );
 }
 
 /// `resource_dir()` is the primary lookup, but it is not the only one: an
@@ -112,7 +118,7 @@ fn appimage_appdir_is_probed_when_no_resource_dir_is_available() {
 fn appimage_resolves_from_appdir_without_a_resource_dir() {
     let temp = TempDir::new("appimage");
     let appdir = temp.path().join("mount");
-    install_runtime(&appdir.join("usr/lib/TokenTracker/EmbeddedServer"));
+    install_runtime(&appdir.join("usr/lib/TokenTracker Community/EmbeddedServer"));
 
     let resolved = resolve_runtime_paths_from(&RuntimeRoots {
         resource_dir: None,
@@ -124,7 +130,7 @@ fn appimage_resolves_from_appdir_without_a_resource_dir() {
 
     assert_eq!(
         resolved,
-        runtime_paths_in(&appdir.join("usr/lib/TokenTracker/EmbeddedServer"))
+        runtime_paths_in(&appdir.join("usr/lib/TokenTracker Community/EmbeddedServer"))
     );
 }
 

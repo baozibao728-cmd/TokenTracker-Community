@@ -240,7 +240,10 @@ test('Linux release identity coexists with the official client', () => {
   assert.match(oauth, /tokentracker-community-appimage\.desktop/);
   assert.match(oauth, /x-scheme-handler\/tokentracker-community/);
   assert.match(server, /const PREFERRED_PORT: u16 = 17681;/);
-  assert.match(server, /TOKENTRACKER_DATA_ROOT.*\.tokentracker-community/);
+  assert.match(
+    server,
+    /command\.env\(\s*"TOKENTRACKER_DATA_ROOT",\s*home\.join\("\.tokentracker-community"\),?\s*\);/,
+  );
   assert.doesNotMatch(server, /PREFERRED_PORT: u16 = 17680/);
   assert.match(bundler, /\.tmp\/release-client-config\.json/);
   assert.match(bundler, /src\/lib\/release-client-config\.json/);
