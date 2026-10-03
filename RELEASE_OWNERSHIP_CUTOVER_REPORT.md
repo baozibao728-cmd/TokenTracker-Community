@@ -2,7 +2,7 @@
 
 日期：2026-10-03。结论：**BLOCKED（正式发布条件尚未全部满足）**。
 
-Ownership Cutover、本地 Windows RC 构建及真实安装共存检查已完成。最新同步偏好修复和定向原生回调/重启验收 **PASS**；管理 API key 已完成轮换、同源码环境刷新及旧 key 到期拒绝验证（第 12 节 PASS）。第 13 节进入已授权的自有分支提交、Draft PR 与普通 CI 阶段；此前 RC 来自基于 `6a9c47160d350bb793e9d99e2cfc3d150f69fda3` 的工作区，未在本轮重建。没有修改数据库 schema、已执行 migration、Edge 源码或 Community 业务契约；没有 merge main、tag、GitHub Release 或正式发布。各阶段历史证据保留，最新 Git/Actions 状态以第 13 节为准。
+Ownership Cutover、本地 Windows RC 构建及真实安装共存检查已完成。最新同步偏好修复和定向原生回调/重启验收 **PASS**；管理 API key 已完成轮换、同源码环境刷新及旧 key 到期拒绝验证（第 12 节 PASS）。第 13 节的自有分支提交、Draft PR、Actions 配置和普通 CI 已完成，固定源码提交四个 job **PASS**；此前 RC 来自基于 `6a9c47160d350bb793e9d99e2cfc3d150f69fda3` 的工作区，未在本轮重建。没有修改数据库 schema、已执行 migration、Edge 源码或 Community 业务契约；没有 merge main、tag、GitHub Release 或正式发布。各阶段历史证据保留，最新 Git/Actions 状态以第 13 节为准，正式三平台 build-only 打包属于下一阶段。
 
 ## 1. Collision & Ownership Audit
 
@@ -143,9 +143,9 @@ Windows 文件锁曾导致一次生产 build 和 `Compress-Archive` 失败：重
 
 ## 7. 正式发布阻塞及人工验收
 
-1. 远端 Actions 的 own-project Variable/Secret 不存在，fork Actions 未启用；本轮 local workflow 修改尚未提交/推送，固定 commit CI 和三平台正式构建没有实测通过。
+1. Actions 配置与普通 CI 原阻塞已关闭：自有 Variable/public anon Secret 已配置，Draft PR 的固定 source SHA 四个 job PASS。下一阶段专用三平台 build-only 正式打包仍未执行，不能以普通 CI 代替。
 2. 既有原生最小 Community 生命周期、重启会话、logout 门禁与 Google OAuth 用户流程经 review 接受，详见第 10 节。本轮同步偏好修复和新包定向验收单独记录于第 11 节；不重跑完整双用户生命周期，不以开发前端结果替代二进制证据。
-3. 首发仍按三平台准备；macOS/Linux 当前只有源码/静态验证，没有本机条件编译/安装，必须在相应 runner/机器完成真实构建与测试。Windows 安装器未签名，状态已明确记录。
+3. 首发仍按三平台准备；macOS/Linux 普通 runner 编译与测试已 PASS，正式包构建、安装和原生 runtime 验收尚未执行。Windows 安装器未签名，macOS 发布签名/notarization 未验证，状态不隐藏。
 4. 暴露的自有项目管理 key 已按本轮追加授权完成轮换、22 个 Edge 同源码环境刷新及实际失效验证；凭据处置 PASS，见第 12 节。第 11 节保留上一轮停止条件及访问记录边界。
 
 已接受的原生 UI、安装共存和手动更新结果不再标为等待验收。本轮只定向补齐同步偏好及安全处置；手动检查更新的已复现失败保留，完整下载升级仍为首发 NOT_TESTED 限制。没有要求再次创建社区或卸载产品。
@@ -391,7 +391,7 @@ Windows 文件锁曾导致一次生产 build 和 `Compress-Archive` 失败：重
 
 本轮扫描 155 个 modified/untracked 待审查文件：没有命中管理凭据、完整 JWT、私钥、敏感字面量赋值或本机个人绝对路径；未发现 backend/ 或构建产物被意外纳入 diff。`git diff --check` PASS；LF/CRLF 提示不属于 whitespace error。22 个自有 Edge 均 active，云端代码 SHA-256 全部与 manifest 一致；migration history 仍只有 `20260930000000` 与 `20261001000000`。
 
-### 9.3 Actions 状态及下阶段方案
+### 9.3 历史 Actions 状态及当时下阶段方案（最新见第 13 节）
 
 本轮只读访问目标仓库 `baozibao728-cmd/TokenTracker-Community`：
 
@@ -422,10 +422,10 @@ Windows 文件锁曾导致一次生产 build 和 `Compress-Archive` 失败：重
 - Final Windows RC Runtime：既有原生流程经 review 接受；当前 `5221732B…` 包仅对同步偏好做定向复验，结果见第 11 节，不宣称完整下载升级已验证。
 - Update source：代码和归属测试 PASS；新包启动检查实际 HTTP 404、用户手动 UI 失败及证据边界见第 10.3 节。
 - Full downloaded upgrade：NOT_TESTED。
-- Actions configuration：BLOCKED，两项配置不存在、Actions 未启用。
-- Actual CI：NOT_RUN。
-- macOS/Linux：仅既有源码/静态验证；无真实 Xcode/Cargo runner 构建和安装证据。
-- 正式发布：BLOCKED；不创建 tag/Release，不推送、不部署。
+- Actions configuration：PASS；两项自有配置已设置且实际 runner build 成功，只启用普通 CI，见第 13 节。
+- Actual ordinary CI：PASS；四个 job 完成，source/checkout SHA 与 run URL 见第 13 节。
+- macOS/Linux：普通 Xcode/Rust runner 编译与测试 PASS；正式打包、安装和原生运行仍 NOT_TESTED。
+- 正式发布：BLOCKED；只推送已授权的 cutover 开发分支，不创建 tag/Release、不 merge main、不部署。
 
 ## 10. 既有有效证据：Windows OAuth 日志补修（512DD534… RC）
 
@@ -796,8 +796,34 @@ GitHub REST 重新核对发现 repository Actions 已 enabled=true，远端 11 �
 - Linux fmt/clippy PASS；实际 Rust 测试暴露 2 个 AppImage 路径夹具仍使用官方 `TokenTracker` 产品目录，未对齐已确定的 `TokenTracker Community` 目录。没有将它们标为平台环境故障，也没有修改实际路径查找逻辑来兼容官方目录。
 - 第二次最小修复只改测试：正则精确匹配环境变量调用及独立目录，允许格式换行；AppImage 夹具使用 Community 产品名，并增加不能自动探测官方产品目录的断言。Node identity/workflow 定向 12/12 PASS；本机没有 Rust 工具链，Rust 结果等待真实 Linux runner，不代写 PASS。
 
-后续 CI 结果待实际运行后补充；后续 docs-only head 如产生，将与实际已测试源码 SHA 分别记录。
+第二次修复提交：`8f7566e23443ebdba06ec9fdb353353f15e93488`（`test: align Linux runtime fixtures with community identity`）。第三轮 [37112921753](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37112921753) 的 Linux fmt 发现新增较长夹具路径还需拆行；依实际 rustfmt diff 提交 `2800a41103148fc9815577df9ea73de9396fce84`（`style: format community AppImage test path`），只改该测试行格式。
+
+第四轮 [37113059002](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37113059002)，PR head=`2800a41103148fc9815577df9ea73de9396fce84`，runner checkout=`76a7ecf52fe7cada9bf5cbffba6e404cafd3a708`：Linux Rust fmt/clippy/69 tests PASS；macOS root suite 3212 PASS/0 FAIL/2 既有平台 skip、identity 3/3、Xcode 201/201 PASS；Windows Node 37/37、xUnit 64/64、SDK 8.0.425 Release build PASS。Ubuntu root suite 3208 PASS/0 FAIL/6 既有平台 skip；后续 UI hardcode 检查失败，指出新增 Hook 测试夹具包含无用 JSX 展示文字。
+
+第三次最小修复：`75b8d2525527645c384748253e50107a844861a3`（`test: remove unused UI text from sync preference fixture`），该测试组件只负责挂载 Hook，不测试展示文字，因此返回 null；11 项原测试断言、UI hardcode baseline 与门禁保持。定向 11/11、UI hardcode、architecture guardrails、敏感信息扫描、diff check 本地 PASS。没有为了通过检查更新 hardcode baseline 或排除该测试文件。
+
+第五轮普通 CI **SUCCESS**：[37113419380](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37113419380)。固定 source/PR head：`75b8d2525527645c384748253e50107a844861a3`；四个 runner 实际 checkout 均为 `21633c601eb9a704641a56f848221326964926d3`。这是 GitHub 为 PR 生成的测试 merge ref，不代表 main 被合并；base main 始终为 `6a9c47160d350bb793e9d99e2cfc3d150f69fda3`。
+
+| CI job | 实际结果 | 证据 |
+|---|---|---|
+| Ubuntu test + validate + build | PASS；typecheck、own client-config、Dashboard build、13 Skills/32 limits/41 Auth-prefs-upload/16 bot tests；root 3208 PASS/0 FAIL/6 既有平台 skip；copy/locale/UI hardcode/architecture/version/bot frames 与附加 architecture 4/4 PASS | [job 111175542976](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37113419380/job/111175542976) |
+| Linux client (Rust) | PASS；fmt、clippy --all-targets -D warnings、cargo test --locked，69 PASS/0 FAIL/0 ignored | [job 111175542954](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37113419380/job/111175542954) |
+| macOS unit tests | PASS；own client-config 与 Dashboard build、root 3212 PASS/0 FAIL/2 既有平台 skip、identity 3/3、Xcode 201/201 | [job 111175542830](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37113419380/job/111175542830) |
+| Windows build | PASS；Node 37/37、完整 xUnit 64/64（含日志/updater/identity）、实际 SDK 8.0.425 与 Release build；0 warnings/0 errors | [job 111175542940](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37113419380/job/111175542940) |
+
+原有平台条件 skip 数量保持，没有新增 skip、continue-on-error 或放宽/删除门禁。完整 Dashboard suite 未加入本轮 CI；两项已接受全球排行榜基线失败（period changes cache timeout、Preloaded User missing）保留，未修改它们。普通 CI 不包含 backend redeploy/migration，不将它等同三平台正式 release packaging 或完整安装升级验收。
+
+收尾文档提交只更新本报告，具有不同的 PR head SHA，会由同一普通 CI 自动独立检查。上表固定记录已通过的**源码提交**；最终文档 head、其实际 runner checkout/run URL/status 将记录在同一 [Draft PR 验证摘要](https://github.com/baozibao728-cmd/TokenTracker-Community/pull/1)及交付回复。不会用源码提交的绿色结果代替新文档 head 的结果；无 force push、rebase 或 squash。
+
+Git 阶段无已知阻塞，可交 review。171 个 PR 变更文件的 key/JWT/private-key/个人路径扫描零命中，版本仍为 1.2.0，diff check PASS；backend diff 为空，没有临时 helpers、RC 产物或凭据进入 Git。报告收尾后再次核对 remote branch 与本地一致、working tree clean；只有普通 CI active，其余 10 个继承 workflow disabled_manually。正式发布仍 BLOCKED，下一阶段范围如下。
 
 ### 13.4 下一阶段边界
 
 普通 CI 全绿后停止交 review。下一阶段在获授权的固定 commit 上新增专用三平台 build-only RC：验证 required client config，复用现有正式 Windows/macOS/Linux 包装流程，输出 installer/DMG/AppImage/deb/rpm 与 SHA-256 为 Actions artifacts；禁止创建 tag/Release、上传 release assets、公开发布、npm/Homebrew 通知或自动更新副作用。不会使用现有自动公开 release workflow 试跑，不将首发范围缩为 Windows-only。Windows 未签名、完整下载升级链 NOT_TESTED、两项已知全球排行榜基线失败继续保留；三平台正式包装/运行验收尚未通过。
+
+具体实施范围（本轮仅计划，未添加或运行）：
+
+1. Review 当前 Draft PR 与固定 source commit。新增独立 build-only workflow，使用手动输入的完整 40 位 commit SHA，checkout 后核对实际 HEAD；只在自有仓库运行，contents:read。构建与其校验均固定在同一 source SHA，不在 job 内 pull/rebase 最新分支。
+2. 三个 job 先执行现有 version/client-config guard，公开客户端配置来自已验证的 repository Variable/Secret。Windows 使用 .NET 8 正式 self-contained win-x64 publish、既有 bundle-node.ps1 与 Inno Setup；macOS 使用既有 bundle-node.sh、xcodegen/icon patch、Release Xcode build、现有 ad-hoc sign 与 create-dmg；Linux 使用现有 bundle:node、Tauri build 与包内容校验，产出 x86_64 AppImage/deb/rpm。
+3. 复用打包脚本与原 release workflow 的构建步骤，不能直接调用有 tag/Release 上传副作用的 release-windows.yml。仅以 Actions artifacts 收集三平台产物、大小/架构/SHA-256 和构建日志，不授予 contents:write，不设置 publish job，不调用 gh release/git tag/npm publish/Homebrew 或自动更新渠道。
+4. 等三个 build-only job 完成后单独 review 产物及平台安装/运行验证范围；macOS ad-hoc 签名不等于 Apple Developer 签名/notarization，Windows 未签名不改写成已签名。正式 tag/Release、资产上传、自动更新及任何签名凭据配置仍需后续明确授权。
