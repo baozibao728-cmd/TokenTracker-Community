@@ -9,6 +9,7 @@ const { requiresBuild } = require("../scripts/rc/changes.cjs");
 const { verifyRuntime, requiredRuntimeFiles } = require("../scripts/rc/verify-runtime.cjs");
 const { OWN_BASE_URL } = require("../scripts/prepare-release-client-config.cjs");
 const { verifyLinuxPackageMetadata } = require("../scripts/rc/linux-package.cjs");
+const { pickOne } = require("../scripts/rc/pick-one.cjs");
 const sha = "a".repeat(40);
 const version = require("../package.json").version;
 
@@ -66,6 +67,18 @@ test("Linux validates Tauri package metadata independently from the Cargo execut
     assert.throws(() => verifyLinuxPackageMetadata(format, "token-tracker-community", "0.0.0", architecture), /mismatch/);
     assert.throws(() => verifyLinuxPackageMetadata(format, "token-tracker-community", version, "arm64"), /mismatch/);
   }
+});
+
+test("Linux package inventory rejects multiple files instead of silently choosing the first", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "community-rc-inventory-"));
+  try {
+    const files = ["one.rpm", "two.rpm"].map(file => path.join(root, file));
+    for (const file of files) fs.writeFileSync(file, "synthetic package");
+    assert.equal(pickOne("rpm", [files[0]]), files[0]);
+    assert.throws(() => pickOne("rpm", files), /exactly one/);
+    assert.throws(() => pickOne("rpm", []), /exactly one/);
+    assert.throws(() => pickOne("rpm", [root]), /exactly one/);
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });
 
 async function fixture(fn) {
