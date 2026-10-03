@@ -31,8 +31,28 @@ env:
   VITE_INSFORGE_ANON_KEY: ${{ secrets.TOKENTRACKER_COMMUNITY_INSFORGE_ANON_KEY }}
 
 jobs:
-  windows:
+  candidate:
     if: github.repository == 'baozibao728-cmd/TokenTracker-Community' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.changes.outputs.build }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - run: node scripts/rc/checkout.cjs
+      # PR paths inspect the whole PR, so use this push's before/head range too.
+      # Documentation-only synchronize events must not rebuild all three clients.
+      - id: changes
+        env:
+          RC_COMPARE_SHA: ${{ github.event.before || github.event.pull_request.base.sha }}
+        run: node scripts/rc/changes.cjs
+
+  windows:
+    needs: candidate
+    if: needs.candidate.outputs.build == 'true' && github.repository == 'baozibao728-cmd/TokenTracker-Community' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: windows-latest
     timeout-minutes: 60
     steps:
@@ -91,7 +111,8 @@ jobs:
           retention-days: 30
 
   macos:
-    if: github.repository == 'baozibao728-cmd/TokenTracker-Community' && github.event.pull_request.head.repo.full_name == github.repository
+    needs: candidate
+    if: needs.candidate.outputs.build == 'true' && github.repository == 'baozibao728-cmd/TokenTracker-Community' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: macos-26
     timeout-minutes: 90
     steps:
@@ -136,7 +157,8 @@ jobs:
           retention-days: 30
 
   linux:
-    if: github.repository == 'baozibao728-cmd/TokenTracker-Community' && github.event.pull_request.head.repo.full_name == github.repository
+    needs: candidate
+    if: needs.candidate.outputs.build == 'true' && github.repository == 'baozibao728-cmd/TokenTracker-Community' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:

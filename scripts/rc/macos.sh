@@ -18,7 +18,7 @@ done < <(find "$app/Contents/Resources/EmbeddedServer" -type f \( -name node -o 
 codesign --force --timestamp=none --entitlements TokenTrackerWidget/TokenTrackerWidget.entitlements --sign - "$appex"
 codesign --force --timestamp=none --entitlements TokenTrackerBar/TokenTrackerBar.entitlements --sign - "$app"
 codesign --verify --deep --strict --verbose=2 "$app"
-codesign -d --entitlements - "$appex" > build/widget-entitlements.plist
+codesign -d --entitlements - --xml "$appex" > build/widget-entitlements.plist
 /usr/libexec/PlistBuddy -c 'Print :com.apple.security.app-sandbox' build/widget-entitlements.plist | grep -Fx true
 bash scripts/create-dmg.sh "$app"
 cd "$repo_root"

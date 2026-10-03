@@ -5,17 +5,27 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { names, record, assemble, verify } = require("../scripts/rc/artifacts.cjs");
+const { requiresBuild } = require("../scripts/rc/changes.cjs");
 const sha = "a".repeat(40);
 
 test("RC workflow is own-repo PR-only, read-only, with explicit head checkout on every runner", () => {
   const workflow = fs.readFileSync(path.join(__dirname, "../.github/workflows/rc-build-only.yml"), "utf8");
   assert.match(workflow, /pull_request:/);
   assert.match(workflow, /contents: read/);
-  assert.equal((workflow.match(/ref: \$\{\{ github\.event\.pull_request\.head\.sha \}\}/g) || []).length, 4);
-  assert.equal((workflow.match(/head\.repo\.full_name == github\.repository/g) || []).length, 4);
+  assert.equal((workflow.match(/ref: \$\{\{ github\.event\.pull_request\.head\.sha \}\}/g) || []).length, 5);
+  assert.equal((workflow.match(/head\.repo\.full_name == github\.repository/g) || []).length, 5);
   assert.doesNotMatch(workflow, /contents: write|pull_request_target|workflow_dispatch|workflow_call|release-(?:dmg|windows)\.yml|gh release|git tag|npm publish|continue-on-error/);
   assert.doesNotMatch(workflow, /paths:[\s\S]*?['"](?:\*\*\.md|RELEASE_OWNERSHIP_CUTOVER_REPORT\.md)['"]/);
   assert.match(workflow, /digest-mismatch: error/);
+});
+
+test("RC checks this push's changes instead of rebuilding for documentation-only PR updates", () => {
+  assert.equal(requiresBuild(["RELEASE_OWNERSHIP_CUTOVER_REPORT.md", "RELEASE_NOTES_DRAFT.md"]), false);
+  for (const file of ["dashboard/src/main.jsx", "TokenTrackerBar/project.yml", "TokenTrackerWin/TokenTrackerWin.csproj", "TokenTrackerLinux/src-tauri/tauri.conf.json", "scripts/rc/linux.sh", "package-lock.json", ".github/workflows/rc-build-only.yml"])
+    assert.equal(requiresBuild([file]), true);
+  const workflow = fs.readFileSync(path.join(__dirname, "../.github/workflows/rc-build-only.yml"), "utf8");
+  assert.match(workflow, /github\.event\.before \|\| github\.event\.pull_request\.base\.sha/);
+  assert.equal((workflow.match(/needs\.candidate\.outputs\.build == 'true'/g) || []).length, 3);
 });
 
 async function fixture(fn) {
