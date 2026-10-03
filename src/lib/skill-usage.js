@@ -24,6 +24,7 @@ const os = require("node:os");
 const path = require("node:path");
 const crypto = require("node:crypto");
 const readline = require("node:readline");
+const { resolveTrackerRoot } = require("./tracker-paths");
 
 const USAGE_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 const SKILL_TOKEN_KEYS = [
@@ -39,7 +40,7 @@ function claudeProjectsDir(home) {
 }
 
 function dataDir(home) {
-  return path.join(home || os.homedir(), ".tokentracker", "skills");
+  return path.join(resolveTrackerRoot({ home: home || os.homedir() }), "skills");
 }
 
 function usageCachePath(home) {

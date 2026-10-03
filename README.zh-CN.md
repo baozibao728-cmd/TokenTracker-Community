@@ -1,3 +1,5 @@
+> TokenTracker-Community is an independent MIT fork of [TokenTracker](https://github.com/xiufengsun/TokenTracker). Current fork downloads/support: [repository](https://github.com/baozibao728-cmd/TokenTracker-Community). The inherited npm/Homebrew instructions refer to upstream packages; Community uses its own backend and does not currently support cloud badges/share/automatic anticheat.
+
  <div align="center">
 
 # Token Tracker
@@ -15,7 +17,6 @@
 [![Platform](https://img.shields.io/badge/macOS-supported-lightgrey.svg)](https://www.apple.com/macos/)
 [![GitHub stars](https://img.shields.io/github/stars/xiufengsun/TokenTracker?style=social)](https://github.com/xiufengsun/TokenTracker/stargazers)
 [![阮一峰周刊 #393 收录](https://img.shields.io/badge/%E6%94%B6%E5%BD%95-%E9%98%AE%E4%B8%80%E5%B3%B0%E5%91%A8%E5%88%8A%20%23393-FF6B35?logo=rss&logoColor=white)](https://github.com/ruanyf/weekly/blob/master/docs/issue-393.md)
-[![作者 tokens](https://srctyff5.us-east.insforge.app/functions/tokentracker-badge-svg?user_id=0652839f-d19f-4f67-af85-6b7675875443&metric=tokens&compact=1&label=author%20tokens)](https://github.com/xiufengsun/TokenTracker)
 
 <br/>
 
@@ -54,9 +55,9 @@ npx tokentracker-cli
 - 🧩 *可选：* Skills 面板——浏览 250+ 公开 skill，并在 Claude · Codex · Grok · Antigravity · Gemini · OpenCode · Hermes 之间同步
 
 > **想要原生桌面 App？**
-> - **macOS** —— [下载 `TokenTrackerBar.dmg`](https://github.com/xiufengsun/TokenTracker/releases/latest/download/TokenTrackerBar.dmg) → 拖入「应用程序」即可。包含桌面小组件、菜单栏状态图标，以及同一套 Dashboard（跑在 WKWebView 里）。
-> - **Windows** —— [下载 `TokenTracker-Setup.exe`](https://github.com/xiufengsun/TokenTracker/releases/latest/download/TokenTracker-Setup.exe) → 运行免管理员的单用户安装包即可。系统托盘 App，Dashboard 跑在 WebView2 里。便携版 zip 见[发布页](https://github.com/xiufengsun/TokenTracker/releases/latest)。
-> - **Linux** —— [下载 `TokenTracker-linux-x86_64.AppImage`](https://github.com/xiufengsun/TokenTracker/releases/latest/download/TokenTracker-linux-x86_64.AppImage) → `chmod +x` 后直接运行。托盘 App，Dashboard 跑在 WebKitGTK 窗口里。AppImage 自带 GTK/WebKit，除了较新的 glibc 之外不依赖发行版的库；GNOME 上托盘图标仍需装 [AppIndicator 扩展](https://extensions.gnome.org/extension/615/appindicator-support/)。[发布页](https://github.com/xiufengsun/TokenTracker/releases/latest)同时提供 `.deb` 与 `.rpm` 安装包，它们改用发行版自带的 `webkit2gtk-4.1`、`gtk3` 与 appindicator；其中 `.deb` 依赖 `libappindicator3-1`，Debian 12 已改为 `libayatana-appindicator3-1` 而不再提供它，因此 Debian 12 请用 AppImage。
+> - **macOS** —— [下载 `TokenTrackerCommunity.dmg`](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest/download/TokenTrackerCommunity.dmg) → 拖入「应用程序」即可。包含桌面小组件、菜单栏状态图标，以及同一套 Dashboard（跑在 WKWebView 里）。
+> - **Windows** —— [下载 `TokenTracker-Community-Setup.exe`](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest/download/TokenTracker-Community-Setup.exe) → 运行免管理员的单用户安装包即可。系统托盘 App，Dashboard 跑在 WebView2 里。便携版 zip 见[发布页](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest)。
+> - **Linux** —— [下载 `TokenTracker-Community-linux-x86_64.AppImage`](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest/download/TokenTracker-Community-linux-x86_64.AppImage) → `chmod +x` 后直接运行。托盘 App，Dashboard 跑在 WebKitGTK 窗口里。AppImage 自带 GTK/WebKit，除了较新的 glibc 之外不依赖发行版的库；GNOME 上托盘图标仍需装 [AppIndicator 扩展](https://extensions.gnome.org/extension/615/appindicator-support/)。[发布页](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest)同时提供 `.deb` 与 `.rpm` 安装包，它们改用发行版自带的 `webkit2gtk-4.1`、`gtk3` 与 appindicator；其中 `.deb` 依赖 `libappindicator3-1`，Debian 12 已改为 `libayatana-appindicator3-1` 而不再提供它，因此 Debian 12 请用 AppImage。
 
 全局安装可以少敲字：
 
@@ -221,7 +222,7 @@ brew install xiufengsun/tokentracker/tokentracker
 >
 > 更深入的资料：[OpenClaw 集成与排障](docs/openclaw-integration.md)。升级 v0.96.0 后 ZCode 历史总量下降，请参阅 [ZCode 历史计数修正说明](docs/zcode-history-correction.md)，了解缓存/推理重复计数修正及本地备份。
 
-工具没在列表里？[提个 Issue](https://github.com/xiufengsun/TokenTracker/issues/new) —— 加一个新 provider 通常只是加一个 parser 文件的事。
+工具没在列表里？[提个 Issue](https://github.com/baozibao728-cmd/TokenTracker-Community/issues/new) —— 加一个新 provider 通常只是加一个 parser 文件的事。
 
 ---
 
@@ -302,7 +303,7 @@ TokenTracker 在本地处理你的用量数据。绝不收集或上传 prompt、
 ## 🛠️ 本地开发
 
 ```bash
-git clone https://github.com/xiufengsun/TokenTracker.git
+git clone https://github.com/baozibao728-cmd/TokenTracker-Community.git
 cd TokenTracker
 npm install
 
@@ -387,7 +388,7 @@ tokentracker status
 tokentracker doctor
 ```
 
-如果你明明在用某个工具却显示未配置，跑一下 `tokentracker activate-if-needed` 重新探测。还不行的话 [提个 Issue](https://github.com/xiufengsun/TokenTracker/issues/new)，把 `doctor` 的输出贴上。
+如果你明明在用某个工具却显示未配置，跑一下 `tokentracker activate-if-needed` 重新探测。还不行的话 [提个 Issue](https://github.com/baozibao728-cmd/TokenTracker-Community/issues/new)，把 `doctor` 的输出贴上。
 
 </details>
 
@@ -465,9 +466,6 @@ xattr -cr /Applications/TokenTracker.app
 然后贴一段：
 
 ```markdown
-[![tokens](https://srctyff5.us-east.insforge.app/functions/tokentracker-badge-svg?user_id=你的_USER_ID&metric=tokens)](https://github.com/xiufengsun/TokenTracker)
-[![cost](https://srctyff5.us-east.insforge.app/functions/tokentracker-badge-svg?user_id=你的_USER_ID&metric=cost)](https://github.com/xiufengsun/TokenTracker)
-[![rank](https://srctyff5.us-east.insforge.app/functions/tokentracker-badge-svg?user_id=你的_USER_ID&metric=rank)](https://github.com/xiufengsun/TokenTracker)
 ```
 
 > 链接默认指向 TokenTracker 仓库，每次点击都能帮其他开发者发现 TokenTracker。如果你想让点击跳到你自己的 leaderboard profile、个人主页或 `https://www.tokentracker.cc`，改 URL 即可。
@@ -500,10 +498,10 @@ xattr -cr /Applications/TokenTracker.app
 
 ## 🤝 贡献与支持
 
-- **Bug / 功能建议**：[提个 Issue](https://github.com/xiufengsun/TokenTracker/issues/new)
+- **Bug / 功能建议**：[提个 Issue](https://github.com/baozibao728-cmd/TokenTracker-Community/issues/new)
 - **安全问题**：见 [SECURITY.md](SECURITY.md) —— 请不要在公开 Issue 里提交安全报告
 - **Pull Request**：见 [CONTRIBUTING.md](CONTRIBUTING.md)，里面有开发环境搭建、测试流程和新增 AI 工具集成的指南
-- **提问 / 展示作品**：[GitHub Discussions](https://github.com/xiufengsun/TokenTracker/discussions)
+- **提问 / 展示作品**：[GitHub Discussions](https://github.com/baozibao728-cmd/TokenTracker-Community/issues)
 
 ## 🙏 致谢
 

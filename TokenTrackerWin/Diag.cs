@@ -3,14 +3,12 @@ using System.IO;
 namespace TokenTrackerWin;
 
 /// <summary>
-/// Best-effort diagnostics to %LOCALAPPDATA%\TokenTracker\windows-host.log (shared with
+/// Best-effort diagnostics to %LOCALAPPDATA%\TokenTrackerCommunity\windows-host.log (shared with
 /// ServerManager / DashboardWindow / TrayApplicationContext). Never throws.
 /// </summary>
 internal static class Diag
 {
-    private static readonly string LogPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "TokenTracker", "windows-host.log");
+    private static readonly string LogPath = Path.Combine(Constants.DataDirectory, "windows-host.log");
 
     // Serializes the per-line writers (node stdout/stderr arrive on pipe-drain
     // pool threads) so the rotation below can't move the file mid-append.

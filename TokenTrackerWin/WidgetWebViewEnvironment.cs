@@ -39,9 +39,7 @@ internal sealed class WidgetWebViewEnvironment
 
     private Task<CoreWebView2Environment> CreateAsync()
     {
-        var userDataFolder = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "TokenTracker", "WebView2Pet");
+        var userDataFolder = Path.Combine(Constants.DataDirectory, "WebView2Pet");
         if (_userDataFolderOverride is not null) userDataFolder = _userDataFolderOverride;
         Environment.SetEnvironmentVariable("WEBVIEW2_DEFAULT_BACKGROUND_COLOR", "0");
         return CoreWebView2Environment.CreateAsync(null, userDataFolder, null);

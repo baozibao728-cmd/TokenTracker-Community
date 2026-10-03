@@ -41,8 +41,8 @@ final class StatusBarController: NSObject {
     private var animator: MenuBarAnimator?
     private let queueActivityMonitor = QueueActivityMonitor()
     private let accountUploadMonitor = QueueActivityMonitor(
-        queueURL: FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".tokentracker/tracker/queue.state.json"),
+        queueURL: Constants.dataRootURL
+            .appendingPathComponent("tracker/queue.state.json"),
         settleDelay: BackgroundRefreshPolicy.defaultAccountUploadVisibilityDelay,
         publishInitialState: true
     )
@@ -1363,7 +1363,7 @@ final class StatusBarController: NSObject {
     }
 
     @objc private func openGitHub() {
-        if let url = URL(string: "https://github.com/xiufengsun/TokenTracker") {
+        if let url = URL(string: "https://github.com/baozibao728-cmd/TokenTracker-Community") {
             NSWorkspace.shared.open(url)
         }
     }

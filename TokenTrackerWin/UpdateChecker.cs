@@ -10,7 +10,7 @@ namespace TokenTrackerWin;
 /// Windows counterpart of <c>TokenTrackerBar/Services/UpdateChecker.swift</c>.
 ///
 /// Checks the GitHub "latest release" for a newer version, downloads the
-/// <c>TokenTracker-Setup.exe</c> asset, and runs it fully silently. Because a
+/// <c>TokenTracker-Community-Setup.exe</c> asset, and runs it fully silently. Because a
 /// silent Inno install does not relaunch the app (its <c>[Run]</c> postinstall is
 /// <c>skipifsilent</c>), we drive the close → install → relaunch sequence
 /// ourselves: a small detached <c>cmd</c> runs the installer and then restarts
@@ -28,22 +28,34 @@ internal sealed class UpdateChecker
     public enum UpdateState { Idle, Checking, UpdateAvailable, Downloading, Installing }
     public enum CheckOutcome { UpToDate, UpdateAvailable, Failed, Skipped }
 
-    private const string Repo = "xiufengsun/TokenTracker";
+    private const string Repo = Constants.GitHubRepo;
 
-    // The release uploads a stable, version-less "TokenTracker-Setup.exe"
+    // The release uploads a stable, version-less "TokenTracker-Community-Setup.exe"
     // (release-windows.yml renames the versioned Inno output before upload), and
     // the publish job lists that exact name in SHA256SUMS.
-    private const string SetupAssetName = "TokenTracker-Setup.exe";
+    private const string SetupAssetName = Constants.SetupAssetName;
 
     // External host (github.com): keep the DEFAULT proxy behaviour so CN proxy/VPN
     // users can reach it. The long timeout covers the installer download; the quick
     // API check wraps its own short cancellation token instead.
     private static readonly HttpClient Http = CreateClient();
+    private readonly HttpClient _http;
+    private readonly Action<string> _launchInstaller;
+    private readonly string _downloadDirectory;
+
+    public UpdateChecker() : this(Http, LaunchSilentInstaller, Path.Combine(Constants.DataDirectory, "updates")) { }
+
+    internal UpdateChecker(HttpClient http, Action<string> launchInstaller, string downloadDirectory)
+    {
+        _http = http;
+        _launchInstaller = launchInstaller;
+        _downloadDirectory = downloadDirectory;
+    }
 
     private static HttpClient CreateClient()
     {
         var client = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("TokenTracker-Windows-Updater");
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("TokenTracker-Community-Windows-Updater");
         client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
         return client;
     }
@@ -180,7 +192,7 @@ internal sealed class UpdateChecker
         SetState(UpdateState.Installing);
         try
         {
-            LaunchSilentInstaller(setupPath);
+            _launchInstaller(setupPath);
         }
         catch (Exception ex)
         {
@@ -197,11 +209,11 @@ internal sealed class UpdateChecker
 
     private readonly record struct ReleaseInfo(string Version, string? SetupUrl, long SetupSize, string? ChecksumsUrl);
 
-    private static async Task<ReleaseInfo?> FetchLatestReleaseAsync()
+    private async Task<ReleaseInfo?> FetchLatestReleaseAsync()
     {
         var url = $"https://api.github.com/repos/{Repo}/releases/latest";
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-        using var resp = await Http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cts.Token);
+        using var resp = await _http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cts.Token);
         if (!resp.IsSuccessStatusCode)
         {
             Diag.Log("update", $"github api status {(int)resp.StatusCode}");
@@ -225,6 +237,7 @@ internal sealed class UpdateChecker
             {
                 var name = asset.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "";
                 if (!asset.TryGetProperty("browser_download_url", out var u)) continue;
+                if (!Constants.IsCommunityReleaseAssetUrl(u.GetString())) continue;
 
                 // Match both names exactly so a future co-released .exe can't be
                 // picked instead, and keep scanning: the checksum asset may be
@@ -251,14 +264,12 @@ internal sealed class UpdateChecker
 
     private async Task<string> DownloadSetupAsync(string url, long expectedSize, string version)
     {
-        var dir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "TokenTracker", "updates");
+        var dir = _downloadDirectory;
         Directory.CreateDirectory(dir);
         var safeVersion = string.Concat(version.Select(c => char.IsAsciiLetterOrDigit(c) || c is '.' or '-' ? c : '_'));
-        var dest = Path.Combine(dir, $"TokenTracker-Setup-{safeVersion}.exe");
-        try { File.Delete(Path.Combine(dir, "TokenTracker-Setup.exe")); } catch { }
-        foreach (var stalePath in Directory.EnumerateFiles(dir, "TokenTracker-Setup-*"))
+        var dest = Path.Combine(dir, $"{Constants.SetupFilePrefix}{safeVersion}.exe");
+        try { File.Delete(Path.Combine(dir, Constants.SetupAssetName)); } catch { }
+        foreach (var stalePath in Directory.EnumerateFiles(dir, Constants.SetupFilePrefix + "*"))
         {
             if (string.Equals(stalePath, dest, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(stalePath, dest + ".part", StringComparison.OrdinalIgnoreCase)
@@ -267,7 +278,7 @@ internal sealed class UpdateChecker
             try { File.Delete(stalePath); } catch { }
         }
         var lastPct = -1;
-        var downloader = new ResumableDownloader(Http);
+        var downloader = new ResumableDownloader(_http);
         await downloader.DownloadAsync(
             new Uri(url),
             dest,
@@ -299,27 +310,24 @@ internal sealed class UpdateChecker
     /// It always runs on the FINAL assembled file (<see cref="ResumableDownloader"/>
     /// has already moved <c>.part</c> into place), never on a chunk.
     ///
-    /// Back-compat: releases published before the checksum asset existed carry no
-    /// <c>SHA256SUMS</c>. Refusing to install from them would strand every user on an
-    /// older build, so a release WITHOUT the asset logs a line and installs exactly as
-    /// it does today. A release WITH the asset must produce a matching digest — and if
-    /// the file is there but unreadable/unparsable we fail rather than fall back,
-    /// because that path is retryable and strands nobody. Once no supported release
-    /// predates the asset, the missing-asset branch can be tightened to fail closed.
+    /// Community releases always require a usable matching checksum. Missing or
+    /// unreadable checksum assets never permit execution of the installer.
     /// </summary>
     private async Task<bool> VerifySetupIntegrityAsync(string setupPath)
     {
         if (_checksumsUrl is null)
         {
-            Diag.Log("update", $"no {UpdateIntegrity.ChecksumsAssetName} asset on this release — installing unverified (legacy release)");
-            return true;
+            Diag.Log("update", $"no {UpdateIntegrity.ChecksumsAssetName} asset on this release — refusing to install");
+            DiscardDownload(setupPath);
+            IntegrityCheckFailed?.Invoke();
+            return false;
         }
 
         string? expected;
         try
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            var body = await Http.GetStringAsync(_checksumsUrl, cts.Token);
+            var body = await _http.GetStringAsync(_checksumsUrl, cts.Token);
             expected = UpdateIntegrity.FindDigest(body, SetupAssetName);
         }
         catch (Exception ex)
@@ -390,7 +398,7 @@ internal sealed class UpdateChecker
     private static void LaunchSilentInstaller(string setupPath)
     {
         var appExe = Environment.ProcessPath
-                     ?? Path.Combine(AppContext.BaseDirectory, "TokenTracker.exe");
+                     ?? Path.Combine(AppContext.BaseDirectory, Constants.AppExeName);
 
         // cmd /c ""<setup>" /VERYSILENT ... & start "" "<app>""
         // The setup runs inline (cmd waits for it); then `start` relaunches the app detached.

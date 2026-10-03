@@ -1,3 +1,5 @@
+> TokenTracker-Community is an independent MIT fork of [TokenTracker](https://github.com/xiufengsun/TokenTracker). Current fork downloads/support: [repository](https://github.com/baozibao728-cmd/TokenTracker-Community). The inherited npm/Homebrew instructions refer to upstream packages; Community uses its own backend and does not currently support cloud badges/share/automatic anticheat.
+
  <div align="center">
 
 # Token Tracker
@@ -15,7 +17,6 @@
 [![Platform](https://img.shields.io/badge/macOS-supported-lightgrey.svg)](https://www.apple.com/macos/)
 [![GitHub stars](https://img.shields.io/github/stars/xiufengsun/TokenTracker?style=social)](https://github.com/xiufengsun/TokenTracker/stargazers)
 [![Featured in 阮一峰周刊 #393](https://img.shields.io/badge/Featured%20in-%E9%98%AE%E4%B8%80%E5%B3%B0%E5%91%A8%E5%88%8A%20%23393-FF6B35?logo=rss&logoColor=white)](https://github.com/ruanyf/weekly/blob/master/docs/issue-393.md)
-[![Author tokens](https://srctyff5.us-east.insforge.app/functions/tokentracker-badge-svg?user_id=0652839f-d19f-4f67-af85-6b7675875443&metric=tokens&compact=1&label=author%20tokens)](https://github.com/xiufengsun/TokenTracker)
 
 <br/>
 
@@ -54,9 +55,9 @@ npx tokentracker-cli
 - 🧩 *オプション:* 250+ の公開 Skill を閲覧して Claude · Codex · AStudio · Gemini · OpenCode · Hermes 間で同期できる Skills タブ
 
 > **ネイティブのデスクトップアプリが欲しい?**
-> - **macOS** — [`TokenTrackerBar.dmg` をダウンロード](https://github.com/xiufengsun/TokenTracker/releases/latest/download/TokenTrackerBar.dmg) → Applications にドラッグ。デスクトップウィジェット、メニューバーのステータスアイコン、WKWebView 上の同じダッシュボードを含みます。
-> - **Windows** — [`TokenTracker-Setup.exe` をダウンロード](https://github.com/xiufengsun/TokenTracker/releases/latest/download/TokenTracker-Setup.exe) → 管理者権限不要のユーザー単位インストーラーを実行。WebView2 上にダッシュボードを表示するシステムトレイアプリです。ポータブル版 zip は[リリースページ](https://github.com/xiufengsun/TokenTracker/releases/latest)にあります。
-> - **Linux** — [`TokenTracker-linux-x86_64.AppImage` をダウンロード](https://github.com/xiufengsun/TokenTracker/releases/latest/download/TokenTracker-linux-x86_64.AppImage) → `chmod +x` して実行。WebKitGTK ウィンドウにダッシュボードを表示するトレイアプリです。GTK/WebKit を同梱しているため、比較的新しい glibc 以外にディストリ側の依存はありません。GNOME ではトレイアイコンに [AppIndicator 拡張機能](https://extensions.gnome.org/extension/615/appindicator-support/)が必要です。`.deb` と `.rpm` パッケージも[リリースページ](https://github.com/xiufengsun/TokenTracker/releases/latest)にあり、こちらはディストリの `webkit2gtk-4.1`、`gtk3`、appindicator を利用します。`.deb` は `libappindicator3-1` に依存しますが、Debian 12 はこれを廃止して `libayatana-appindicator3-1` を提供しているため、Debian 12 では AppImage を使ってください。
+> - **macOS** — [`TokenTrackerCommunity.dmg` をダウンロード](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest/download/TokenTrackerCommunity.dmg) → Applications にドラッグ。デスクトップウィジェット、メニューバーのステータスアイコン、WKWebView 上の同じダッシュボードを含みます。
+> - **Windows** — [`TokenTracker-Community-Setup.exe` をダウンロード](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest/download/TokenTracker-Community-Setup.exe) → 管理者権限不要のユーザー単位インストーラーを実行。WebView2 上にダッシュボードを表示するシステムトレイアプリです。ポータブル版 zip は[リリースページ](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest)にあります。
+> - **Linux** — [`TokenTracker-Community-linux-x86_64.AppImage` をダウンロード](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest/download/TokenTracker-Community-linux-x86_64.AppImage) → `chmod +x` して実行。WebKitGTK ウィンドウにダッシュボードを表示するトレイアプリです。GTK/WebKit を同梱しているため、比較的新しい glibc 以外にディストリ側の依存はありません。GNOME ではトレイアイコンに [AppIndicator 拡張機能](https://extensions.gnome.org/extension/615/appindicator-support/)が必要です。`.deb` と `.rpm` パッケージも[リリースページ](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest)にあり、こちらはディストリの `webkit2gtk-4.1`、`gtk3`、appindicator を利用します。`.deb` は `libappindicator3-1` に依存しますが、Debian 12 はこれを廃止して `libayatana-appindicator3-1` を提供しているため、Debian 12 では AppImage を使ってください。
 
 短いコマンドで使うためグローバルインストール:
 
@@ -218,7 +219,7 @@ brew install xiufengsun/tokentracker/tokentracker
 >
 > もっと深く知りたい方へ: [OpenClaw 統合とトラブルシューティング](docs/openclaw-integration.md)。
 
-お使いのツールが見当たらない? [Issue を立ててください](https://github.com/xiufengsun/TokenTracker/issues/new) — 新しいプロバイダーの追加は、たいていパーサーファイル 1 つで済みます。
+お使いのツールが見当たらない? [Issue を立ててください](https://github.com/baozibao728-cmd/TokenTracker-Community/issues/new) — 新しいプロバイダーの追加は、たいていパーサーファイル 1 つで済みます。
 
 ---
 
@@ -296,7 +297,7 @@ TokenTracker は使用量データをローカルで処理します。プロン�
 ## 🛠️ 開発
 
 ```bash
-git clone https://github.com/xiufengsun/TokenTracker.git
+git clone https://github.com/baozibao728-cmd/TokenTracker-Community.git
 cd TokenTracker
 npm install
 
@@ -381,7 +382,7 @@ tokentracker status
 tokentracker doctor
 ```
 
-使っているはずなのに未設定と表示されるプロバイダーがある場合、`tokentracker activate-if-needed` で hook 検出を再実行してみてください。それでも見つからない場合は、`doctor` の出力を添えて [Issue を立ててください](https://github.com/xiufengsun/TokenTracker/issues/new)。
+使っているはずなのに未設定と表示されるプロバイダーがある場合、`tokentracker activate-if-needed` で hook 検出を再実行してみてください。それでも見つからない場合は、`doctor` の出力を添えて [Issue を立ててください](https://github.com/baozibao728-cmd/TokenTracker-Community/issues/new)。
 
 </details>
 
@@ -459,9 +460,6 @@ GitHub プロフィールやプロジェクトの README で自分のトーク�
 以下のどれかを貼り付けてください:
 
 ```markdown
-[![tokens](https://srctyff5.us-east.insforge.app/functions/tokentracker-badge-svg?user_id=YOUR_USER_ID&metric=tokens)](https://github.com/xiufengsun/TokenTracker)
-[![cost](https://srctyff5.us-east.insforge.app/functions/tokentracker-badge-svg?user_id=YOUR_USER_ID&metric=cost)](https://github.com/xiufengsun/TokenTracker)
-[![rank](https://srctyff5.us-east.insforge.app/functions/tokentracker-badge-svg?user_id=YOUR_USER_ID&metric=rank)](https://github.com/xiufengsun/TokenTracker)
 ```
 
 > リンク先はデフォルトで TokenTracker リポジトリに設定してあり、クリックがそのまま他の開発者の発見につながります。あなた自身の leaderboard プロフィール、個人サイト、または `https://www.tokentracker.cc` に飛ばしたい場合は URL を差し替えてください。
@@ -494,10 +492,10 @@ GitHub プロフィールやプロジェクトの README で自分のトーク�
 
 ## 🤝 コントリビューション & サポート
 
-- **バグ / 機能リクエスト**: [Issue を立てる](https://github.com/xiufengsun/TokenTracker/issues/new)
+- **バグ / 機能リクエスト**: [Issue を立てる](https://github.com/baozibao728-cmd/TokenTracker-Community/issues/new)
 - **セキュリティ**: [SECURITY.md](SECURITY.md) を参照 — セキュリティ報告は公開 Issue として立てないでください
 - **プルリクエスト**: セットアップ、テスト、新しい AI ツール統合の追加方法は [CONTRIBUTING.md](CONTRIBUTING.md) を参照
-- **質問 / ショーケース**: [GitHub Discussions](https://github.com/xiufengsun/TokenTracker/discussions)
+- **質問 / ショーケース**: [GitHub Discussions](https://github.com/baozibao728-cmd/TokenTracker-Community/issues)
 
 ## 🙏 クレジット
 

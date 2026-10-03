@@ -12,6 +12,7 @@ const {
 } = require("./source-metadata");
 const { accountSlugFor, fetchAccountUsage, mintAccessToken } = require("./cloud-account");
 const { getOrCreateMachineId, computeStableMachineId } = require("./machine-id");
+const { resolveTrackerRoot } = require("./tracker-paths");
 
 const SYNC_TIMEOUT_MS = 120_000;
 // A failed account-view request should not stall every dashboard refresh
@@ -74,8 +75,7 @@ const {
 // ---------------------------------------------------------------------------
 
 function resolveQueuePath() {
-  const home = os.homedir();
-  return path.join(home, ".tokentracker", "tracker", "queue.jsonl");
+  return path.join(resolveTrackerRoot(), "tracker", "queue.jsonl");
 }
 
 // Pseudo-project written by the pre-fix claude-mem observer attribution;
@@ -1140,7 +1140,7 @@ function createLocalApiHandler({ queuePath }) {
   const csrfRelayCookieName = "insforge_csrf_token";
   let relayCookies = new Map();
   const localAuthToken = crypto.randomBytes(24).toString("hex");
-  const trackerDataDir = path.join(os.homedir(), ".tokentracker", "tracker");
+  const trackerDataDir = path.join(resolveTrackerRoot(), "tracker");
   const cookiePath = path.join(trackerDataDir, "relay-cookies.json");
   const localSyncDeviceTokenCache = new Map();
   const localSyncDeviceTokenInflight = new Map();
@@ -1850,7 +1850,7 @@ function createLocalApiHandler({ queuePath }) {
           accept: req.headers["accept"] || "*/*",
           "accept-language": req.headers["accept-language"] || "en",
           "accept-encoding": req.headers["accept-encoding"] || "gzip",
-          "user-agent": "TokenTracker/IPCheck (https://www.tokentracker.cc)",
+          "user-agent": "TokenTracker-Community/IPCheck (https://github.com/baozibao728-cmd/TokenTracker-Community)",
           referer: `${IP_CHECK_TARGET}${targetPath}`,
         };
 
@@ -1956,7 +1956,7 @@ function createLocalApiHandler({ queuePath }) {
           headers: {
             accept: req.headers["accept"] || "image/*",
             "accept-language": req.headers["accept-language"] || "en",
-            "user-agent": "TokenTracker/AvatarProxy (https://www.tokentracker.cc)",
+            "user-agent": "TokenTracker-Community/AvatarProxy (https://github.com/baozibao728-cmd/TokenTracker-Community)",
           },
         });
         if (!upstream.ok) {

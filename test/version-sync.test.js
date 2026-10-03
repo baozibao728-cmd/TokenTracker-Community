@@ -19,12 +19,12 @@ function writeFixture(root, canonical = '2.3.4', stale = '0.0.1') {
       'MARKETING_VERSION: "' + stale + '"',
     ].join('\n'),
     'TokenTrackerWin/TokenTrackerWin.csproj': `<Project><PropertyGroup><Version>${stale}</Version></PropertyGroup></Project>`,
-    'TokenTrackerLinux/package.json': JSON.stringify({ name: 'tokentracker-linux', version: stale }, null, 2),
-    'TokenTrackerLinux/package-lock.json': JSON.stringify({ name: 'tokentracker-linux', version: stale, lockfileVersion: 3, packages: { '': { name: 'tokentracker-linux', version: stale }, 'node_modules/example': { version: stale } } }, null, 2),
-    'TokenTrackerLinux/src-tauri/Cargo.toml': `[package]\nname = "tokentracker-linux"\nversion = "${stale}"\n`,
-    'TokenTrackerLinux/src-tauri/Cargo.lock': `version = 4\n\n[[package]]\nname = "other"\nversion = "${stale}"\n\n[[package]]\nname = "tokentracker-linux"\nversion = "${stale}"\n`,
+    'TokenTrackerLinux/package.json': JSON.stringify({ name: 'tokentracker-community-linux', version: stale }, null, 2),
+    'TokenTrackerLinux/package-lock.json': JSON.stringify({ name: 'tokentracker-community-linux', version: stale, lockfileVersion: 3, packages: { '': { name: 'tokentracker-community-linux', version: stale }, 'node_modules/example': { version: stale } } }, null, 2),
+    'TokenTrackerLinux/src-tauri/Cargo.toml': `[package]\nname = "tokentracker-community-linux"\nversion = "${stale}"\n`,
+    'TokenTrackerLinux/src-tauri/Cargo.lock': `version = 4\n\n[[package]]\nname = "other"\nversion = "${stale}"\n\n[[package]]\nname = "tokentracker-community-linux"\nversion = "${stale}"\n`,
     'TokenTrackerLinux/src-tauri/tauri.conf.json': JSON.stringify({ productName: 'TokenTracker', version: stale }, null, 2),
-    'TokenTrackerLinux/packaging/arch/tokentracker-linux/PKGBUILD': `pkgname=tokentracker-linux\npkgver=${stale}\npkgrel=1\n`,
+    'TokenTrackerLinux/packaging/arch/tokentracker-linux/PKGBUILD': `pkgname=tokentracker-community-linux\npkgver=${stale}\npkgrel=1\n`,
   };
   for (const [relativePath, content] of Object.entries(files)) {
     const target = path.join(root, relativePath);
@@ -75,7 +75,7 @@ test('collectVersionEntries rejects duplicate target Cargo.lock versions', (t) =
 
   assert.throws(
     () => collectVersionEntries(root),
-    /Expected exactly one tokentracker-linux Cargo.lock version entry/,
+    /Expected exactly one tokentracker-community-linux Cargo.lock version entry/,
   );
 });
 

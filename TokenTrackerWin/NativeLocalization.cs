@@ -16,10 +16,7 @@ internal static partial class NativeLocalization
     public const string JapaneseLocale = "ja";
     public const string KoreanLocale = "ko";
 
-    private static readonly string SettingsPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "TokenTracker",
-        "native-settings.json");
+    private static readonly string SettingsPath = Path.Combine(Constants.DataDirectory, "native-settings.json");
 
     public static string CurrentPreference => ReadStoredPreference() ?? SystemPreference;
 

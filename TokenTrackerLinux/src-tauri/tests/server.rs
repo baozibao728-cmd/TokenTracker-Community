@@ -26,7 +26,7 @@ impl TempDir {
     fn new(label: &str) -> Self {
         let unique = COUNTER.fetch_add(1, Ordering::Relaxed);
         let path = std::env::temp_dir().join(format!(
-            "tokentracker-linux-{label}-{}-{unique}",
+            "tokentracker-community-linux-{label}-{}-{unique}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&path);
@@ -45,7 +45,7 @@ impl Drop for TempDir {
     }
 }
 
-const PREFERRED_PORT: u16 = 17680;
+const PREFERRED_PORT: u16 = 17681;
 
 // Held by every test here that binds a port *or forks*, because cargo runs them
 // in parallel. Two races, both of which have actually fired:
@@ -70,7 +70,7 @@ fn port_guard() -> std::sync::MutexGuard<'static, ()> {
 #[test]
 fn preferred_port_is_used_when_free() {
     let _serial = port_guard();
-    // Only meaningful when nothing else on the machine holds 17680.
+    // Only meaningful when nothing else on the machine holds 17681.
     let Ok(probe) = TcpListener::bind(("127.0.0.1", PREFERRED_PORT)) else {
         eprintln!("port {PREFERRED_PORT} is busy on this machine; skipping");
         return;
@@ -107,9 +107,9 @@ fn port_selection_falls_back_when_the_preferred_port_is_taken() {
 #[test]
 fn dashboard_url_is_loopback_only() {
     // Binding to 127.0.0.1 rather than 0.0.0.0 keeps usage data off the LAN.
-    assert_eq!(dashboard_url(17680), "http://127.0.0.1:17680");
-    assert!(!dashboard_url(17680).contains("0.0.0.0"));
-    assert!(!dashboard_url(17680).contains("localhost"));
+    assert_eq!(dashboard_url(17681), "http://127.0.0.1:17681");
+    assert!(!dashboard_url(17681).contains("0.0.0.0"));
+    assert!(!dashboard_url(17681).contains("localhost"));
 }
 
 #[test]
@@ -167,13 +167,13 @@ fn log_paths_prefer_xdg_state_home() {
     assert_eq!(
         paths.first(),
         Some(&PathBuf::from(
-            "/home/u/.local/state/tokentracker/server.log"
+            "/home/u/.local/state/tokentracker-community/server.log"
         ))
     );
     // /tmp is always the last resort so a read-only home never loses logging.
     assert_eq!(
         paths.last(),
-        Some(&PathBuf::from("/tmp/tokentracker-server.log"))
+        Some(&PathBuf::from("/tmp/tokentracker-community-server.log"))
     );
 }
 
@@ -183,8 +183,8 @@ fn log_paths_fall_back_to_home_then_tmp() {
     assert_eq!(
         paths,
         vec![
-            PathBuf::from("/home/u/.local/state/tokentracker/server.log"),
-            PathBuf::from("/tmp/tokentracker-server.log"),
+            PathBuf::from("/home/u/.local/state/tokentracker-community/server.log"),
+            PathBuf::from("/tmp/tokentracker-community-server.log"),
         ]
     );
 }
@@ -192,7 +192,7 @@ fn log_paths_fall_back_to_home_then_tmp() {
 #[test]
 fn log_paths_survive_a_missing_home() {
     let paths = server_log_paths(None, None);
-    assert_eq!(paths, vec![PathBuf::from("/tmp/tokentracker-server.log")]);
+    assert_eq!(paths, vec![PathBuf::from("/tmp/tokentracker-community-server.log")]);
 }
 
 #[test]
@@ -273,10 +273,10 @@ fn records_never_land_in_a_world_writable_directory() {
         Some(PathBuf::from("/home/u")),
     );
 
-    assert_eq!(dirs[0], PathBuf::from("/state/tokentracker/servers"));
+    assert_eq!(dirs[0], PathBuf::from("/state/tokentracker-community/servers"));
     assert_eq!(
         dirs[1],
-        PathBuf::from("/home/u/.local/state/tokentracker/servers")
+        PathBuf::from("/home/u/.local/state/tokentracker-community/servers")
     );
 
     // No /tmp fallback, unlike the log: /tmp is writable by every account, so a

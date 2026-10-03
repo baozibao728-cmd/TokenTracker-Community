@@ -3,7 +3,7 @@ using Microsoft.Win32;
 namespace TokenTrackerWin;
 
 /// <summary>
-/// Registers the <c>tokentracker://</c> URL scheme for the current user, so the OAuth
+/// Registers the <c>tokentracker-community://</c> URL scheme for the current user, so the OAuth
 /// callback page (running in the system browser) can deep-link the auth code back into
 /// this app — the Windows analogue of the macOS app's Info.plist
 /// <c>CFBundleURLSchemes</c>. Per-user (HKCU\Software\Classes), so no admin rights are
@@ -11,10 +11,10 @@ namespace TokenTrackerWin;
 /// </summary>
 internal static class UrlProtocol
 {
-    public const string Scheme = "tokentracker";
+    public const string Scheme = Constants.UrlScheme;
 
     /// <summary>
-    /// Point <c>tokentracker://</c> at this executable. Idempotent and cheap, so we just
+    /// Point <c>tokentracker-community://</c> at this executable. Idempotent and cheap, so we just
     /// run it every launch to self-heal if the exe moved. Best-effort: failures are
     /// swallowed (OAuth simply won't deep-link back; other features are unaffected).
     /// </summary>
@@ -34,7 +34,7 @@ internal static class UrlProtocol
             }
 
             using var key = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{Scheme}");
-            key.SetValue(null, "URL:TokenTracker Protocol");
+            key.SetValue(null, "URL:TokenTracker Community Protocol");
             key.SetValue("URL Protocol", "");
             using var cmd = key.CreateSubKey(@"shell\open\command");
             cmd.SetValue(null, command);

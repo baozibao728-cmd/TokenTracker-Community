@@ -95,6 +95,7 @@ test("buildOmpNotifyExtensionSource embeds notify path and marker", () => {
   assert.ok(source.includes("agent_end"));
   assert.ok(source.includes("session_shutdown"));
   assert.ok(source.includes("/Users/me/.tokentracker/bin/notify.cjs"));
+  assert.doesNotMatch(source, /path\.join\(os\.homedir\(\), "\.tokentracker"/);
   assert.ok(isManagedOmpExtension(source));
 });
 

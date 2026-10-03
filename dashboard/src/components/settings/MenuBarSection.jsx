@@ -158,7 +158,7 @@ export function NativeAppFooter() {
   const handleCheckUpdates = async () => {
     setChecking(true);
     try {
-      const res = await fetch("https://api.github.com/repos/xiufengsun/TokenTracker/releases/latest");
+      const res = await fetch("https://api.github.com/repos/baozibao728-cmd/TokenTracker-Community/releases/latest");
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
       const latestVersion = data.tag_name;

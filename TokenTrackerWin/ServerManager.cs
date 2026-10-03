@@ -473,7 +473,7 @@ internal sealed class ServerManager : IDisposable
     // prefer this fixed port (registered in the InsForge allow-list alongside the macOS
     // app's :7680). It sits in the IANA "registered" range (10000–49151), so Windows
     // won't hand it out as an ephemeral port, and it avoids the DoSvc-held :7680.
-    private const int PreferredPort = 17680;
+    private const int PreferredPort = Constants.PreferredOAuthPort;
 
     /// <summary>
     /// Prefer the OAuth-allow-listed fixed port; fall back to an OS-assigned free
@@ -692,6 +692,7 @@ internal sealed class ServerManager : IDisposable
         foreach (var a in args) psi.ArgumentList.Add(a);
         psi.Environment["NODE_ENV"] = "production";
         psi.Environment["TOKENTRACKER_APP_SHELL"] = "windows";
+        psi.Environment["TOKENTRACKER_DATA_ROOT"] = Constants.CliDataRoot;
         // The tray host owns the five-minute background sync timer and receives
         // completion events for the UI. Disable the embedded server's own
         // one-minute fallback to avoid sync.lock contention and stale totals.

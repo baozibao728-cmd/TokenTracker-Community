@@ -24,6 +24,7 @@
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
+const { resolveTrackerRoot } = require("./tracker-paths");
 
 const { runCommand, resolveBinaryPath, statBinaryInDirs, commonGlobalBinDirectories, resolvedCliEnvironment } = require("./command-runner");
 
@@ -213,7 +214,7 @@ function normalizeArkCodingPlanResponse(body) {
 }
 
 function arkCodingPlanCachePath({ home = os.homedir() } = {}) {
-  return path.join(home, ".tokentracker", "tracker", ARK_LIMITS_CACHE_FILE);
+  return path.join(resolveTrackerRoot({ home }), "tracker", ARK_LIMITS_CACHE_FILE);
 }
 
 function readArkCodingPlanLimitsCache({ home = os.homedir(), nowMs = Date.now(), profileIdentity } = {}) {

@@ -8,7 +8,7 @@ import { isNativeLinuxApp } from "../../../lib/native-bridge.js";
 
 const DISMISS_KEY = "macAppBannerDismissed";
 const LOGIN_DISMISS_KEY = "leaderboardBannerDismissed";
-const RELEASE_URL = "https://github.com/xiufengsun/TokenTracker/releases/latest";
+import { RELEASES_URL as RELEASE_URL } from "../../../lib/config";
 
 /** True when loaded inside the native macOS app (WKWebView with ?app=1) */
 const NATIVE_APP_KEY = "tokentracker_native_app";

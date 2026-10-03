@@ -12,10 +12,7 @@ internal static class AutoUpdatePolicy
 {
     public const string EnabledKey = "UpdateChecker.autoUpdateEnabled";
 
-    private static readonly string SettingsPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "TokenTracker",
-        "native-settings.json");
+    private static readonly string SettingsPath = Path.Combine(Constants.DataDirectory, "native-settings.json");
 
     public static bool IsEnabled() => ResolveEnabled(ReadSettings());
 

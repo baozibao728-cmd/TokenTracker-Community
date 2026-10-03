@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { normalizeProxyConfig, buildProxyUrl } = require("./proxy-settings");
+const { resolveTrackerRoot } = require("./tracker-paths");
 
 // scutil --proxy is a sync spawn (2s timeout) that blocks the event loop.
 // resolveEffectiveProxySource runs on GET /proxy-config, and
@@ -71,7 +72,7 @@ function isDeclaredManual(raw) {
 }
 
 function defaultConfigPath() {
-  return path.join(os.homedir(), ".tokentracker", "tracker", "config.json");
+  return path.join(resolveTrackerRoot(), "tracker", "config.json");
 }
 
 function readPersistedProxyConfig({ configPath } = {}) {

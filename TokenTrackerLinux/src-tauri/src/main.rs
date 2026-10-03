@@ -37,7 +37,7 @@ const NATIVE_OAUTH_BRIDGE: &str = r#"
 /// path either paints a permanently blank webview or loses the Wayland
 /// connection outright, aborting with `Error 71 (Protocol error)` before the
 /// dashboard is ever shown. The abort skips `stop_server`, so the bundled Node
-/// server is orphaned on port 17680 and later launches lose OAuth sign-in.
+/// server is orphaned on port 17681 and later launches lose OAuth sign-in.
 ///
 /// Defaults to the compatibility renderer while treating an explicit user value
 /// as authoritative, so `WEBKIT_DISABLE_DMABUF_RENDERER=0` can still opt back
@@ -138,7 +138,7 @@ fn start_dashboard(app: AppHandle, window: WebviewWindow) {
             eprintln!("[TokenTracker] failed to open the dashboard: {error}");
             return;
         }
-        // A `tokentracker://` callback may have arrived before the server was
+        // A `tokentracker-community://` callback may have arrived before the server was
         // ready, in which case it was parked as a pending code.
         oauth::deliver_pending_callback(&navigate_app);
     });
@@ -301,7 +301,7 @@ fn main() {
                 external::open_in_browser(url);
                 false
             })
-            .title("TokenTracker")
+            .title("TokenTracker Community")
             .inner_size(1180.0, 820.0)
             .min_inner_size(960.0, 640.0)
             .build()?;

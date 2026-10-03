@@ -138,21 +138,21 @@ function writeCargoPackageVersion(content, version, label) {
 
 function cargoLockStanza(content) {
   const stanzas = content.split(/(?=^\[\[package\]\]\s*$)/m);
-  const matching = stanzas.filter((stanza) => /^\[\[package\]\]\s*$\nname\s*=\s*"tokentracker-linux"\s*$/m.test(stanza));
-  if (matching.length !== 1) throw new Error('Expected exactly one tokentracker-linux package stanza in TokenTrackerLinux/src-tauri/Cargo.lock');
+  const matching = stanzas.filter((stanza) => /^\[\[package\]\]\s*$\nname\s*=\s*"tokentracker-community-linux"\s*$/m.test(stanza));
+  if (matching.length !== 1) throw new Error('Expected exactly one tokentracker-community-linux package stanza in TokenTrackerLinux/src-tauri/Cargo.lock');
   return { stanza: matching[0], start: content.indexOf(matching[0]) };
 }
 
 function readCargoLockPackageVersion(content) {
   const { stanza } = cargoLockStanza(content);
   const matches = [...stanza.matchAll(/^version\s*=\s*"([^"]+)"\s*$/gm)];
-  if (matches.length !== 1) throw new Error('Expected exactly one tokentracker-linux Cargo.lock version entry');
+  if (matches.length !== 1) throw new Error('Expected exactly one tokentracker-community-linux Cargo.lock version entry');
   return matches[0][1];
 }
 
 function writeCargoLockPackageVersion(content, version) {
   const { stanza, start } = cargoLockStanza(content);
-  const updated = replaceExactlyOne(stanza, /^(version\s*=\s*")[^"]+("\s*)$/gm, `$1${version}$2`, 'tokentracker-linux Cargo.lock version');
+  const updated = replaceExactlyOne(stanza, /^(version\s*=\s*")[^"]+("\s*)$/gm, `$1${version}$2`, 'tokentracker-community-linux Cargo.lock version');
   return `${content.slice(0, start)}${updated}${content.slice(start + stanza.length)}`;
 }
 

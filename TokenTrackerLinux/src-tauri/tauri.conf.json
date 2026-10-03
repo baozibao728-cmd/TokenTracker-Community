@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "TokenTracker",
-  "version": "1.1.3",
-  "identifier": "cc.tokentracker.linux",
+  "productName": "TokenTracker Community",
+  "version": "1.2.0",
+  "identifier": "io.github.baozibao728cmd.tokentrackercommunity",
   "build": {
     "beforeDevCommand": "",
     "beforeBuildCommand": "",

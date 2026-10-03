@@ -16,8 +16,8 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 Gio._promisify(Soup.Session.prototype, 'send_and_read_async');
 
 // The Linux app pins its embedded server to this port (see server.rs).
-const BASE_URL = 'http://127.0.0.1:17680';
-const DESKTOP_ID = 'TokenTracker.desktop';
+const BASE_URL = 'http://127.0.0.1:17681';
+const DESKTOP_ID = 'tokentracker-community-linux.desktop';
 // With account=1, a signed-in user's summary read goes through to the cloud,
 // so the background poll matches the macOS app. Opening the menu fetches
 // right away.
@@ -746,7 +746,7 @@ const TrendChart = GObject.registerClass({
 const TokenTrackerIndicator = GObject.registerClass(
 class TokenTrackerIndicator extends PanelMenu.Button {
     _init(extension) {
-        super._init(0.5, 'TokenTracker');
+        super._init(0.5, 'TokenTracker Community');
         this._extension = extension;
         this._session = new Soup.Session({timeout: 20});
         this._cancellable = new Gio.Cancellable();
@@ -1118,7 +1118,7 @@ class TokenTrackerIndicator extends PanelMenu.Button {
         this._clawd.opacity = 128;
         this._clawd.setEyesClosed(false);
         this._setStatsVisible(false);
-        this._renderMessage('TokenTracker isn’t running. Open the app to start tracking.');
+        this._renderMessage('TokenTracker Community isn’t running. Open the app to start tracking.');
     }
 
     async _setPeriod(period) {

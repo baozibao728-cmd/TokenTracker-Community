@@ -113,13 +113,13 @@ pub struct TokenTrackerServer {
 pub fn server_record_dirs(xdg_state_home: Option<PathBuf>, home: Option<PathBuf>) -> Vec<PathBuf> {
     let mut dirs = Vec::new();
     if let Some(state_home) = xdg_state_home {
-        dirs.push(state_home.join("tokentracker").join("servers"));
+        dirs.push(state_home.join("tokentracker-community").join("servers"));
     }
     if let Some(home) = home {
         let dir = home
             .join(".local")
             .join("state")
-            .join("tokentracker")
+            .join("tokentracker-community")
             .join("servers");
         if !dirs.contains(&dir) {
             dirs.push(dir);
@@ -133,7 +133,7 @@ pub fn server_record_dirs(xdg_state_home: Option<PathBuf>, home: Option<PathBuf>
 /// Single-instance locking runs over the session D-Bus, so a second login
 /// session on the same account starts a second app. A shared file would let
 /// each session delete or overwrite the other's record, and the loser's server
-/// could then never be reaped -- leaving port 17680 held and OAuth broken,
+/// could then never be reaped -- leaving port 17681 held and OAuth broken,
 /// which is the failure this whole mechanism exists to prevent.
 pub fn server_record_name(owner_pid: i32) -> String {
     format!("server-{owner_pid}.json")
@@ -481,12 +481,12 @@ impl TokenTrackerServer {
         let url = dashboard_url(port);
 
         let args = serve_args(&paths.tracker, port);
-        let mut child = node_command(&paths.node)
+        let mut child = node_command(&paths.node)?
             .args(&args)
             // Own process group: `bin/tracker.js` re-executes itself through
             // `spawnSync` when a proxy is configured, so the process actually
             // holding the port is a grandchild. Signalling the group reaches it;
-            // signalling this pid alone would leave it on 17680.
+            // signalling this pid alone would leave it on 17681.
             .process_group(0)
             .stdout(Stdio::null())
             .stderr(server_log_stdio())
@@ -554,7 +554,7 @@ impl TokenTrackerServer {
         });
 
         let args = serve_args(&self.paths.tracker, self.port);
-        self.child = node_command(&self.paths.node)
+        self.child = node_command(&self.paths.node)?
             .args(&args)
             .process_group(0)
             .stdout(Stdio::null())
@@ -584,24 +584,24 @@ impl Drop for TokenTrackerServer {
 /// without bound for the lifetime of the install.
 pub const MAX_LOG_BYTES: u64 = 5 * 1024 * 1024;
 
-/// Candidate log paths in preference order: `$XDG_STATE_HOME/tokentracker/`,
-/// then `$HOME/.local/state/tokentracker/`, then `/tmp`.
+/// Candidate log paths in preference order: `$XDG_STATE_HOME/tokentracker-community/`,
+/// then `$HOME/.local/state/tokentracker-community/`, then `/tmp`.
 pub fn server_log_paths(xdg_state_home: Option<PathBuf>, home: Option<PathBuf>) -> Vec<PathBuf> {
     let mut paths = Vec::new();
     if let Some(state_home) = xdg_state_home {
-        paths.push(state_home.join("tokentracker").join("server.log"));
+        paths.push(state_home.join("tokentracker-community").join("server.log"));
     }
     if let Some(home) = home {
         let path = home
             .join(".local")
             .join("state")
-            .join("tokentracker")
+            .join("tokentracker-community")
             .join("server.log");
         if !paths.contains(&path) {
             paths.push(path);
         }
     }
-    paths.push(PathBuf::from("/tmp").join("tokentracker-server.log"));
+    paths.push(PathBuf::from("/tmp").join("tokentracker-community-server.log"));
     paths
 }
 
@@ -668,10 +668,10 @@ pub fn dashboard_url(port: u16) -> String {
 
 /// OAuth (Google/GitHub) redirects to `http://127.0.0.1:<port>/auth/callback`,
 /// which must be in InsForge's allowed-redirect-URL list.  Prefer a fixed port
-/// registered alongside the macOS (:7680) and Windows (:17680) apps.  Falls
+/// separate from the official TokenTracker's Linux/Windows port (:17680). Falls
 /// back to an OS-assigned free port if the preferred one is already in use
 /// (email login still works; OAuth needs the fixed port).
-const PREFERRED_PORT: u16 = 17680;
+const PREFERRED_PORT: u16 = 17681;
 
 pub fn pick_available_port() -> Result<u16, String> {
     if let Ok(listener) = TcpListener::bind(("127.0.0.1", PREFERRED_PORT)) {
@@ -693,12 +693,17 @@ pub fn pick_available_port() -> Result<u16, String> {
     Ok(port)
 }
 
-/// Base command for every Node process the app spawns. Marks the process as
-/// app-shell `linux` so daily telemetry heartbeats don't report as `cli`.
-pub fn node_command(node: &Path) -> Command {
+/// Base command for every Node process the app spawns. Keep the embedded CLI's
+/// configuration, queue, cache and login state apart from an official install.
+pub fn node_command(node: &Path) -> Result<Command, String> {
+    let home = std::env::var_os("HOME")
+        .map(PathBuf::from)
+        .filter(|path| path.is_absolute())
+        .ok_or_else(|| "HOME must be absolute for Community data isolation".to_string())?;
     let mut command = Command::new(node);
     command.env("TOKENTRACKER_APP_SHELL", "linux");
-    command
+    command.env("TOKENTRACKER_DATA_ROOT", home.join(".tokentracker-community"));
+    Ok(command)
 }
 
 pub fn serve_args(tracker: &Path, port: u16) -> Vec<OsString> {
@@ -746,7 +751,14 @@ fn run_background_sync(paths: &RuntimePaths, child_slot: &Mutex<Option<Child>>) 
     }
 
     let args = sync_args(&paths.tracker);
-    match node_command(&paths.node)
+    let mut command = match node_command(&paths.node) {
+        Ok(command) => command,
+        Err(error) => {
+            eprintln!("[TokenTracker Community] failed to configure background sync: {error}");
+            return;
+        }
+    };
+    match command
         .args(args)
         // Own group, like the server spawns: `stop_child` signals by group, and
         // a plain pid there would name a group this process never created.
@@ -873,12 +885,18 @@ mod tests {
 
     #[test]
     fn node_command_marks_the_linux_app_shell() {
-        let command = node_command(Path::new("/opt/tokentracker/node"));
+        let command = node_command(Path::new("/opt/tokentracker/node")).expect("HOME available");
         let shell = command
             .get_envs()
             .find(|(key, _)| *key == "TOKENTRACKER_APP_SHELL")
             .and_then(|(_, value)| value);
         assert_eq!(shell, Some("linux".as_ref()));
+        let data_root = command
+            .get_envs()
+            .find(|(key, _)| *key == "TOKENTRACKER_DATA_ROOT")
+            .and_then(|(_, value)| value)
+            .expect("isolated data root");
+        assert!(Path::new(data_root).ends_with(".tokentracker-community"));
     }
 
     #[test]

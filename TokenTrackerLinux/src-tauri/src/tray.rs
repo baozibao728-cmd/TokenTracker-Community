@@ -82,7 +82,7 @@ pub fn install(app: &App) -> tauri::Result<()> {
 
     TrayIconBuilder::with_id(TRAY_ID)
         .icon(icon)
-        .tooltip("TokenTracker")
+        .tooltip("TokenTracker Community")
         .menu(&menu)
         .on_menu_event(|app, event| match event.id().as_ref() {
             OPEN_ID => show_main_window(app),

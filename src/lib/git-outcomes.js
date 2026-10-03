@@ -9,9 +9,10 @@ const fsp = require("node:fs/promises");
 const os = require("node:os");
 const path = require("node:path");
 const crypto = require("node:crypto");
+const { resolveTrackerRoot } = require("./tracker-paths");
 
 function resolveAutoOutcomesPath(home = os.homedir()) {
-  return path.join(home, ".tokentracker", "tracker", "auto-outcomes.jsonl");
+  return path.join(resolveTrackerRoot({ home }), "tracker", "auto-outcomes.jsonl");
 }
 
 function readJsonl(filePath) {

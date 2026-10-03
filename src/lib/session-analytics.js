@@ -32,6 +32,7 @@ const { listClaudeProjectFiles, listRolloutFilesDeep, claudeMessageDedupKey } = 
 const { parseCodexRolloutFile } = require("./codex-rollout-parser");
 const { computeRowCost, getModelPricing } = require("./pricing");
 const { USD_TICKS_PER_USD, normalizeGrokUsage } = require("./grok-usage");
+const { resolveTrackerRoot } = require("./tracker-paths");
 const wsl = require("./wsl-probe");
 
 // Bump the sidecar when derived metrics change so cached rows are rebuilt
@@ -87,7 +88,7 @@ function normalizeSessionModel(value) {
 }
 
 function resolveSessionSidecarPath(home = os.homedir()) {
-  return path.join(home, ".tokentracker", "tracker", "session.queue.jsonl");
+  return path.join(resolveTrackerRoot({ home }), "tracker", "session.queue.jsonl");
 }
 
 function sessionHash(source, id) {
@@ -1108,7 +1109,7 @@ function providerRoots(home, providerDir, env, deps = {}) {
 // cannot see a second copy of the same file under a different path spelling.
 // Every discovered path becomes its own row keyed by the resolved file path, so
 // a WSL `$HOME` pointing at the Windows profile — the same files reachable as
-// both `C:\Users\dev\.claude\...` and `\\wsl$\Ubuntu\home\dev\.claude\...` —
+// both Windows drive paths and WSL UNC paths —
 // duplicated sessions in the browser, the project list and the CSV export.
 //
 // Cross-root only, on purpose: a single root is passed through verbatim, so

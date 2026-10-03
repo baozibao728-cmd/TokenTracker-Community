@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { useInsforgeAuth } from "../contexts/InsforgeAuthContext";
-import { getCloudSyncEnabled, isLocalDashboardHost } from "../lib/cloud-sync-prefs";
+import { getCloudSyncEnabled, isLocalDashboardHost, isOAuthRelayPath, syncCloudSyncPrefToLocalServer } from "../lib/cloud-sync-prefs";
 import { runCloudUsageSyncIfDue } from "../lib/cloud-sync";
 
 function isSharePath(pathname: string): boolean {
@@ -23,6 +23,15 @@ export function useCloudUsageSync(): void {
   const location = useLocation();
   const insforge = useInsforgeAuth();
   const runRef = useRef(false);
+  const mirrorInitializedRef = useRef(false);
+
+  // AccountViewProvider sits outside the Router. Initialize here so a relay
+  // cannot overwrite native preferences, and callback -> dashboard still works.
+  useEffect(() => {
+    if (mirrorInitializedRef.current || isOAuthRelayPath(location.pathname)) return;
+    syncCloudSyncPrefToLocalServer();
+    mirrorInitializedRef.current = true;
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!isLocalDashboardHost()) return;
@@ -33,7 +42,7 @@ export function useCloudUsageSync(): void {
     let cancelled = false;
     const t = window.setTimeout(() => {
       (async () => {
-        if (cancelled || runRef.current) return;
+        if (cancelled || runRef.current || !getCloudSyncEnabled()) return;
         runRef.current = true;
         try {
           await runCloudUsageSyncIfDue(() => insforge.getAccessToken());

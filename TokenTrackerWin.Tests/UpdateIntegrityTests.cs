@@ -7,13 +7,12 @@ namespace TokenTrackerWin.Tests;
 
 /// <summary>
 /// The updater executes what it downloads, so these cover the three outcomes the
-/// release flow can produce: a matching digest (install), a mismatching one
-/// (refuse + discard), and no SHA256SUMS entry at all (legacy release, the caller
-/// keeps today's behaviour).
+/// release flow can produce: only a matching digest permits installation.
+/// Missing or unusable SHA256SUMS must refuse and discard the download.
 /// </summary>
 public class UpdateIntegrityTests
 {
-    private const string SetupName = "TokenTracker-Setup.exe";
+    private const string SetupName = Constants.SetupAssetName;
 
     private static string HexOf(byte[] bytes)
         => Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();

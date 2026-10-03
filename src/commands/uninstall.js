@@ -27,12 +27,28 @@ const { removeOpenclawHookConfig } = require("../lib/openclaw-hook");
 const { removeOpenclawSessionPluginConfig } = require("../lib/openclaw-session-plugin");
 const { removeGrokHook } = require("../lib/grok-hook");
 const { removeOmpHook } = require("../lib/omp-hook");
-const { resolveTrackerPaths } = require("../lib/tracker-paths");
+const { resolveTrackerPaths, isIsolatedTrackerRuntime } = require("../lib/tracker-paths");
+const { defaultSeedPath } = require("../lib/machine-id");
 
 async function cmdUninstall(argv) {
   const opts = parseArgs(argv);
   const home = os.homedir();
-  const { trackerDir, binDir } = await resolveTrackerPaths({ home });
+  const { rootDir, trackerDir, binDir } = await resolveTrackerPaths({ home });
+  if (isIsolatedTrackerRuntime()) {
+    // Community does not own upstream/global provider hooks. Removing any of
+    // them could disable the separately installed official TokenTracker.
+    await fs.unlink(path.join(binDir, "notify.cjs")).catch(() => {});
+    await fs.rm(path.join(trackerDir, "app"), { recursive: true, force: true }).catch(() => {});
+    if (opts.purge) {
+      await fs.rm(rootDir, { recursive: true, force: true });
+    }
+    const seedPath = defaultSeedPath(path.join(trackerDir, "queue.jsonl"));
+    process.stdout.write(
+      `Community runtime removed; global provider integrations left unchanged.\n`
+      + (opts.purge ? `- Purged: ${rootDir}\n- Kept identity seed: ${seedPath}\n` : "- Purge: skipped (use --purge)\n"),
+    );
+    return;
+  }
   const codexHome = process.env.CODEX_HOME || path.join(home, ".codex");
   const codexConfigPath = path.join(codexHome, "config.toml");
   const acodeHome = process.env.TOKENTRACKER_ACODE_HOME || path.join(home, ".acode");

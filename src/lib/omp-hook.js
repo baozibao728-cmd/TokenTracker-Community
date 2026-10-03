@@ -1,7 +1,7 @@
 "use strict";
 
-const os = require("node:os");
 const path = require("node:path");
+const os = require("node:os");
 const fs = require("node:fs/promises");
 const fssync = require("node:fs");
 
@@ -74,7 +74,6 @@ function resolveNotifyPath() {
   const candidates = [];
   if (process.env.TOKENTRACKER_NOTIFY) candidates.push(process.env.TOKENTRACKER_NOTIFY);
   if (MANAGED_NOTIFY) candidates.push(MANAGED_NOTIFY);
-  candidates.push(path.join(os.homedir(), ".tokentracker", "bin", "notify.cjs"));
   for (const candidate of candidates) {
     try {
       if (candidate && fs.existsSync(candidate)) return candidate;
@@ -89,7 +88,7 @@ function spawnNotify() {
     if (!warnedMissing) {
       warnedMissing = true;
       console.warn(
-        "[tokentracker-notify] notify.cjs not found; expected ~/.tokentracker/bin/notify.cjs",
+        "[tokentracker-notify] notify.cjs not found; reinstall the matching TokenTracker runtime",
       );
     }
     return;

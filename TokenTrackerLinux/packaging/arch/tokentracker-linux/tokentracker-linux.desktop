@@ -1,10 +1,10 @@
 [Desktop Entry]
 Type=Application
-Name=TokenTracker
-Comment=Local AI token usage tracker
-Exec=tokentracker-linux %u
-Icon=tokentracker-linux
+Name=TokenTracker Community
+Comment=Community AI token usage tracker
+Exec=tokentracker-community-linux %u
+Icon=tokentracker-community-linux
 Terminal=false
 Categories=Development;Utility;
 StartupNotify=true
-MimeType=x-scheme-handler/tokentracker;
+MimeType=x-scheme-handler/tokentracker-community;

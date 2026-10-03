@@ -1,3 +1,5 @@
+> TokenTracker-Community is an independent MIT fork of [TokenTracker](https://github.com/xiufengsun/TokenTracker). Current fork downloads/support: [repository](https://github.com/baozibao728-cmd/TokenTracker-Community). The inherited npm/Homebrew instructions refer to upstream packages; Community uses its own backend and does not currently support cloud badges/share/automatic anticheat.
+
 <div align="center">
 
 # Token Tracker
@@ -13,11 +15,10 @@ Sammle automatisch Token-Zahlen von **42 KI-Coding-Tools**, aggregiere sie lokal
 [![Homebrew](https://img.shields.io/github/v/release/xiufengsun/TokenTracker?label=brew&color=F8B73E&logo=homebrew&logoColor=white)](https://github.com/xiufengsun/homebrew-tokentracker)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![CLI](https://img.shields.io/badge/CLI-macOS%20%C2%B7%20Linux%20%C2%B7%20Windows-lightgrey.svg)](https://www.npmjs.com/package/tokentracker-cli)
-[![macOS app](https://img.shields.io/badge/macOS%20app-menu%20bar%20%2B%20widgets-lightgrey.svg?logo=apple&logoColor=white)](https://github.com/xiufengsun/TokenTracker/releases/latest)
-[![Windows app](https://img.shields.io/badge/Windows%20app-system%20tray-lightgrey.svg?logo=windows&logoColor=white)](https://github.com/xiufengsun/TokenTracker/releases/latest)
+[![macOS app](https://img.shields.io/badge/macOS%20app-menu%20bar%20%2B%20widgets-lightgrey.svg?logo=apple&logoColor=white)](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest)
+[![Windows app](https://img.shields.io/badge/Windows%20app-system%20tray-lightgrey.svg?logo=windows&logoColor=white)](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest)
 [![GitHub stars](https://img.shields.io/github/stars/xiufengsun/TokenTracker?style=social)](https://github.com/xiufengsun/TokenTracker/stargazers)
 [![Featured in 阮一峰周刊 #393](https://img.shields.io/badge/Featured%20in-%E9%98%AE%E4%B8%80%E5%B3%B0%E5%91%A8%E5%88%8A%20%23393-FF6B35?logo=rss&logoColor=white)](https://github.com/ruanyf/weekly/blob/master/docs/issue-393.md)
-[![Author tokens](https://srctyff5.us-east.insforge.app/functions/tokentracker-badge-svg?user_id=0652839f-d19f-4f67-af85-6b7675875443&metric=tokens&compact=1&label=author%20tokens)](https://github.com/xiufengsun/TokenTracker)
 
 <br/>
 
@@ -59,9 +60,9 @@ Das war's. Beim ersten Start werden Hooks installiert, deine Daten synchronisier
 - 🧩 *Optional:* Ein Skills-Tab zum Durchsuchen von 250+ öffentlichen Skills – synchronisiert über Claude · Codex · Grok · Antigravity · Gemini · OpenCode · Hermes
 
 > **Möchtest du eine native Desktop-App?**
-> - **macOS** — [Lade `TokenTrackerBar.dmg` herunter](https://github.com/xiufengsun/TokenTracker/releases/latest/download/TokenTrackerBar.dmg) → in Programme ziehen. Menüleisten-Symbol, Desktop-Widgets und das Dashboard in einer WKWebView.
-> - **Windows** — [Lade `TokenTracker-Setup.exe` herunter](https://github.com/xiufengsun/TokenTracker/releases/latest/download/TokenTracker-Setup.exe) → per-user Installer ausführen (kein Admin nötig). System-Tray-App mit Dashboard in WebView2. Portables Zip gibt's auf der [Releases-Seite](https://github.com/xiufengsun/TokenTracker/releases/latest).
-> - **Linux** — [Lade `TokenTracker-linux-x86_64.AppImage` herunter](https://github.com/xiufengsun/TokenTracker/releases/latest/download/TokenTracker-linux-x86_64.AppImage) → `chmod +x` und starten. Tray-App mit Dashboard in einem WebKitGTK-Fenster. Sie bringt GTK/WebKit selbst mit und braucht aus deiner Distribution nichts außer einer aktuellen glibc; unter GNOME braucht das Tray-Symbol weiterhin die [AppIndicator-Erweiterung](https://extensions.gnome.org/extension/615/appindicator-support/). `.deb`- und `.rpm`-Pakete gibt es ebenfalls auf der [Releases-Seite](https://github.com/xiufengsun/TokenTracker/releases/latest) — diese nutzen stattdessen `webkit2gtk-4.1`, `gtk3` und appindicator der Distribution. Das `.deb` benötigt `libappindicator3-1`, das Debian 12 zugunsten von `libayatana-appindicator3-1` entfernt hat; nutze dort das AppImage.
+> - **macOS** — [Lade `TokenTrackerCommunity.dmg` herunter](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest/download/TokenTrackerCommunity.dmg) → in Programme ziehen. Menüleisten-Symbol, Desktop-Widgets und das Dashboard in einer WKWebView.
+> - **Windows** — [Lade `TokenTracker-Community-Setup.exe` herunter](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest/download/TokenTracker-Community-Setup.exe) → per-user Installer ausführen (kein Admin nötig). System-Tray-App mit Dashboard in WebView2. Portables Zip gibt's auf der [Releases-Seite](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest).
+> - **Linux** — [Lade `TokenTracker-Community-linux-x86_64.AppImage` herunter](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest/download/TokenTracker-Community-linux-x86_64.AppImage) → `chmod +x` und starten. Tray-App mit Dashboard in einem WebKitGTK-Fenster. Sie bringt GTK/WebKit selbst mit und braucht aus deiner Distribution nichts außer einer aktuellen glibc; unter GNOME braucht das Tray-Symbol weiterhin die [AppIndicator-Erweiterung](https://extensions.gnome.org/extension/615/appindicator-support/). `.deb`- und `.rpm`-Pakete gibt es ebenfalls auf der [Releases-Seite](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest) — diese nutzen stattdessen `webkit2gtk-4.1`, `gtk3` und appindicator der Distribution. Das `.deb` benötigt `libappindicator3-1`, das Debian 12 zugunsten von `libayatana-appindicator3-1` entfernt hat; nutze dort das AppImage.
 
 Für kürzere Befehle global installieren:
 
@@ -220,7 +221,7 @@ Aktualisieren mit `brew upgrade --cask xiufengsun/tokentracker/tokentracker`. De
 >
 > Tiefergehend: [OpenClaw-Integration & Troubleshooting](docs/openclaw-integration.md).
 
-Fehlt dein Tool? [Erstelle ein Issue](https://github.com/xiufengsun/TokenTracker/issues/new) — neue Provider sind meist nur eine Parser-Datei entfernt.
+Fehlt dein Tool? [Erstelle ein Issue](https://github.com/baozibao728-cmd/TokenTracker-Community/issues/new) — neue Provider sind meist nur eine Parser-Datei entfernt.
 
 ---
 
@@ -324,7 +325,7 @@ Unterstützte Provider für WSL-Erkennung und Zusammenführung (Aggregation):
 ## 🛠️ Entwicklung
 
 ```bash
-git clone https://github.com/xiufengsun/TokenTracker.git
+git clone https://github.com/baozibao728-cmd/TokenTracker-Community.git
 cd TokenTracker
 npm install
 
@@ -407,7 +408,7 @@ Für einen tiefergehenden Health Check:
 tokentracker doctor
 ```
 
-Zeigt ein Provider `not configured`, obwohl du ihn nutzt, versuche `tokentracker activate-if-needed`. Falls immer noch fehlend, [erstelle ein Issue](https://github.com/xiufengsun/TokenTracker/issues/new) mit der `doctor`-Ausgabe.
+Zeigt ein Provider `not configured`, obwohl du ihn nutzt, versuche `tokentracker activate-if-needed`. Falls immer noch fehlend, [erstelle ein Issue](https://github.com/baozibao728-cmd/TokenTracker-Community/issues/new) mit der `doctor`-Ausgabe.
 
 </details>
 
@@ -485,9 +486,6 @@ So findest du `DEINE_USER_ID`:
 Dann füge eines davon ein:
 
 ```markdown
-[![tokens](https://srctyff5.us-east.insforge.app/functions/tokentracker-badge-svg?user_id=DEINE_USER_ID&metric=tokens)](https://github.com/xiufengsun/TokenTracker)
-[![cost](https://srctyff5.us-east.insforge.app/functions/tokentracker-badge-svg?user_id=DEINE_USER_ID&metric=cost)](https://github.com/xiufengsun/TokenTracker)
-[![rank](https://srctyff5.us-east.insforge.app/functions/tokentracker-badge-svg?user_id=DEINE_USER_ID&metric=rank)](https://github.com/xiufengsun/TokenTracker)
 ```
 
 > Der Link verweist standardmäßig auf das TokenTracker-Repo, damit jeder Klick anderen Entwicklern hilft, das Tool zu entdecken. Du kannst ihn gegen dein Leaderboard-Profil, deine Website oder `https://www.tokentracker.cc` austauschen.
@@ -520,10 +518,10 @@ Shields.io-kompatible Badges mit deinen aktuellen Gesamtwerten (60s Cache):
 
 ## 🤝 Beitragen & Support
 
-- **Bugs / Feature-Wünsche**: [Issue erstellen](https://github.com/xiufengsun/TokenTracker/issues/new)
+- **Bugs / Feature-Wünsche**: [Issue erstellen](https://github.com/baozibao728-cmd/TokenTracker-Community/issues/new)
 - **Sicherheit**: Siehe [SECURITY.md](SECURITY.md) – bitte keine öffentlichen Issues für Sicherheitsmeldungen
 - **Pull Requests**: Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Setup, Tests und das Hinzufügen neuer KI-Tool-Integrationen
-- **Fragen / Vorstellungen**: [GitHub Discussions](https://github.com/xiufengsun/TokenTracker/discussions)
+- **Fragen / Vorstellungen**: [GitHub Discussions](https://github.com/baozibao728-cmd/TokenTracker-Community/issues)
 
 ## 🙏 Danksagungen
 

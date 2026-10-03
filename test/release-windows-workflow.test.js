@@ -12,7 +12,7 @@ const WORKFLOW_PATH = path.join(
 );
 
 function loadWorkflow() {
-  return fs.readFileSync(WORKFLOW_PATH, "utf8");
+  return fs.readFileSync(WORKFLOW_PATH, "utf8").replace(/\r\n/g, "\n");
 }
 
 test("Windows release includes and verifies the resident quota entry", () => {
@@ -100,7 +100,8 @@ test("workflow verifies the packaged runtime is complete", () => {
 test("workflow packages a zip release asset", () => {
   const content = loadWorkflow();
   assert.ok(content.includes("Compress-Archive"));
-  assert.ok(content.includes("TokenTracker-win-x64"));
+  assert.ok(content.includes("TokenTracker-Community-win-x64"));
+  assert.ok(content.includes("TokenTrackerCommunity.exe"));
 });
 
 test("workflow builds the installer with Inno Setup", () => {
@@ -116,8 +117,8 @@ test("workflow builds the installer with Inno Setup", () => {
 test("workflow attaches the zip and the installer to a GitHub release", () => {
   const content = loadWorkflow();
   assert.ok(content.includes("gh release"));
-  assert.ok(content.includes("TokenTracker-win-x64"), "zip asset");
-  assert.ok(content.includes("TokenTracker-Setup"), "installer asset");
+  assert.ok(content.includes("TokenTracker-Community-win-x64.zip"), "zip asset");
+  assert.ok(content.includes("TokenTracker-Community-Setup.exe"), "installer asset");
 });
 
 test("Windows builds from the version tag and only uploads to a draft", () => {
@@ -161,12 +162,24 @@ test("workflow uploads version-less assets only (no versioned duplicate)", () =>
 
 test("workflow uploads a stable version-less installer alias for landing deep links", () => {
   const content = loadWorkflow();
-  // The landing page links releases/latest/download/TokenTracker-Setup.exe,
+  // The landing page links releases/latest/download/TokenTracker-Community-Setup.exe,
   // which only resolves if a version-less asset of that exact name is uploaded.
   assert.ok(
-    /TokenTracker-Setup\.exe/.test(content),
-    "must upload a version-less TokenTracker-Setup.exe alias"
+    /TokenTracker-Community-Setup\.exe/.test(content),
+    "must upload a version-less TokenTracker-Community-Setup.exe alias"
   );
+});
+
+test("Windows release uses the Community backend configuration and forwards it when reusable", () => {
+  const content = loadWorkflow();
+  const dmg = fs.readFileSync(DMG_WORKFLOW_PATH, "utf8").replace(/\r\n/g, "\n");
+  assert.match(content, /vars\.TOKENTRACKER_COMMUNITY_INSFORGE_BASE_URL/);
+  assert.match(content, /secrets\.TOKENTRACKER_COMMUNITY_INSFORGE_ANON_KEY/);
+  assert.match(content, /node scripts\/prepare-release-client-config\.cjs/);
+  assert.match(dmg, /secrets:\s*inherit/);
+  assert.match(content, /ref: refs\/tags\/v\$\{\{ inputs\.version \}\}/);
+  assert.doesNotMatch(content, /https:\/\/[^\s'"`]*insforge\.app/);
+  assert.doesNotMatch(content, /eyJ[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/);
 });
 
 test("workflow has correct step order: dashboard → bundle → publish → copy → zip → installer → release", () => {
@@ -229,8 +242,8 @@ test("installer is per-user (no admin / UAC)", () => {
 test("installer bundles the self-contained publish output", () => {
   const iss = loadIss();
   assert.ok(
-    /Source:\s*"\.\.\\publish\\\*"/.test(iss),
-    "should pack ..\\publish\\* (exe + runtime + EmbeddedServer)"
+    /#define PublishDir "\.\.\\publish"/.test(iss) && /Source:\s*"\{#PublishDir\}\\\*"/.test(iss),
+    "should default to ..\\publish and pack the explicit publish directory (exe + runtime + EmbeddedServer)"
   );
 });
 
@@ -238,7 +251,7 @@ test("installer output is parameterized by version", () => {
   const iss = loadIss();
   assert.ok(iss.includes("MyAppVersion"), "version must be passed in via /D");
   assert.ok(
-    iss.includes("TokenTracker-Setup-v"),
+    iss.includes("TokenTracker-Community-Setup-v"),
     "output filename should carry the version"
   );
 });
@@ -284,7 +297,7 @@ test("release-windows is callable as a reusable workflow", () => {
 });
 
 test("release-dmg invokes release-windows so one dispatch ships both platforms", () => {
-  const dmg = fs.readFileSync(DMG_WORKFLOW_PATH, "utf8");
+  const dmg = fs.readFileSync(DMG_WORKFLOW_PATH, "utf8").replace(/\r\n/g, "\n");
   assert.ok(
     /uses:\s*\.\/\.github\/workflows\/release-windows\.yml/.test(dmg),
     "DMG workflow must call the Windows reusable workflow"

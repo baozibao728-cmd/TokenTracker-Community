@@ -21,7 +21,7 @@ impl TempDir {
     fn new(label: &str) -> Self {
         let unique = COUNTER.fetch_add(1, Ordering::Relaxed);
         let path = std::env::temp_dir().join(format!(
-            "tokentracker-linux-{label}-{}-{unique}",
+            "tokentracker-community-linux-{label}-{}-{unique}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&path);
@@ -96,7 +96,7 @@ fn appimage_appdir_is_probed_when_no_resource_dir_is_available() {
     .expect("the productName layout must be a candidate");
     let arch = index_of(
         &candidates,
-        &PathBuf::from("/tmp/.mount_xyz789/usr/lib/tokentracker-linux"),
+        &PathBuf::from("/tmp/.mount_xyz789/usr/lib/tokentracker-community-linux"),
     )
     .expect("the Arch-style name must remain a candidate");
 
@@ -140,10 +140,10 @@ fn exe_relative_prefix_is_probed_before_the_absolute_install_path() {
     let candidates = candidate_runtime_roots(&roots);
     let relative = index_of(
         &candidates,
-        &PathBuf::from("/opt/tokentracker/bin/../lib/tokentracker-linux"),
+        &PathBuf::from("/opt/tokentracker/bin/../lib/tokentracker-community-linux"),
     )
     .expect("exe-relative prefix should be a candidate");
-    let absolute = index_of(&candidates, Path::new("/usr/lib/tokentracker-linux"))
+    let absolute = index_of(&candidates, Path::new("/usr/lib/tokentracker-community-linux"))
         .expect("Arch install path should always be a candidate");
 
     assert!(
@@ -157,7 +157,7 @@ fn exe_relative_prefix_is_probed_before_the_absolute_install_path() {
 fn arch_install_path_is_always_a_candidate() {
     let candidates = candidate_runtime_roots(&RuntimeRoots::default());
     assert!(
-        candidates.contains(&PathBuf::from("/usr/lib/tokentracker-linux")),
+        candidates.contains(&PathBuf::from("/usr/lib/tokentracker-community-linux")),
         "the Arch package layout must never be dropped; got {candidates:?}"
     );
 }
@@ -280,7 +280,7 @@ fn resolution_reports_every_checked_location_when_nothing_is_found() {
     // AppImage and development locations, not just one of them.
     assert!(error.contains("appdir"), "got {error}");
     assert!(error.contains("project"), "got {error}");
-    assert!(error.contains("/usr/lib/tokentracker-linux"), "got {error}");
+    assert!(error.contains("/usr/lib/tokentracker-community-linux"), "got {error}");
 }
 
 #[test]

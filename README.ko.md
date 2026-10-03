@@ -1,3 +1,5 @@
+> TokenTracker-Community is an independent MIT fork of [TokenTracker](https://github.com/xiufengsun/TokenTracker). Current fork downloads/support: [repository](https://github.com/baozibao728-cmd/TokenTracker-Community). The inherited npm/Homebrew instructions refer to upstream packages; Community uses its own backend and does not currently support cloud badges/share/automatic anticheat.
+
  <div align="center">
 
 # Token Tracker
@@ -15,7 +17,6 @@
 [![Platform](https://img.shields.io/badge/macOS-supported-lightgrey.svg)](https://www.apple.com/macos/)
 [![GitHub stars](https://img.shields.io/github/stars/xiufengsun/TokenTracker?style=social)](https://github.com/xiufengsun/TokenTracker/stargazers)
 [![Featured in 阮一峰周刊 #393](https://img.shields.io/badge/Featured%20in-%E9%98%AE%E4%B8%80%E5%B3%B0%E5%91%A8%E5%88%8A%20%23393-FF6B35?logo=rss&logoColor=white)](https://github.com/ruanyf/weekly/blob/master/docs/issue-393.md)
-[![Author tokens](https://srctyff5.us-east.insforge.app/functions/tokentracker-badge-svg?user_id=0652839f-d19f-4f67-af85-6b7675875443&metric=tokens&compact=1&label=author%20tokens)](https://github.com/xiufengsun/TokenTracker)
 
 <br/>
 
@@ -54,9 +55,9 @@ npx tokentracker-cli
 - 🧩 *옵션:* 250+개의 공개 Skill을 둘러보고 Claude · Codex · AStudio · Gemini · OpenCode · Hermes 간에 동기화할 수 있는 Skills 탭
 
 > **네이티브 데스크톱 앱이 필요하다면?**
-> - **macOS** — [`TokenTrackerBar.dmg` 다운로드](https://github.com/xiufengsun/TokenTracker/releases/latest/download/TokenTrackerBar.dmg) → Applications로 드래그. 데스크톱 위젯, 메뉴바 상태 아이콘, WKWebView 안의 동일한 대시보드를 포함합니다.
-> - **Windows** — [`TokenTracker-Setup.exe` 다운로드](https://github.com/xiufengsun/TokenTracker/releases/latest/download/TokenTracker-Setup.exe) → 관리자 권한이 필요 없는 사용자 단위 설치 프로그램 실행. WebView2 안에 대시보드를 표시하는 시스템 트레이 앱입니다. 포터블 zip은 [릴리스 페이지](https://github.com/xiufengsun/TokenTracker/releases/latest)에 있습니다.
-> - **Linux** — [`TokenTracker-linux-x86_64.AppImage` 다운로드](https://github.com/xiufengsun/TokenTracker/releases/latest/download/TokenTracker-linux-x86_64.AppImage) → `chmod +x` 후 실행. WebKitGTK 창에 대시보드를 표시하는 트레이 앱입니다. GTK/WebKit을 함께 담고 있어 비교적 최신 glibc 외에는 배포판 의존성이 없습니다. GNOME에서는 트레이 아이콘에 [AppIndicator 확장](https://extensions.gnome.org/extension/615/appindicator-support/)이 필요합니다. `.deb`, `.rpm` 패키지도 [릴리스 페이지](https://github.com/xiufengsun/TokenTracker/releases/latest)에서 받을 수 있으며, 이쪽은 배포판의 `webkit2gtk-4.1`, `gtk3`, appindicator를 사용합니다. `.deb`는 `libappindicator3-1`을 요구하는데 Debian 12는 이를 빼고 `libayatana-appindicator3-1`을 제공하므로, Debian 12에서는 AppImage를 사용하세요.
+> - **macOS** — [`TokenTrackerCommunity.dmg` 다운로드](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest/download/TokenTrackerCommunity.dmg) → Applications로 드래그. 데스크톱 위젯, 메뉴바 상태 아이콘, WKWebView 안의 동일한 대시보드를 포함합니다.
+> - **Windows** — [`TokenTracker-Community-Setup.exe` 다운로드](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest/download/TokenTracker-Community-Setup.exe) → 관리자 권한이 필요 없는 사용자 단위 설치 프로그램 실행. WebView2 안에 대시보드를 표시하는 시스템 트레이 앱입니다. 포터블 zip은 [릴리스 페이지](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest)에 있습니다.
+> - **Linux** — [`TokenTracker-Community-linux-x86_64.AppImage` 다운로드](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest/download/TokenTracker-Community-linux-x86_64.AppImage) → `chmod +x` 후 실행. WebKitGTK 창에 대시보드를 표시하는 트레이 앱입니다. GTK/WebKit을 함께 담고 있어 비교적 최신 glibc 외에는 배포판 의존성이 없습니다. GNOME에서는 트레이 아이콘에 [AppIndicator 확장](https://extensions.gnome.org/extension/615/appindicator-support/)이 필요합니다. `.deb`, `.rpm` 패키지도 [릴리스 페이지](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest)에서 받을 수 있으며, 이쪽은 배포판의 `webkit2gtk-4.1`, `gtk3`, appindicator를 사용합니다. `.deb`는 `libappindicator3-1`을 요구하는데 Debian 12는 이를 빼고 `libayatana-appindicator3-1`을 제공하므로, Debian 12에서는 AppImage를 사용하세요.
 
 짧은 명령어로 쓰려면 전역 설치:
 
@@ -218,7 +219,7 @@ brew install xiufengsun/tokentracker/tokentracker
 >
 > 더 깊이 살펴보기: [OpenClaw 통합 & 트러블슈팅](docs/openclaw-integration.md).
 
-원하는 도구가 빠져 있나요? [Issue를 열어주세요](https://github.com/xiufengsun/TokenTracker/issues/new) — 새 프로바이더 추가는 보통 파서 파일 하나 정도면 됩니다.
+원하는 도구가 빠져 있나요? [Issue를 열어주세요](https://github.com/baozibao728-cmd/TokenTracker-Community/issues/new) — 새 프로바이더 추가는 보통 파서 파일 하나 정도면 됩니다.
 
 ---
 
@@ -296,7 +297,7 @@ TokenTracker는 사용량 데이터를 로컬에서 처리합니다. 프롬프�
 ## 🛠️ 개발
 
 ```bash
-git clone https://github.com/xiufengsun/TokenTracker.git
+git clone https://github.com/baozibao728-cmd/TokenTracker-Community.git
 cd TokenTracker
 npm install
 
@@ -381,7 +382,7 @@ tokentracker status
 tokentracker doctor
 ```
 
-사용하고 있는데도 설정되지 않은 것으로 표시되는 프로바이더가 있다면 `tokentracker activate-if-needed`로 hook 감지를 다시 실행해 보세요. 여전히 없으면 `doctor` 출력을 첨부해 [Issue를 열어주세요](https://github.com/xiufengsun/TokenTracker/issues/new).
+사용하고 있는데도 설정되지 않은 것으로 표시되는 프로바이더가 있다면 `tokentracker activate-if-needed`로 hook 감지를 다시 실행해 보세요. 여전히 없으면 `doctor` 출력을 첨부해 [Issue를 열어주세요](https://github.com/baozibao728-cmd/TokenTracker-Community/issues/new).
 
 </details>
 
@@ -459,9 +460,6 @@ GitHub 프로필이나 프로젝트 README에서 토큰 사용량을 자랑해 �
 아래 중 하나를 붙여넣으세요:
 
 ```markdown
-[![tokens](https://srctyff5.us-east.insforge.app/functions/tokentracker-badge-svg?user_id=YOUR_USER_ID&metric=tokens)](https://github.com/xiufengsun/TokenTracker)
-[![cost](https://srctyff5.us-east.insforge.app/functions/tokentracker-badge-svg?user_id=YOUR_USER_ID&metric=cost)](https://github.com/xiufengsun/TokenTracker)
-[![rank](https://srctyff5.us-east.insforge.app/functions/tokentracker-badge-svg?user_id=YOUR_USER_ID&metric=rank)](https://github.com/xiufengsun/TokenTracker)
 ```
 
 > 링크 대상은 기본적으로 TokenTracker 리포지토리로 설정되어 있어, 클릭 한 번이 다른 개발자의 발견으로 이어집니다. 본인의 leaderboard 프로필, 개인 사이트, 또는 `https://www.tokentracker.cc`로 보내고 싶다면 URL만 바꾸면 됩니다.
@@ -494,10 +492,10 @@ GitHub 프로필이나 프로젝트 README에서 토큰 사용량을 자랑해 �
 
 ## 🤝 컨트리뷰션 & 지원
 
-- **버그 / 기능 요청**: [Issue 열기](https://github.com/xiufengsun/TokenTracker/issues/new)
+- **버그 / 기능 요청**: [Issue 열기](https://github.com/baozibao728-cmd/TokenTracker-Community/issues/new)
 - **보안**: [SECURITY.md](SECURITY.md) 참조 — 보안 보고는 공개 Issue로 올리지 마세요
 - **풀 리퀘스트**: 셋업, 테스트, 새 AI 도구 통합 추가 방법은 [CONTRIBUTING.md](CONTRIBUTING.md) 참조
-- **질문 / 쇼케이스**: [GitHub Discussions](https://github.com/xiufengsun/TokenTracker/discussions)
+- **질문 / 쇼케이스**: [GitHub Discussions](https://github.com/baozibao728-cmd/TokenTracker-Community/issues)
 
 ## 🙏 크레딧
 

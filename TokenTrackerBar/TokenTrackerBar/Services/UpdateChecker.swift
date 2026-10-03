@@ -6,8 +6,8 @@ final class UpdateChecker {
 
     static let shared = UpdateChecker()
 
-    private let repo = "xiufengsun/TokenTracker"
-    private let releaseURL: String = "https://github.com/xiufengsun/TokenTracker/releases/latest"
+    private let repo = "baozibao728-cmd/TokenTracker-Community"
+    private let releaseURL: String = "https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest"
 
     /// Observable status for menu item display
     private(set) var statusText: String? = nil {
@@ -43,6 +43,7 @@ final class UpdateChecker {
 
     func check(silent: Bool = false) {
         guard !isBusy else { return }
+        guard Bundle.main.bundleIdentifier == "com.tokentracker.community" else { return }
 
         // Auto-update toggle: silent checks are exclusively launch-time background
         // checks whose success path downloads and installs without prompting, so the
@@ -56,7 +57,7 @@ final class UpdateChecker {
         // Developer / Debug path guard:
         // Skip automatic silent background checks if the application is running from outside
         // the standard Applications directories (e.g., from Xcode DerivedData).
-        // This prevents developer builds from being replaced by official App Store/GitHub releases.
+        // This prevents developer builds from being replaced by a published release.
         if silent {
             let path = Bundle.main.bundlePath
             let inStandardApps = path.hasPrefix("/Applications/") || path.hasPrefix("/Users/\(NSUserName())/Applications/")
@@ -89,7 +90,6 @@ final class UpdateChecker {
         let tag_name: String
         let name: String?
         let body: String?
-        let html_url: String
         let assets: [Asset]
 
         struct Asset: Decodable {
@@ -103,18 +103,7 @@ final class UpdateChecker {
         }
 
         var dmgAsset: Asset? {
-            let isArm64: Bool = {
-                var sysinfo = utsname()
-                uname(&sysinfo)
-                let machine = withUnsafePointer(to: &sysinfo.machine) {
-                    $0.withMemoryRebound(to: CChar.self, capacity: 1) { String(cString: $0) }
-                }
-                return machine == "arm64"
-            }()
-            let suffix = isArm64 ? "arm64.dmg" : "x64.dmg"
-            // Prefer arch-specific DMG, fall back to any .dmg
-            return assets.first { $0.name.hasSuffix(suffix) }
-                ?? assets.first { $0.name.hasSuffix(".dmg") }
+            assets.first { $0.name == "TokenTrackerCommunity.dmg" }
         }
     }
 
@@ -255,7 +244,7 @@ final class UpdateChecker {
             if response == .alertFirstButtonReturn {
                 if let dmg = release.dmgAsset {
                     self.startDownloadAndInstall(dmg, targetVersion: release.tagVersion, interactive: true)
-                } else if let url = URL(string: release.html_url) {
+                } else if let url = URL(string: self.releaseURL) {
                     NSWorkspace.shared.open(url)
                 }
             }
@@ -287,7 +276,7 @@ final class UpdateChecker {
 
         // Download into the app's own data directory rather than ~/Downloads/.
         // Downloads is TCC-protected on macOS, so writing there triggers a
-        // "TokenTrackerBar wants to access files in your Downloads folder"
+        // "TokenTracker Community wants to access files in your Downloads folder"
         // prompt every time silent auto-update fires — particularly noisy
         // for ad-hoc-signed builds where TCC grants don't persist across
         // re-installs. Application Support is owned by the user and not
@@ -297,7 +286,7 @@ final class UpdateChecker {
             in: .userDomainMask,
             appropriateFor: nil,
             create: true
-        ))?.appendingPathComponent("TokenTrackerBar/updates", isDirectory: true)
+        ))?.appendingPathComponent("TokenTrackerCommunity/updates", isDirectory: true)
             ?? FileManager.default.temporaryDirectory
         if !FileManager.default.fileExists(atPath: supportDir.path) {
             try? FileManager.default.createDirectory(at: supportDir, withIntermediateDirectories: true)
@@ -320,7 +309,15 @@ final class UpdateChecker {
             }
         }
 
-        guard let url = URL(string: asset.browser_download_url) else {
+        guard asset.name == "TokenTrackerCommunity.dmg",
+              let url = URL(string: asset.browser_download_url),
+              url.scheme == "https",
+              url.host == "github.com",
+              url.user == nil,
+              url.password == nil,
+              url.port == nil,
+              url.path.hasPrefix("/baozibao728-cmd/TokenTracker-Community/releases/download/"),
+              url.lastPathComponent == asset.name else {
             finishUpdate()
             showAlert(
                 title: Strings.downloadFailedTitle,
@@ -390,7 +387,7 @@ final class UpdateChecker {
         Task.detached { [self] in
             let result: Result<URL, Error>
             do {
-                result = .success(try self.mountCopyRelaunch(dmgPath: dmgPath))
+                result = .success(try self.mountCopyRelaunch(dmgPath: dmgPath, targetVersion: targetVersion))
             } catch {
                 result = .failure(error)
             }
@@ -404,9 +401,6 @@ final class UpdateChecker {
                     self.relaunch(appURL: appURL)
                 case .failure(let error):
                     self.finishUpdate()
-                    if FileManager.default.fileExists(atPath: dmgPath) {
-                        NSWorkspace.shared.open(dmgURL)
-                    }
                     self.showAlert(
                         title: Strings.installationFailedTitle,
                         message: "\(error.localizedDescription)\n\n\(Strings.manualInstallHint)",
@@ -419,7 +413,7 @@ final class UpdateChecker {
 
     // MARK: - Install Logic
 
-    nonisolated private func mountCopyRelaunch(dmgPath: String) throws -> URL {
+    nonisolated private func mountCopyRelaunch(dmgPath: String, targetVersion: String) throws -> URL {
         // 1. Mount
         let mount = Process()
         mount.executableURL = URL(fileURLWithPath: "/usr/bin/hdiutil")
@@ -447,22 +441,35 @@ final class UpdateChecker {
             detach.waitUntilExit()
         }
 
-        // 2. Find .app
+        // 2. Accept only the Community app with the expected bundle identity.
+        // The DMG must never choose an arbitrary .app or replace the official app.
         let fm = FileManager.default
-        let contents = try fm.contentsOfDirectory(atPath: mountPoint)
-        guard let appName = contents.first(where: { $0.hasSuffix(".app") }) else {
-            throw UpdateError.installFailed("No .app found in DMG")
-        }
-
+        let appName = "TokenTracker Community.app"
+        let expectedBundleIdentifier = "com.tokentracker.community"
         let appsDir = URL(fileURLWithPath: "/Applications", isDirectory: true)
         let sourceApp = URL(fileURLWithPath: mountPoint).appendingPathComponent(appName)
         let destApp = appsDir.appendingPathComponent(appName)
+        let sourceValues = try sourceApp.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
+        guard sourceValues.isDirectory == true,
+              sourceValues.isSymbolicLink != true,
+              let sourceBundle = Bundle(url: sourceApp),
+              sourceBundle.bundleIdentifier == expectedBundleIdentifier,
+              sourceBundle.infoDictionary?["CFBundleShortVersionString"] as? String == targetVersion else {
+            throw UpdateError.installFailed("DMG does not contain the expected TokenTracker Community app and version")
+        }
+        if fm.fileExists(atPath: destApp.path) {
+            let destValues = try destApp.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
+            guard destValues.isDirectory == true,
+                  destValues.isSymbolicLink != true,
+                  Bundle(url: destApp)?.bundleIdentifier == expectedBundleIdentifier else {
+                throw UpdateError.installFailed("Existing app at the Community destination has a different identity")
+            }
+        }
 
         // 3. Stage the new bundle next to the old one, then swap.
         //
         // Never delete the installed app before its replacement is fully on disk.
-        // The previous code removed /Applications/TokenTracker.app and copied into
-        // that same path, so a copy that died partway destroyed the install: one
+        // A copy that dies partway must not destroy the installed app: one
         // such failure on macOS 27 left 15 of 671 files behind, and the only way
         // out was downloading the DMG and dragging it by hand.
         //

@@ -7,7 +7,7 @@ Guidance for Claude Code working in this repository. Every line here is loaded i
 Token Tracker is a local-first AI token usage tracker.
 
 - **CLI** (`src/`, CommonJS, Node ≥20) — entry `bin/tracker.js` → `src/cli.js`. `serve` runs a local HTTP server on `:7680`, `sync` parses logs into `~/.tokentracker/queue.jsonl`.
-- **Dashboard** (`dashboard/`, React 18 + Vite 7 + TS strict + Tailwind) — built to `dashboard/dist/`, served by the CLI locally and by Vercel at `www.tokentracker.cc`.
+- **Dashboard** (`dashboard/`, React 18 + Vite 7 + TS strict + Tailwind) — built to `dashboard/dist/`, served by the CLI locally; this fork has no independent hosted dashboard yet.
 - **macOS app** (`TokenTrackerBar/`, Swift 5.9, XcodeGen) — menu bar + WidgetKit. `EmbeddedServer/` bundles the CLI runtime + built dashboard so the `.app` is self-contained.
 - **Windows app** (`TokenTrackerWin/`, .NET 8 WinForms + WPF + WebView2) — system-tray counterpart of the macOS app. Launches the bundled CLI `serve` on a dynamic loopback port (avoids the DoSvc-held `:7680`), hosts the dashboard in WebView2, registers the `tokentracker://` deep-link for OAuth. Built `EmbeddedServer/` (Node + CLI + dashboard) is bundled by `scripts/bundle-node.ps1` so the `.exe` is self-contained. Dashboard adaptations are gated behind `isNativeWindowsApp()` (`dashboard/src/lib/native-bridge.js`) so macOS/web paths are untouched.
 
@@ -108,20 +108,17 @@ The macOS + Windows + Linux release is **one workflow**: `release-dmg.yml` (disp
 
 | Platform | Assets |
 |---|---|
-| macOS | `TokenTrackerBar.dmg` |
-| Windows | `TokenTracker-win-x64.zip`, `TokenTracker-Setup.exe` |
-| Linux | `TokenTracker-linux-x86_64.AppImage`, `TokenTracker-linux-x86_64.deb`, `TokenTracker-linux-x86_64.rpm` |
+| macOS | `TokenTrackerCommunity.dmg` |
+| Windows | `TokenTracker-Community-win-x64.zip`, `TokenTracker-Community-Setup.exe` |
+| Linux | `TokenTracker-Community-linux-x86_64.AppImage`, `TokenTracker-Community-linux-x86_64.deb`, `TokenTracker-Community-linux-x86_64.rpm` |
 
-When the user says "release" or "发 release", that is explicit approval for the release commit(s) + push — do not ask again for commit/push permission within that scope.
+### Community release ownership
 
-### Steps
+This fork releases from `baozibao728-cmd/TokenTracker-Community`. The inherited npm package name remains reserved to upstream; npm publishing and upstream Homebrew dispatch are disabled here. Official cloud operations workflows are also disabled.
 
-1. Bump the version in **one** place — `package.json` is the single source of truth. Run `npm version <X.Y.Z|patch|minor>` (or, if you edited `package.json` by hand, `npm run sync-versions`): the `version` npm-lifecycle hook runs `scripts/sync-versions.cjs`, which syncs the version into every file listed in `scripts/version-files.cjs` (`project.yml`'s two `MARKETING_VERSION` entries, the Windows `<Version>`, and the Linux `package.json` / `package-lock.json` / `Cargo.toml` / `Cargo.lock` / `tauri.conf.json` / `PKGBUILD`), then `git add`s them so they land in the version commit. They all stay in lockstep automatically — don't hand-edit any of them. (`npm version` also creates a local `vX.Y.Z` tag and a `vX.Y.Z`-style commit message rather than `chore(release): vX.Y.Z`; CI triggers on the package.json version change, not the message.)
-2. `git commit && git push origin main` → the canonical `CI` workflow runs. Only after that exact main-branch commit passes the full Linux validators + macOS tests + Windows build does `npm-publish.yml` check out the tested SHA and publish when the version is new. A failed or cancelled CI never reaches npm. **Never push the local `vX.Y.Z` tag (no `--follow-tags`)** — the release workflow creates the tag itself, and a pre-existing tag makes its `create-release` job fail with "version already consumed" (recovery: delete the remote tag, re-dispatch).
-3. For DMG-eligible changes: `gh workflow run "release (macOS + Windows + Linux)" -f version=X.Y.Z` → the macOS, Windows and Linux jobs run **in parallel**, producing the DMG, the Windows zip + installer, and — from the Linux job's single `tauri build` — the three Linux packages, each job attaching its own assets to the GitHub Release.
-4. Homebrew tap `xiufengsun/homebrew-tokentracker` self-updates via dispatch (~40s if `HOMEBREW_DISPATCH_TOKEN` set) or hourly cron (≤1h fallback). **Never edit the tap repo manually for routine releases.**
+Native release builds require repository variable `TOKENTRACKER_COMMUNITY_INSFORGE_BASE_URL` pointing to our own project and repository secret `TOKENTRACKER_COMMUNITY_INSFORGE_ANON_KEY` containing its public client credential. The build validates these before creating any tag or release and stages the client config in ignored build artifacts; management credentials are forbidden. See `scripts/prepare-release-client-config.cjs`.
 
-Release notes: one English line, no markdown sections (`Fix token stats inflation caused by duplicate queue entries`).
+For local RC preparation only, use `npm version X.Y.Z --no-git-tag-version --ignore-scripts`, then `npm run sync-versions` and `npm run validate:versions`. This does not create a commit or tag. Publishing, pushing, and creating GitHub releases require explicit user authorization. Do not dispatch the release workflow during RC preparation.
 
 ### Local DMG build (testing only — CI is authoritative)
 
@@ -129,7 +126,7 @@ Release notes: one English line, no markdown sections (`Fix token stats inflatio
 cd TokenTrackerBar && npm run dashboard:build && ./scripts/bundle-node.sh
 xcodegen generate && ruby scripts/patch-pbxproj-icon.rb
 xcodebuild -scheme TokenTrackerBar -configuration Release clean build
-APP="$(find ~/Library/Developer/Xcode/DerivedData/TokenTrackerBar-*/Build/Products/Release -name 'TokenTracker.app' -maxdepth 1)"
+APP="$(find ~/Library/Developer/Xcode/DerivedData/TokenTrackerBar-*/Build/Products/Release -name 'TokenTracker Community.app' -maxdepth 1)"
 bash scripts/create-dmg.sh "$APP"
 ```
 

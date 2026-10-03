@@ -1,8 +1,8 @@
 use std::env;
 use std::path::{Path, PathBuf};
 
-/// Directory name used by the Arch package (`/usr/lib/tokentracker-linux`).
-const INSTALL_DIR_NAME: &str = "tokentracker-linux";
+/// Directory name used by the Arch package (`/usr/lib/tokentracker-community-linux`).
+const INSTALL_DIR_NAME: &str = "tokentracker-community-linux";
 
 /// Directory name Tauri itself uses for Linux resources (`<prefix>/lib/<name>`),
 /// where `<name>` is `productName` from `tauri.conf.json` -- verified against
@@ -10,7 +10,7 @@ const INSTALL_DIR_NAME: &str = "tokentracker-linux";
 ///
 /// Probed in addition to Tauri's `resource_dir()` so an AppImage still resolves
 /// if that lookup is unavailable for any reason.
-const PRODUCT_DIR_NAME: &str = "TokenTracker";
+const PRODUCT_DIR_NAME: &str = "TokenTracker Community";
 
 /// Subdirectory that `scripts/bundle-node-linux.sh` writes and that
 /// `bundle.resources` in `tauri.conf.json` maps into the bundle.
@@ -48,8 +48,8 @@ pub struct RuntimeRoots {
     ///
     /// Authoritative for bundled builds: it is derived from the same
     /// `package_info.name` the bundler used, so it stays correct even though
-    /// the product name ("TokenTracker") differs from the Arch package
-    /// directory name ("tokentracker-linux").
+    /// the product name ("TokenTracker Community") differs from the Arch package
+    /// directory name ("tokentracker-community-linux").
     pub resource_dir: Option<PathBuf>,
     /// `$APPDIR`, exported by the AppImage runtime after it mounts the image
     /// on a random `/tmp/.mount_XXXXXX` path.
@@ -181,7 +181,7 @@ pub fn resolve_runtime_paths_from(roots: &RuntimeRoots) -> Result<RuntimePaths, 
     }
 
     Err(format!(
-        "TokenTracker runtime not found. Checked {}",
+        "TokenTracker Community runtime not found. Checked {}",
         candidates
             .iter()
             .map(|candidate| candidate.display().to_string())
@@ -200,14 +200,14 @@ mod tests {
 
     #[test]
     fn installed_runtime_paths_use_usr_lib_layout() {
-        let paths = installed_runtime_paths(Path::new("/usr/lib/tokentracker-linux"));
+        let paths = installed_runtime_paths(Path::new("/usr/lib/tokentracker-community-linux"));
         assert_eq!(
             paths.node,
-            PathBuf::from("/usr/lib/tokentracker-linux/node")
+            PathBuf::from("/usr/lib/tokentracker-community-linux/node")
         );
         assert_eq!(
             paths.tracker,
-            PathBuf::from("/usr/lib/tokentracker-linux/tokentracker/bin/tracker.js")
+            PathBuf::from("/usr/lib/tokentracker-community-linux/tokentracker/bin/tracker.js")
         );
     }
 

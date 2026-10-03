@@ -6,6 +6,8 @@ node_modules
 dist/
 build/
 .tmp/
+# Generated only inside release bundles; never commit client configuration.
+src/lib/release-client-config.json
 dashboard/tmp/
 *.tsbuildinfo
 

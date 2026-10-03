@@ -1,4 +1,4 @@
-# TokenTracker GNOME Shell extension
+# TokenTracker Community GNOME Shell extension
 
 Puts today's tokens and cost in the GNOME top bar, next to a pixel Clawd,
 like the macOS menu bar item. Clicking it opens a dropdown modelled on the
@@ -7,8 +7,8 @@ trend (day / week / month / total) and top models, plus a sync button and a
 link to the dashboard.
 
 It reads everything from the Linux desktop app's local server on
-`127.0.0.1:17680`, so the app has to be running. It sends nothing anywhere
-else. If something else holds 17680 when the app starts, the app falls back
+`127.0.0.1:17681`, so the app has to be running. It sends nothing anywhere
+else. If something else holds 17681 when the app starts, the app falls back
 to a random port and the extension shows "TokenTracker isn't running". Free
 the port and restart the app.
 
@@ -23,13 +23,13 @@ dark shell theme.
 ```bash
 mkdir -p ~/.local/share/gnome-shell/extensions
 ln -s "$PWD/TokenTrackerLinux/gnome-extension/tokentracker@tokentracker.cc" \
-  ~/.local/share/gnome-shell/extensions/tokentracker@tokentracker.cc
+  ~/.local/share/gnome-shell/extensions/tokentracker-community@tokentracker.cc
 ```
 
 Log out and back in (Wayland can't reload the shell in place), then:
 
 ```bash
-gnome-extensions enable tokentracker@tokentracker.cc
+gnome-extensions enable tokentracker-community@tokentracker.cc
 ```
 
 Errors show up in `journalctl --user -b -o cat /usr/bin/gnome-shell`.
@@ -46,7 +46,7 @@ dbus-run-session -- bash -c '
   sleep 12
   gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell \
     --method org.gnome.Shell.Eval \
-    "Main.panel.statusArea[\"tokentracker@tokentracker.cc\"].menu.open(false)"
+    "Main.panel.statusArea[\"tokentracker-community@tokentracker.cc\"].menu.open(false)"
   sleep 5
   gdbus call --session --dest org.gnome.Shell.Screenshot \
     --object-path /org/gnome/Shell/Screenshot \

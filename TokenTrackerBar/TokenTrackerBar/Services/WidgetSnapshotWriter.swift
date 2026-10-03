@@ -13,7 +13,7 @@ import os
 @MainActor
 enum WidgetSnapshotWriter {
 
-    private static let logger = Logger(subsystem: "com.tokentracker.bar", category: "WidgetSnapshotWriter")
+    private static let logger = Logger(subsystem: "com.tokentracker.community", category: "WidgetSnapshotWriter")
 
     /// Immutable snapshot of the fields we read off `DashboardViewModel`.
     /// Captured synchronously on the main actor BEFORE we suspend on any
@@ -114,7 +114,7 @@ enum WidgetSnapshotWriter {
     }
 
     /// Serializes snapshot writes off the main actor.
-    private static let writeQueue = DispatchQueue(label: "com.tokentracker.widget-snapshot-write", qos: .utility)
+    private static let writeQueue = DispatchQueue(label: "com.tokentracker.community.widget-snapshot-write", qos: .utility)
 
     /// Bumped at the start of every `update`; stale calls bail before writing.
     private static var updateGeneration = 0

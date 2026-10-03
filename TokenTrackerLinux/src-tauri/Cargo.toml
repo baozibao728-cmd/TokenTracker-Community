@@ -1,8 +1,8 @@
 [package]
-name = "tokentracker-linux"
-version = "1.1.3"
-description = "TokenTracker Linux desktop client"
-authors = ["TokenTracker"]
+name = "tokentracker-community-linux"
+version = "1.2.0"
+description = "TokenTracker Community Linux desktop client"
+authors = ["TokenTracker Community"]
 edition = "2021"
 license = "MIT"
 
@@ -11,7 +11,7 @@ name = "tokentracker_linux"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [[bin]]
-name = "tokentracker-linux"
+name = "tokentracker-community-linux"
 path = "src/main.rs"
 
 [build-dependencies]

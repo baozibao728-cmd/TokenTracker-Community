@@ -1,10 +1,10 @@
 # Maintainer: local
-pkgname=tokentracker-linux
-pkgver=1.1.3
+pkgname=tokentracker-community-linux
+pkgver=1.2.0
 pkgrel=1
-pkgdesc='Local TokenTracker Linux desktop client for Arch KDE'
+pkgdesc='TokenTracker Community Linux desktop client'
 arch=('x86_64')
-url='https://github.com/mm7894215/TokenTracker'
+url='https://github.com/baozibao728-cmd/TokenTracker-Community'
 license=('MIT')
 options=(!debug)
 depends=(
@@ -42,18 +42,18 @@ build() {
 package() {
   cd "${_repo_root}"
 
-  install -Dm755 "TokenTrackerLinux/src-tauri/target/release/tokentracker-linux" \
-    "${pkgdir}/usr/bin/tokentracker-linux"
+  install -Dm755 "TokenTrackerLinux/src-tauri/target/release/tokentracker-community-linux" \
+    "${pkgdir}/usr/bin/tokentracker-community-linux"
 
-  install -dm755 "${pkgdir}/usr/lib/tokentracker-linux"
-  cp -a "TokenTrackerLinux/EmbeddedServer/." "${pkgdir}/usr/lib/tokentracker-linux/"
-  chmod 755 "${pkgdir}/usr/lib/tokentracker-linux/node"
+  install -dm755 "${pkgdir}/usr/lib/tokentracker-community-linux"
+  cp -a "TokenTrackerLinux/EmbeddedServer/." "${pkgdir}/usr/lib/tokentracker-community-linux/"
+  chmod 755 "${pkgdir}/usr/lib/tokentracker-community-linux/node"
 
   install -Dm644 "TokenTrackerLinux/packaging/arch/tokentracker-linux/tokentracker-linux.desktop" \
-    "${pkgdir}/usr/share/applications/tokentracker-linux.desktop"
+    "${pkgdir}/usr/share/applications/tokentracker-community-linux.desktop"
 
   install -Dm644 "dashboard/public/icon-512.png" \
-    "${pkgdir}/usr/share/icons/hicolor/512x512/apps/tokentracker-linux.png"
+    "${pkgdir}/usr/share/icons/hicolor/512x512/apps/tokentracker-community-linux.png"
 
-  install -Dm644 "LICENSE" "${pkgdir}/usr/share/licenses/tokentracker-linux/LICENSE"
+  install -Dm644 "LICENSE" "${pkgdir}/usr/share/licenses/tokentracker-community-linux/LICENSE"
 }

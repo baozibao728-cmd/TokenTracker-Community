@@ -14,6 +14,8 @@ const {
   DEFAULT_ANON_KEY,
 } = require("../src/lib/runtime-config");
 
+const TEST_BASE_URL = "https://tc79bxhm.ap-southeast.insforge.app";
+const TEST_ANON_KEY = "mock-public-client-credential";
 const LEGACY_BASE_URL = "https://b46ug8xu.us-east.insforge.app";
 
 async function withTempHome(fn) {
@@ -39,8 +41,8 @@ async function withTempHome(fn) {
     process.env.CODE_HOME = path.join(home, ".code");
     process.env.XDG_DATA_HOME = path.join(home, ".local", "share");
     delete process.env.TOKENTRACKER_DEVICE_TOKEN;
-    delete process.env.TOKENTRACKER_INSFORGE_BASE_URL;
-    delete process.env.TOKENTRACKER_INSFORGE_ANON_KEY;
+    process.env.TOKENTRACKER_INSFORGE_BASE_URL = TEST_BASE_URL;
+    process.env.TOKENTRACKER_INSFORGE_ANON_KEY = TEST_ANON_KEY;
     delete process.env.DSH_HOME;
     delete process.env.TOKENTRACKER_DSH_HOME;
     return await fn(home);
@@ -221,8 +223,8 @@ test("sync preserves the legacy device token and replays the queue to the curren
     assert.equal(queueState.note, "reset_after_legacy_baseurl_migration_2026_07");
 
     assert.equal(ingestCalls.length, 1);
-    assert.equal(ingestCalls[0].url, `${DEFAULT_BASE_URL}/functions/tokentracker-ingest`);
-    assert.equal(ingestCalls[0].options.headers.apikey, DEFAULT_ANON_KEY);
+    assert.equal(ingestCalls[0].url, `${TEST_BASE_URL}/functions/tokentracker-ingest`);
+    assert.equal(ingestCalls[0].options.headers.apikey, TEST_ANON_KEY);
     assert.equal(ingestCalls[0].options.headers.Authorization, "Bearer legacy-token");
     assert.deepEqual(JSON.parse(ingestCalls[0].options.body).hourly, [JSON.parse(queue)]);
 
@@ -253,7 +255,7 @@ test("sync preserves the legacy device token and replays the queue to the curren
     assert.equal(after.offset, Buffer.byteLength(queue) + Buffer.byteLength(pendingLine));
     assert.equal(after.note, "manual");
     assert.equal(ingestCalls.length, 2);
-    assert.equal(ingestCalls[1].options.headers.apikey, DEFAULT_ANON_KEY);
+    assert.equal(ingestCalls[1].options.headers.apikey, TEST_ANON_KEY);
     assert.equal(ingestCalls[1].options.headers.Authorization, "Bearer legacy-token");
     assert.deepEqual(JSON.parse(ingestCalls[1].options.body).hourly, [pendingRow]);
   });
@@ -340,7 +342,7 @@ test("sync removes an unchanged legacy anon key after a concurrent login updates
           await fs.writeFile(
             configPath,
             JSON.stringify({
-              baseUrl: DEFAULT_BASE_URL,
+              baseUrl: TEST_BASE_URL,
               anonKey: "legacy-anon-key",
               deviceToken: "current-login-token",
               user_id: "current-user",
@@ -367,7 +369,7 @@ test("sync removes an unchanged legacy anon key after a concurrent login updates
 
     await cmdSync(["--auto"]);
     const config = await readJsonFile(configPath);
-    assert.equal(config.baseUrl, DEFAULT_BASE_URL);
+    assert.equal(config.baseUrl, TEST_BASE_URL);
     assert.equal(config.anonKey, undefined);
     assert.equal(config.deviceToken, "current-login-token");
     assert.equal(config.user_id, "current-user");
@@ -382,7 +384,7 @@ test("sync removes an unchanged legacy anon key after a concurrent login updates
     await cmdSync(["--auto"]);
 
     assert.equal(ingestCalls.length, 2);
-    assert.equal(ingestCalls[1].headers.apikey, DEFAULT_ANON_KEY);
+    assert.equal(ingestCalls[1].headers.apikey, TEST_ANON_KEY);
     assert.equal(ingestCalls[1].headers.Authorization, "Bearer current-login-token");
   });
 });
@@ -697,7 +699,7 @@ test("sync migration does not overwrite a concurrent successful device login", a
         await fs.writeFile(
           configPath,
           JSON.stringify({
-            baseUrl: DEFAULT_BASE_URL,
+            baseUrl: TEST_BASE_URL,
             deviceToken: "concurrent-login-token",
             deviceId: "concurrent-device",
             user_id: "concurrent-user",
@@ -724,7 +726,7 @@ test("sync migration does not overwrite a concurrent successful device login", a
     await cmdSync(["--auto"]);
 
     const config = await readJsonFile(configPath);
-    assert.equal(config.baseUrl, DEFAULT_BASE_URL);
+    assert.equal(config.baseUrl, TEST_BASE_URL);
     assert.equal(config.deviceToken, "concurrent-login-token");
     assert.equal(config.deviceId, "concurrent-device");
     assert.equal(config.user_id, "concurrent-user");
@@ -759,7 +761,7 @@ test("device-login ignores a retired persisted backend before the first sync", a
 
     assert.equal(
       calls[0],
-      `${DEFAULT_BASE_URL}/functions/tokentracker-device-flow-authorize`,
+      `${TEST_BASE_URL}/functions/tokentracker-device-flow-authorize`,
     );
   });
 });
@@ -817,7 +819,7 @@ test("sync leaves a current base URL config untouched", async () => {
     await writeTrackerState(home, {
       config: {
         installedAt: "2026-05-01T00:00:00.000Z",
-        baseUrl: DEFAULT_BASE_URL,
+        baseUrl: TEST_BASE_URL,
         deviceToken: "current-token",
       },
       queueState: { offset: 500, updatedAt: "2026-07-27T00:00:00.000Z" },
@@ -826,7 +828,7 @@ test("sync leaves a current base URL config untouched", async () => {
     await cmdSync(["--auto"]);
 
     const config = await readJsonFile(path.join(trackerDir, "config.json"));
-    assert.equal(config.baseUrl, DEFAULT_BASE_URL);
+    assert.equal(config.baseUrl, TEST_BASE_URL);
     assert.equal(config.deviceToken, "current-token");
 
     const queueState = await readJsonFile(path.join(trackerDir, "queue.state.json"));
@@ -871,6 +873,6 @@ test("init leaves the migration marker for sync, which preserves credentials and
     assert.equal(afterSync.deviceId, "legacy-device");
     assert.equal(afterSync.machineId, "machine-1");
     assert.equal(ingestCalls.length, 1);
-    assert.equal(ingestCalls[0].url, `${DEFAULT_BASE_URL}/functions/tokentracker-ingest`);
+    assert.equal(ingestCalls[0].url, `${TEST_BASE_URL}/functions/tokentracker-ingest`);
   });
 });

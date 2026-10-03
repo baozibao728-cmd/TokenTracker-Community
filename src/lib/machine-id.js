@@ -5,9 +5,10 @@ const os = require("node:os");
 const path = require("node:path");
 const crypto = require("node:crypto");
 const { execFileSync } = require("node:child_process");
+const { resolveTrackerRoot, COMMUNITY_DIR } = require("./tracker-paths");
 
 function resolveQueuePath() {
-  return path.join(os.homedir(), ".tokentracker", "tracker", "queue.jsonl");
+  return path.join(resolveTrackerRoot(), "tracker", "queue.jsonl");
 }
 
 /**
@@ -27,8 +28,16 @@ function resolveQueuePath() {
  */
 function defaultSeedPath(queuePath) {
   const rootDir = path.dirname(path.dirname(queuePath));
-  const home = path.basename(rootDir) === ".tokentracker" ? path.dirname(rootDir) : os.homedir();
-  return path.join(home, ".config", "tokentracker", "machine-id");
+  const rootName = path.basename(rootDir);
+  const rootIsOverride = Boolean(process.env.TOKENTRACKER_DATA_ROOT)
+    && path.resolve(process.env.TOKENTRACKER_DATA_ROOT) === rootDir;
+  const home = rootName === ".tokentracker" || rootName === COMMUNITY_DIR || rootIsOverride
+    ? path.dirname(rootDir)
+    : os.homedir();
+  const identityDir = rootName === COMMUNITY_DIR || rootIsOverride
+    ? "tokentracker-community"
+    : "tokentracker";
+  return path.join(home, ".config", identityDir, "machine-id");
 }
 
 function isValidMachineIdString(value) {

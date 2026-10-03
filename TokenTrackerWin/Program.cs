@@ -2,22 +2,19 @@ namespace TokenTrackerWin;
 
 internal static class Program
 {
-    // Stable per-user mutex name so a second launch just exits.
-    private const string SingleInstanceMutexName = "TokenTracker.Windows.Tray.SingleInstance";
-
     [STAThread]
     private static void Main(string[] args)
     {
         InstallExceptionGuards();
 
-        // Windows launches us with the full tokentracker://… URL as an argument when a
+        // Windows launches us with the full tokentracker-community:// URL as an argument when a
         // deep link fires (OAuth callback). Extract it if present.
         var deepLink = FindDeepLink(args);
         var launchedAtStartup = args.Any(a =>
             string.Equals(a, LaunchAtStartup.StartupArgument, StringComparison.OrdinalIgnoreCase));
-        Diag.Log("program", $"Main argc={args.Length} deepLink={(deepLink ?? "<none>")} startup={launchedAtStartup}");
+        Diag.Log("program", $"Main argc={args.Length} hasDeepLink={deepLink is not null} startup={launchedAtStartup}");
 
-        using var mutex = new Mutex(initiallyOwned: true, SingleInstanceMutexName, out var isNew);
+        using var mutex = new Mutex(initiallyOwned: true, Constants.SingleInstanceMutexName, out var isNew);
         Diag.Log("program", $"mutex isNew={isNew}");
         if (!isNew)
         {
@@ -31,7 +28,7 @@ internal static class Program
             return;
         }
 
-        // Primary instance: make tokentracker:// point at this exe so the OAuth callback
+        // Primary instance: make tokentracker-community:// point at this exe so the OAuth callback
         // (in the system browser) can deep-link the code back to us.
         UrlProtocol.EnsureRegistered();
 
@@ -48,7 +45,7 @@ internal static class Program
             if (recovery == DispatcherExceptionPolicy.RecoveryKind.IgnoreAfterShutdown
                 || recovery == DispatcherExceptionPolicy.RecoveryKind.IgnoreCancellation)
             {
-                Diag.Log("program", $"WPF dispatcher exception absorbed during window teardown: {e.Exception}");
+                OAuthDiagnostics.Failure("program", "WPF dispatcher exception absorbed during window teardown", e.Exception);
                 // These callbacks have no useful work left after cancellation or
                 // dispatcher teardown, so allowing WPF to continue is intentional.
                 e.Handled = true;
@@ -58,7 +55,7 @@ internal static class Program
             if (recovery == DispatcherExceptionPolicy.RecoveryKind.RecreateDashboardWebView
                 && trayContext?.RecoverDashboardWebView(e.Exception) == true)
             {
-                Diag.Log("program", $"WPF dispatcher exception recovered by recreating WebView2: {e.Exception}");
+                OAuthDiagnostics.Failure("program", "WPF dispatcher exception recovered by recreating WebView2", e.Exception);
                 e.Handled = true;
                 return;
             }
@@ -66,7 +63,7 @@ internal static class Program
             // Do not turn an unknown dispatcher failure into a silently-running
             // but corrupted tray process. Leaving Handled=false preserves WPF's
             // normal shutdown path after the diagnostic has been recorded.
-            Diag.Log("program", $"WPF dispatcher exception unhandled: {e.Exception}");
+            OAuthDiagnostics.Failure("program", "WPF dispatcher exception unhandled", e.Exception);
         };
 
         ApplicationConfiguration.Initialize();
@@ -94,16 +91,16 @@ internal static class Program
     private static void InstallExceptionGuards()
     {
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>
-            Diag.Log("program", $"unhandled exception terminating={e.IsTerminating}: {e.ExceptionObject}");
+            OAuthDiagnostics.Failure("program", $"unhandled exception terminating={e.IsTerminating}", e.ExceptionObject);
         TaskScheduler.UnobservedTaskException += (_, e) =>
         {
-            Diag.Log("program", $"unobserved task exception: {e.Exception}");
+            OAuthDiagnostics.Failure("program", "unobserved task exception", e.Exception);
             e.SetObserved();
         };
         System.Windows.Forms.Application.SetUnhandledExceptionMode(
             System.Windows.Forms.UnhandledExceptionMode.CatchException);
         System.Windows.Forms.Application.ThreadException += (_, e) =>
-            Diag.Log("program", $"WinForms UI exception: {e}");
+            OAuthDiagnostics.Failure("program", "WinForms UI exception", e.Exception);
     }
 
     private static string? FindDeepLink(string[] args)

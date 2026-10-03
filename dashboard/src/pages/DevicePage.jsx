@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useInsforgeAuth } from "../contexts/InsforgeAuthContext";
 import { copy } from "../lib/copy";
-import { getOrCreateInsforgeClient } from "../lib/insforge-config";
+import { getInsforgeRemoteUrl } from "../lib/insforge-config";
 
 /**
  * /device — OAuth-style device flow approval page.
@@ -15,15 +15,8 @@ import { getOrCreateInsforgeClient } from "../lib/insforge-config";
  */
 
 function buildGrantUrl() {
-  // The Insforge baseUrl drives both the SDK and the edge functions; reading
-  // from getOrCreateInsforgeClient() avoids hardcoding the production URL
-  // here (dev/staging may differ).
-  const client = getOrCreateInsforgeClient();
-  // SDK doesn't expose its baseUrl as a public field; fall back to the same
-  // VITE env var that initialized the client.
-  const baseUrl =
-    (import.meta.env && import.meta.env.VITE_INSFORGE_BASE_URL) ||
-    "https://srctyff5.us-east.insforge.app";
+  const baseUrl = getInsforgeRemoteUrl();
+  if (!baseUrl) throw new Error("InsForge backend is not configured");
   return `${baseUrl.replace(/\/$/, "")}/functions/tokentracker-device-flow-grant`;
 }
 

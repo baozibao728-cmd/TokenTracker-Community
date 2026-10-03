@@ -1,6 +1,6 @@
-# TokenTracker Linux Client
+# TokenTracker Community Linux Client
 
-A Tauri desktop client for TokenTracker. It is the Linux counterpart of the macOS
+A Tauri desktop client for TokenTracker Community. It is the Linux counterpart of the macOS
 menu bar app and the Windows tray app: a native shell that starts the bundled
 TokenTracker CLI on a loopback port, loads the same dashboard in a WebKitGTK
 window, and keeps a tray icon alive.
@@ -21,13 +21,13 @@ Self-contained — besides the Node runtime and the built dashboard it carries
 GTK3, WebKitGTK (including the `WebKitWebProcess` / `WebKitNetworkProcess`
 helpers) and appindicator, so it runs on any reasonably current glibc distro
 with no package manager and no GUI dependencies. Download
-`TokenTracker-linux-x86_64.AppImage` from the
-[latest release](https://github.com/xiufengsun/TokenTracker/releases/latest),
+`TokenTracker-Community-linux-x86_64.AppImage` from the
+[Community latest release](https://github.com/baozibao728-cmd/TokenTracker-Community/releases/latest),
 then:
 
 ```bash
-chmod +x TokenTracker-linux-x86_64.AppImage
-./TokenTracker-linux-x86_64.AppImage
+chmod +x TokenTracker-Community-linux-x86_64.AppImage
+./TokenTracker-Community-linux-x86_64.AppImage
 ```
 
 AppImages need FUSE. On distros that ship FUSE 3 only, install `fuse3`
@@ -35,14 +35,14 @@ AppImages need FUSE. On distros that ship FUSE 3 only, install `fuse3`
 run without FUSE at all:
 
 ```bash
-./TokenTracker-linux-x86_64.AppImage --appimage-extract
+./TokenTracker-Community-linux-x86_64.AppImage --appimage-extract
 ./squashfs-root/AppRun
 ```
 
 ### Debian / Ubuntu (apt)
 
 ```bash
-sudo apt install ./TokenTracker-linux-x86_64.deb
+sudo apt install ./TokenTracker-Community-linux-x86_64.deb
 ```
 
 Needs `libappindicator3-1`, which lives in Ubuntu's **universe** component and
@@ -51,7 +51,7 @@ is absent from Debian 12; use the AppImage there, which carries its own copy.
 ### Fedora / RHEL (dnf)
 
 ```bash
-sudo dnf install ./TokenTracker-linux-x86_64.rpm
+sudo dnf install ./TokenTracker-Community-linux-x86_64.rpm
 ```
 
 The `.deb` and `.rpm` link against the system GTK/WebKit rather than bundling
@@ -72,12 +72,12 @@ makepkg -si
 > is not ready for AUR publication or clean-chroot builds, and does not promise
 > byte-identical artifacts.
 
-Uninstall with `sudo pacman -R tokentracker-linux`.
+Uninstall with `sudo pacman -R tokentracker-community-linux`.
 
 ## Run
 
-Start **TokenTracker** from your application launcher, or run
-`tokentracker-linux` (Arch package) / the AppImage directly.
+Start **TokenTracker Community** from your application launcher, or run
+`tokentracker-community-linux` (Arch package) / the AppImage directly.
 
 On launch the window shows a loading screen while the bundled server starts, then
 navigates to the dashboard. If the runtime cannot be found the window reports the
@@ -118,7 +118,7 @@ Cinnamon and MATE show the icon with no extra setup.
 
 Until the extension is installed, closing the window hides the app with no way to
 get it back from the tray — quit it from the launcher or with `pkill
-tokentracker-linux`.
+tokentracker-community-linux`.
 
 ### The window is blank, or the app exits immediately
 
@@ -135,7 +135,7 @@ GTK. To retry the accelerated renderer, set it explicitly — an explicit value 
 never overridden:
 
 ```bash
-WEBKIT_DISABLE_DMABUF_RENDERER=0 tokentracker-linux
+WEBKIT_DISABLE_DMABUF_RENDERER=0 tokentracker-community-linux
 ```
 
 WebKitGTK treats the variable as "set and not `0`", so `=0` genuinely restores
@@ -143,7 +143,7 @@ the accelerated path while any other value (including an empty string) disables
 it.
 
 Note that when the webview aborts this way the app never reaches its shutdown
-path, so the bundled Node server is left running and keeps port 17680. Since
+path, so the bundled Node server is left running and keeps port 17681. Since
 OAuth sign-in requires that exact port, a later launch will fall back to a
 random port and browser sign-in will fail until the orphan is stopped:
 
@@ -153,22 +153,24 @@ pkill -f 'tokentracker/bin/tracker.js serve'
 
 ## Sign-in
 
-The app prefers a **fixed loopback port, 17680**, because OAuth redirect URLs
+The app prefers a **fixed loopback port, 17681**, because OAuth redirect URLs
 have to be registered server-side. Email sign-in works on any port; browser-based
-Google/GitHub sign-in needs `http://127.0.0.1:17680/auth/callback`, so if
-something else already holds 17680 the app falls back to a random port and OAuth
-will not complete until 17680 is free again.
+Google/GitHub sign-in needs `http://127.0.0.1:17681/auth/callback`, so if
+something else already holds 17681 the app falls back to a random port and OAuth
+will not complete until 17681 is free again. Port 17681 keeps this Community
+client independent from the official TokenTracker's port 17680.
 
 The AppImage registers a per-user `.desktop` handler for the
-`tokentracker://` OAuth callback on first launch and refreshes it whenever the
+`tokentracker-community://` OAuth callback on first launch and refreshes it whenever the
 AppImage moves. This requires `xdg-mime` (normally provided by `xdg-utils`). The
 Arch package installs the equivalent handler system-wide.
 
 ## Logs
 
 The bundled server's stderr goes to
-`${XDG_STATE_HOME:-$HOME/.local/state}/tokentracker/server.log`, falling back to
-`/tmp/tokentracker-server.log`. The log rotates once it passes 5 MB, keeping a
+`${XDG_STATE_HOME:-$HOME/.local/state}/tokentracker-community/server.log`, falling back to
+`/tmp/tokentracker-community-server.log`. The CLI data root is isolated at
+`~/.tokentracker-community`. The log rotates once it passes 5 MB, keeping a
 single `server.log.1` generation.
 
 ## Development
