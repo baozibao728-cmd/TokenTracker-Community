@@ -1190,7 +1190,7 @@ function toUtcHalfHourStart(ts) {
   ).toISOString();
 }
 
-async function computeClaudeGroundTruthBuckets({ rootDir = null, rootDirs = null } = {}) {
+async function computeClaudeGroundTruthBuckets({ rootDir = null, rootDirs = null, filePaths = null } = {}) {
   // Multi-root (#307): a Windows host may scan a native ~/.claude/projects
   // plus a WSL install over \\wsl$. `rootDirs` wins over the legacy single
   // `rootDir`; duplicated session files synced between environments collapse
@@ -1200,8 +1200,10 @@ async function computeClaudeGroundTruthBuckets({ rootDir = null, rootDirs = null
     : [rootDir || defaultClaudeProjectsDir()];
   const files = [];
   const seenFiles = new Set();
-  for (const root of roots) {
-    for (const fp of listSessionFiles(root)) {
+  // Sync may supply its verified complete discovery. Re-enumerating here
+  // would silently ignore a directory lost between discovery and repair.
+  for (const group of Array.isArray(filePaths) ? [filePaths] : roots.map(listSessionFiles)) {
+    for (const fp of group) {
       if (!seenFiles.has(fp)) {
         seenFiles.add(fp);
         files.push(fp);
@@ -1216,7 +1218,8 @@ async function computeClaudeGroundTruthBuckets({ rootDir = null, rootDirs = null
     let stream;
     try {
       stream = fssync.createReadStream(fp, { encoding: "utf8" });
-    } catch (_e) {
+    } catch (error) {
+      if (Array.isArray(filePaths)) throw error;
       continue;
     }
     const rl = readline.createInterface({ input: stream, crlfDelay: Infinity });

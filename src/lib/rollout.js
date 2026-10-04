@@ -194,10 +194,10 @@ function directoryInventoryStatKey(st) {
 // scanner misses them. This recursive variant handles both flat and nested
 // layouts; safe because the codex event dedup keys on sessionUUID + timestamp,
 // so an archived copy of an already-counted session re-reads as a no-op.
-async function listRolloutFilesDeep(dir) {
+async function listRolloutFilesDeep(dir, discovery) {
   const out = [];
   async function walk(d) {
-    const entries = await safeReadDir(d);
+    const entries = await safeReadDir(d, discovery);
     for (const e of entries) {
       const p = path.join(d, e.name);
       if (e.isDirectory()) {
@@ -212,9 +212,9 @@ async function listRolloutFilesDeep(dir) {
   return out;
 }
 
-async function listClaudeProjectFiles(projectsDir) {
+async function listClaudeProjectFiles(projectsDir, discovery) {
   const out = [];
-  await walkClaudeProjects(projectsDir, out);
+  await walkClaudeProjects(projectsDir, out, discovery);
   out.sort((a, b) => a.localeCompare(b));
   return out;
 }
@@ -4879,20 +4879,23 @@ function coerceEpochMs(v) {
   return Math.floor(n);
 }
 
-async function safeReadDir(dir) {
+async function safeReadDir(dir, discovery) {
   try {
-    return await fs.readdir(dir, { withFileTypes: true });
-  } catch (_e) {
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+    discovery?.onDirectory?.(dir);
+    return entries;
+  } catch (error) {
+    discovery?.onError?.(dir, error);
     return [];
   }
 }
 
-async function walkClaudeProjects(dir, out) {
-  const entries = await safeReadDir(dir);
+async function walkClaudeProjects(dir, out, discovery) {
+  const entries = await safeReadDir(dir, discovery);
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      await walkClaudeProjects(fullPath, out);
+      await walkClaudeProjects(fullPath, out, discovery);
       continue;
     }
     if (entry.isFile() && entry.name.endsWith(".jsonl")) out.push(fullPath);
