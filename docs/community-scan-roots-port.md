@@ -119,6 +119,23 @@ directory regression failed before the provider-scoped comparison was added.
 Version consistency and architecture guardrails passed. Final CI/RC links and
 new package checksums are recorded separately without changing packaged HEAD.
 
+### WSL overlapping-source follow-up
+
+WSL selection is now recorded before root deduplication and persisted as an
+independent `wsl_owned` flag. A root also selected by config/env/native sources
+keeps that ownership when a duplicate configuration is removed. Established
+ownership survives temporary failed detection while an explicit path still
+allows a complete refresh; explicitly disabling WSL probing ends it. An
+explicit-only root is never labelled WSL merely because policy allows WSL.
+The existing sidecar completeness and redacted-warning guards are unchanged.
+
+Older `626f331` metadata whose overlapping root was labelled only `explicit`
+needs one successful WSL discovery to establish this flag. The missing source
+cannot safely be inferred from that old label. The separate anonymous global
+directory-hash migration limitation above also remains unchanged. Regression
+evidence and the new fixed-head CI/RC/package results live in the delivery
+report without changing packaged HEAD to record run results.
+
 This candidate does not change the accepted first technical-preview PASS.
 Cloud account/Community ranking comparison and macOS/Linux GUI/runtime remain
 outside this batch. Stable release status remains **NOT_READY**.

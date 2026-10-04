@@ -1108,7 +1108,11 @@ function providerRoots(home, providerDir, env, deps = {}) {
     : path.resolve(home) === path.resolve(homedir());
   if (platform === "win32" && probeWsl && wsl.shouldProbeWsl(env)) {
     const wslRoot = discoverWslHome(providerDir, { env });
-    if (wslRoot) roots.push(wslRoot);
+    if (wslRoot) {
+      roots.push(wslRoot);
+      // Report selection before explicit/env aliases are realpath-deduped.
+      deps.onWslRoot?.(wslRoot);
+    }
   }
   // Extra roots (#657), mirroring src/commands/sync.js: CLAUDE_CONFIG_DIR is
   // the spawning process's implicit Claude root (additive — ~/.claude stays
@@ -1261,8 +1265,13 @@ async function discoverSessionFiles(home, env = process.env, deps = {}) {
   const extraRootsFor = (provider) => scanRootsConfig[provider]
     .map((root) => expandHome(root, home))
     .filter(Boolean);
-  const requestedClaudeRoots = providerRoots(home, ".claude", env, { ...deps, extraRoots: extraRootsFor("claude") });
-  const requestedCodexRoots = providerRoots(home, ".codex", env, { ...deps, extraRoots: extraRootsFor("codex") });
+  const selectedWslRoots = { claude: [], codex: [] };
+  const requestedClaudeRoots = providerRoots(home, ".claude", env, {
+    ...deps, extraRoots: extraRootsFor("claude"), onWslRoot: (root) => selectedWslRoots.claude.push(root),
+  });
+  const requestedCodexRoots = providerRoots(home, ".codex", env, {
+    ...deps, extraRoots: extraRootsFor("codex"), onWslRoot: (root) => selectedWslRoots.codex.push(root),
+  });
   const claudeRoots = requestedClaudeRoots.filter((root) => scanRootDirState(root).exists);
   const codexRoots = dedupeDirsByRealpath(requestedCodexRoots.filter((root) => scanRootDirState(root).exists))
     .map((root) => canonicalScanRoot(root, home));
@@ -1333,6 +1342,11 @@ async function discoverSessionFiles(home, env = process.env, deps = {}) {
   const directoryKeys = [...new Set(observedDirs.map(directoryKey))].sort();
   const directoryRoots = [];
   const scanScopes = [];
+  const probeWsl = deps.probeWsl !== undefined ? Boolean(deps.probeWsl)
+    : path.resolve(home) === path.resolve((deps.homedir || os.homedir)());
+  const wslEnabled = (deps.platform || process.platform) === "win32" && probeWsl && wsl.shouldProbeWsl(env);
+  const ownsWsl = (root) => root.wsl_owned === true || root.origin === "wsl";
+  const previousRootInventory = Array.isArray(deps.previousDirectoryRoots) ? deps.previousDirectoryRoots : [];
   for (const [provider, roots, nativeName, envKey] of [
     ["claude", requestedClaudeRoots, ".claude", "CLAUDE_CONFIG_DIR"],
     ["codex", requestedCodexRoots, ".codex", "CODEX_HOME"],
@@ -1340,6 +1354,7 @@ async function discoverSessionFiles(home, env = process.env, deps = {}) {
     const explicitKeys = [...extraRootsFor(provider), expandHome(env[envKey], home)]
       .filter(Boolean).flatMap(rootKeys);
     const nativeKeys = rootKeys(path.join(home, nativeName));
+    const wslKeys = selectedWslRoots[provider].flatMap(rootKeys);
     for (const root of roots) {
       const keys = rootKeys(root);
       const scanPaths = (provider === "claude" ? ["projects"] : ["sessions", "archived_sessions"])
@@ -1350,6 +1365,12 @@ async function discoverSessionFiles(home, env = process.env, deps = {}) {
         root_keys: keys,
         origin: keys.some((key) => nativeKeys.includes(key)) ? "native"
           : keys.some((key) => explicitKeys.includes(key)) ? "explicit" : "wsl",
+        // An overlapping explicit/native source must not hide WSL ownership.
+        // Retain established ownership while detection is down but another
+        // source still allows a complete scan; native-only explicitly ends it.
+        wsl_owned: keys.some((key) => wslKeys.includes(key)) || (wslEnabled
+          && previousRootInventory.some((previous) => previous.provider === provider
+            && ownsWsl(previous) && keys.some((key) => (previous.root_keys || []).includes(key)))),
         directory_keys: [...new Set(observedDirs
           .filter((dir) => scanPaths.some((scanPath) => within(dir, scanPath))).map(directoryKey))].sort(),
       });
@@ -1360,15 +1381,12 @@ async function discoverSessionFiles(home, env = process.env, deps = {}) {
   // configured/env root no longer owns the current inventory, but a WSL root
   // disappearing from detection is still required while WSL remains enabled.
   if (incomplete.length === 0 && Array.isArray(deps.previousDirectoryRoots)) {
-    const probeWsl = deps.probeWsl !== undefined ? Boolean(deps.probeWsl)
-      : path.resolve(home) === path.resolve((deps.homedir || os.homedir)());
-    const wslEnabled = (deps.platform || process.platform) === "win32" && probeWsl && wsl.shouldProbeWsl(env);
     for (const previous of deps.previousDirectoryRoots) {
       const retained = directoryRoots.some((root) => root.provider === previous.provider
         && root.root_keys.some((key) => (previous.root_keys || []).includes(key)));
       const providerDirectoryKeys = new Set(directoryRoots
         .filter((root) => root.provider === previous.provider).flatMap((root) => root.directory_keys));
-      if ((retained || (previous.origin === "wsl" && wslEnabled))
+      if ((retained || (ownsWsl(previous) && wslEnabled))
         && (previous.directory_keys || []).some((key) => !providerDirectoryKeys.has(key))) {
         const failure = { path: `previous session directory (${previous.root_keys[0]})`, error: "ENOENT" };
         Object.defineProperty(failure, "provider", { value: previous.provider });

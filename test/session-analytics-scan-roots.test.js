@@ -230,6 +230,88 @@ test("an undetected WSL root is not an intentional scope removal while WSL probi
   assert.equal(nativeOnly.incomplete.length, 0, "explicit WSL policy changes can remove that scope");
 });
 
+for (const spelling of ["same path", "realpath alias", "detection lost before config removal", "legacy single-origin metadata"]) {
+  test(`WSL and explicit ${spelling} ownership survives config removal, lost detection and force`, async (t) => {
+    const home = tmpdir(t);
+    const wslRoot = path.join(home, "fixture-wsl", ".claude");
+    writeClaudeSession(wslRoot, "p1", "11111111-1111-4111-8111-111111111111");
+    let configuredRoot = wslRoot;
+    if (spelling === "realpath alias") {
+      configuredRoot = path.join(home, "configured-alias");
+      fs.symlinkSync(wslRoot, configuredRoot, process.platform === "win32" ? "junction" : "dir");
+    }
+    configureClaudeRoots(home, [configuredRoot]);
+    process.env.TOKENTRACKER_WSL_MODE = "both";
+    const platformDescriptor = Object.getOwnPropertyDescriptor(process, "platform");
+    Object.defineProperty(process, "platform", { ...platformDescriptor, value: "win32" });
+    t.after(() => Object.defineProperty(process, "platform", platformDescriptor));
+    let online = true;
+    const wsl = require("../src/lib/wsl-probe");
+    t.mock.method(wsl, "discoverWslHome", (provider) => online && provider === ".claude" ? wslRoot : null);
+
+    assert.equal((await buildSessionAnalytics({ home, force: true })).length, 1);
+    const sidecar = resolveSessionSidecarPath(home);
+    const meta = `${sidecar}.meta.json`;
+    if (spelling === "legacy single-origin metadata") {
+      const previous = JSON.parse(fs.readFileSync(meta, "utf8"));
+      for (const root of previous.directory_roots) delete root.wsl_owned;
+      assert.ok(previous.directory_roots.some((root) => root.origin === "explicit" && root.directory_keys.length));
+      fs.writeFileSync(meta, JSON.stringify(previous));
+      assert.equal((await buildSessionAnalytics({ home, cacheTtlMs: 0 })).length, 1,
+        "successful WSL detection establishes ownership in the older single-origin metadata");
+    }
+    if (spelling === "detection lost before config removal") {
+      online = false;
+      assert.equal((await buildSessionAnalytics({ home, cacheTtlMs: 0 })).length, 1,
+        "the explicit path is readable while automatic detection is temporarily unavailable");
+    }
+    const before = [fs.readFileSync(sidecar, "utf8"), fs.readFileSync(meta, "utf8")];
+    configureClaudeRoots(home, []);
+    online = false;
+    const cached = await buildSessionAnalytics({ home, cacheTtlMs: 0 });
+    assert.equal(cached.length, 1, "WSL policy still requires the previously discovered root");
+    assert.ok(cached.incompleteDirs.length);
+    assert.deepEqual([fs.readFileSync(sidecar, "utf8"), fs.readFileSync(meta, "utf8")], before);
+    const forced = await buildSessionAnalytics({ home, force: true });
+    assert.equal(forced.length, 0);
+    assert.ok(forced.incompleteDirs.length);
+    assert.deepEqual([fs.readFileSync(sidecar, "utf8"), fs.readFileSync(meta, "utf8")], before,
+      "force must not persist the partial result");
+
+    online = true;
+    writeClaudeSession(wslRoot, "p1", "22222222-2222-4222-8222-222222222222");
+    const recovered = await buildSessionAnalytics({ home, cacheTtlMs: 0 });
+    assert.equal(recovered.length, 2);
+    assert.equal(recovered.incompleteDirs.length, 0);
+    assert.equal(fs.readFileSync(sidecar, "utf8").trim().split("\n").length, 2);
+    process.env.TOKENTRACKER_WSL_MODE = "native-only";
+    online = false;
+    const excluded = await buildSessionAnalytics({ home, cacheTtlMs: 0 });
+    assert.equal(excluded.length, 0);
+    assert.equal(excluded.incompleteDirs.length, 0);
+    assert.equal(fs.readFileSync(sidecar, "utf8"), "", "explicit policy change persists the new scope");
+  });
+}
+
+test("an explicit-only root is removable under both policy when WSL never discovered it", async (t) => {
+  const home = tmpdir(t);
+  const extra = path.join(home, "explicit-only");
+  writeClaudeSession(extra, "p1", "11111111-1111-4111-8111-111111111111");
+  configureClaudeRoots(home, [extra]);
+  process.env.TOKENTRACKER_WSL_MODE = "both";
+  const descriptor = Object.getOwnPropertyDescriptor(process, "platform");
+  Object.defineProperty(process, "platform", { ...descriptor, value: "win32" });
+  t.after(() => Object.defineProperty(process, "platform", descriptor));
+  t.mock.method(require("../src/lib/wsl-probe"), "discoverWslHome", () => null);
+  assert.equal((await buildSessionAnalytics({ home, force: true })).length, 1);
+  configureClaudeRoots(home, []);
+  writeClaudeSession(path.join(home, ".claude"), "native", "22222222-2222-4222-8222-222222222222");
+  const refreshed = await buildSessionAnalytics({ home, cacheTtlMs: 0 });
+  assert.equal(refreshed.incompleteDirs.length, 0);
+  assert.deepEqual(refreshed.map((row) => row.session_id), ["22222222-2222-4222-8222-222222222222"]);
+  assert.match(fs.readFileSync(resolveSessionSidecarPath(home), "utf8"), /22222222-2222-4222-8222-222222222222/);
+});
+
 test("another provider observing the same realpath cannot hide a retained Claude projects loss", async (t) => {
   const home = tmpdir(t);
   const donor = path.join(home, "shared-provider-tree");
