@@ -1,5 +1,7 @@
 # Community 统一排行榜 UI Review
 
+前面各节保留原 UI 验收记录；本轮 401 修复与已合入扫描目录的组合源码验证在最后一节单独记录，不能将原截图或原生运行证据误作组合包的安装验收。
+
 ## 实现与边界
 
 `/leaderboard` 保留全站布局，在标题旁提供全站榜 / 社区榜切换。社区模式通过 query 保存社区、周期、页码与每页数量，例如 `/leaderboard?scope=community&community=<community-id>&period=week&page=1&size=50`；切换社区、周期或每页数量重置页码，刷新及历史导航恢复 URL 对应状态。
@@ -72,6 +74,79 @@
 
 提交范围排除 `.insforge`、临时测试宿主、诊断 helper、构建产物和凭据；敏感信息 / 本机绝对路径扫描在提交前执行。继承发布 / 运营等 10 个 workflow 保持禁用，没有 dispatch 发布流程。
 
-## Review 状态
+## 原 UI Review 状态
 
 功能与定向本地 / 原生证据已整理供 Draft PR review。提交 SHA、PR 链接、实际普通 CI 状态以 PR 最终摘要为准，避免为记录自身 SHA 反复提交。普通 CI 未完成前不声称通过；专用 build-only RC 若由既有 PR 触发规则运行，仅产生 Actions artifacts，不替换公开资产。本轮不 merge、部署或发布。
+
+## PR #4：401 修复及最终组合验证（2026-10-04）
+
+### 源码与证据范围
+
+| 范围 | 不可变源码 SHA | 证据 |
+|---|---|---|
+| 原审定 UI | `9146d59973cb95093ffc93be15f9a558e45a245e` | 上述原生交互、截图、请求对照及已接受的原 UI CI / RC；截图时间范围仍以原章节为准 |
+| 401 最小修复 | `e7dfc084c8ca1d15da26ebd67517874928033a03` | 缓存状态、hook 自动读取门禁和四项组件回归 |
+| 合入的自有 main / PR #3 | `a0d58cfc1cb192f6dd9410db709b1edc0ffea5f7` | 已审定扫描目录实现，原样保留 |
+| 最终组合源码 | `d294c2e4dd9ef11b31eb34709c084d3e388a7bb0` | `--no-ff` 合并提交；本节组合前端回归、普通 CI、三平台 build-only RC 和下载回核的候选 |
+
+原 UI [普通 CI 37178301150](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37178301150) 与 [RC 37178301157](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37178301157) 已 PASS，继续保留，不能代替组合源码的验证。未在组合包上重新执行原生安装、Community 生命周期或云端写入；组合产物仅作 BUILD/PACKAGE 与下载完整性验收。
+
+合并保留原 UI、修复及 main 历史，没有 rebase / force push；合并后 `src/` 和根测试与 main 一致，Dashboard 与修复分支一致。未切换或修改其他会话 checkout。首次合并被本机 `ORIG_HEAD` 元数据写入失败阻止，工作树未改变；定向 `git update-ref ORIG_HEAD` 成功后重试，无冲突完成，没有变更权限或 Git 全局配置。
+
+### 401 回归与修复
+
+先在真实 `CommunityLeaderboardPage` 组件上补顶栏刷新回归。原实现稳定复现失败：401 后失效标记触发 hook 重复读取、通知和渲染，Profiler 超过 40 次预算。保留相同测试后修复：blocked 的非强制读取消费失效标记；hook 的所有自动读取条件受 blocked 状态统一限制。没有移除 JWT、缓存隔离或重试入口。
+
+四项新增组件回归覆盖：401 后顶栏刷新、blocked 会话收到失效通知、显式重试恢复、重新登录的新 session epoch 恢复。前两项核对渲染稳定、focus 不触发自动请求、私有榜单不显示；后两项核对正常读取恢复及 TTL 内 focus 复用。缓存清理、迟到响应、正常手动刷新、GET 去重和 POST 不重试继续通过既有测试。
+
+### 组合源码本地门禁
+
+- 11 个定向 Community / cache / hooks / Auth / AccountView / upload gate / summary 文件：**99/99 PASS**，包含新增四项回归；修复前 RED 与修复后 GREEN 均实际执行。
+- 合入扫描目录的四文件加 architecture / RC 既有契约：**66 PASS、0 FAIL、3 个既有 Windows 权限位不适用 skip**。没有添加 skip 或降低断言；跨平台完整根测试由普通 CI 验证。
+- Dashboard typecheck、production build、copy、locale、UI hardcode、architecture guardrails、版本校验及 `git diff --check`：PASS，版本仍 `1.2.0`。
+- 本次相对已合入 main 的 27 个文本文件敏感凭据 / 本机绝对路径扫描：无发现；临时 helper、下载包及构建产物排除于提交。
+- 两个完整 Dashboard suite 既有基线失败、SDK crypto externalization / chunk-size / static-dynamic import 警告继续保留，没有为取得绿色修改它们。
+
+### 组合远端与产物门禁
+
+普通 CI：[37181882505](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37181882505)，**4/4 PASS**。run head 是组合源码 SHA；四个 runner 实际 checkout 同一个 GitHub PR merge-check SHA：`7d853668589df2915f4f59460c4c30049db7a133`，不是主分支实际 merge。
+
+| 普通 CI job | Job ID | 结果 |
+|---|---|---|
+| test + validate + build | `111375934086` | PASS |
+| Windows build | `111375934103` | PASS |
+| macOS unit tests | `111375933985` | PASS |
+| Linux client (Rust) | `111375934150` | PASS |
+
+三平台 build-only RC：[37181882488](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37181882488)，**5/5 PASS**。candidate、windows、macos、linux、delivery 的实际 checkout 均是 `d294c2e4dd9ef11b31eb34709c084d3e388a7bb0`，与 package manifest 的源码一致。
+
+| RC job | Job ID | 实际内容检查 |
+|---|---|---|
+| candidate | `111375934012` | 自有仓库与精确 PR head SHA |
+| windows | `111375957327` | ZIP 与 Setup 安装后文件 payload 一致；self-contained x64 runtime、版本、独立安装身份、自有 backend / updater |
+| macos | `111375957324` | 挂载 DMG；实际 universal app / widget / Node、版本、独立 bundle / protocol、自有 backend / updater 与 ad-hoc signature |
+| linux | `111375957413` | AppImage、deb、rpm 分别解包核对 runtime、x86_64、版本、独立包 / desktop / protocol、自有 backend / updater |
+| delivery | `111376924165` | 从实际上传的三平台 artifact 重新读取，既有 `artifacts.cjs` 对六包字节和元数据验收 |
+
+此组合候选 CI / build / package 首次均成功，没有产品修复重试或降低门禁。Windows 未签名、macOS ad-hoc 不等同 Developer ID / notarization、macOS/Linux GUI/RUNTIME 未复验、完整下载升级链未验证等已有发行限制继续保留。
+
+六包交付：[artifact 11295596917](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37181882488/artifacts/11295596917)，名称 `community-rc-d294c2e4dd9ef11b31eb34709c084d3e388a7bb0`。上传后客户端下载 **PASS**：完整 ZIP 为 `499112879` bytes，SHA-256 `ce7fd0640929cbdd0f31ac647aa23d0e9923e5b8c8ac615fce4d1778e5b2edc2`，与 GitHub artifact digest 一致。压缩目录恰为六包和两份元数据，没有额外条目；解压后使用既有 `node scripts/rc/artifacts.cjs verify <delivery> <source-sha>`，六包实际字节、大小、固定名称、manifest source / checkout / version 与 SHA256SUMS 均通过。
+
+下载首个单连接请求超时；对同一 artifact 续传和精确分段下载后完成，拼接过程中短时 Windows `EBUSY` 经定向文件句柄重试解决。没有重新构建、压缩、签名或生成 package 元数据；最终完整 ZIP digest 与包校验消除了部分下载或拼接污染的可能。
+
+| 文件 | 字节数 | SHA-256 |
+|---|---:|---|
+| TokenTracker-Community-win-x64.zip | 114909372 | `352ff6039ecf384917c15073fe50c9c22528cf9744c1e09df3bb7a63a215fa9d` |
+| TokenTracker-Community-Setup.exe | 80756362 | `dad9aab12cfa8c5a0a264ba2f8db82c1b5272ff42223f7a60ea9b24759841804` |
+| TokenTrackerCommunity.dmg | 61938690 | `af7bd92a2d6da0b45f25a4860ee207211c329d36ad556b840112b19ca82f3125` |
+| TokenTracker-Community-linux-x86_64.AppImage | 127502840 | `f6f48137e17c2c6a976fd20f0cecd3028d3bec0976c442dc2aec904aca6cadd1` |
+| TokenTracker-Community-linux-x86_64.deb | 57010424 | `b4e42463d86f702e70b8666fdc39aafaac67e067451dc78808f610409d4db608` |
+| TokenTracker-Community-linux-x86_64.rpm | 56991742 | `4d1b247137589c0eec8746388ade806ffe79780413036f47a23bdfa48f38f9a5` |
+| RC_MANIFEST.json | 1598 | `068b7904d05ef6981f0909fed778474e2f899d1407087461955b4511550ae8d0` |
+| SHA256SUMS | 615 | `d7d22e246cbc4e29de557f5a616c3e0ee8148b233deeff9530d4ed3ddfdcb2ed` |
+
+所有包内版本 `1.2.0`；Windows / Linux 架构 x86_64，macOS arm64+x86_64。架构、独立身份和 embedded runtime 由各平台实际 payload 检查补充，不能仅凭 manifest 字段视为已验证。
+
+结论：401 最小修复、最终组合前端回归、普通 CI、三平台 BUILD/PACKAGE 与下载回核 **PASS，提交 review**。本节后续报告 commit 仅改变此 Markdown，不是新的产品候选；组合产物继续对应上表不可变源码 SHA。最终 PR head 及报告提交自动触发的普通 CI 状态在 PR 摘要记录，避免为报告自身 SHA 反复追加提交。没有把文档-only 更新跳过三平台打包解释成新源码 RC PASS。
+
+远端只有普通 CI 和 build-only RC active；其余 10 个工作流仍 `disabled_manually`。PR #4 保持 Draft，本轮不 merge PR、不覆盖安装、不发布、不改版本、后端、migration、Edge、云端配置或 Token 数据。已有同步关闭及原 `130` Token 基线证据保留，不重新制造云端样本。
