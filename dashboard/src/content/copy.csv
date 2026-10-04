@@ -385,13 +385,13 @@ limits.settings.display_mode_label,ui,LimitsPage,LimitsSettingsPanel,display_mod
 limits.settings.display_mode_used,ui,LimitsPage,LimitsSettingsPanel,display_mode_used,"Used",,active
 limits.settings.display_mode_remaining,ui,LimitsPage,LimitsSettingsPanel,display_mode_remaining,"Remaining",,active
 limits.page.openSettings,ui,LimitsPage,LimitsPage,open_settings,"Display settings",,active
-leaderboard.community.tokens_label,ui,LeaderboardPage,LeaderboardPage,community_tokens_label,"Tokens tracked by the community",,active
+leaderboard.community.tokens_label,ui,LeaderboardPage,LeaderboardPage,community_tokens_label,Global Tokens,,active
 leaderboard.community.devs,ui,LeaderboardPage,LeaderboardPage,community_devs,"{{count}} users syncing",,active
-leaderboard.community.view_stats,ui,LeaderboardPage,CommunityStatsChip,view_stats,"View global community stats",,active
-leaderboard.community.tokens_chip,ui,LeaderboardPage,CommunityStatsChip,tokens_chip,"Community Tokens",,active
+leaderboard.community.view_stats,ui,LeaderboardPage,CommunityStatsChip,view_stats,View TokenTracker Community stats,,active
+leaderboard.community.tokens_chip,ui,LeaderboardPage,CommunityStatsChip,tokens_chip,Global Tokens,,active
 leaderboard.community.devs_chip,ui,LeaderboardPage,CommunityStatsChip,devs_chip,"Users",,active
 leaderboard.community.modal.title,ui,LeaderboardPage,CommunityStatsModal,title,"Global Metrics",,active
-leaderboard.community.modal.description,ui,LeaderboardPage,CommunityStatsModal,description,"A privacy-safe view of how the community builds with AI.",,active
+leaderboard.community.modal.description,ui,LeaderboardPage,CommunityStatsModal,description,Global metrics across all TokenTracker Community users. Individual usage stays private.,,active
 leaderboard.community.modal.total_tokens,ui,LeaderboardPage,CommunityStatsModal,total_tokens,"Total Tokens",,active
 leaderboard.community.modal.active_devs,ui,LeaderboardPage,CommunityStatsModal,active_devs,"Active users",,active
 leaderboard.community.modal.active_devs_detail,ui,LeaderboardPage,CommunityStatsModal,active_devs_detail,"{{count}} syncing",,active
@@ -401,7 +401,7 @@ leaderboard.community.modal.top_models,ui,LeaderboardPage,CommunityStatsModal,to
 leaderboard.community.modal.all_time,ui,LeaderboardPage,CommunityStatsModal,all_time,"All time",,active
 leaderboard.community.modal.tokens_title,ui,LeaderboardPage,CommunityStatsModal,tokens_title,"{{count}} tokens",,active
 leaderboard.community.modal.no_data,ui,LeaderboardPage,CommunityStatsModal,no_data,"No aggregate data yet",,active
-leaderboard.community.modal.activity_chart,ui,LeaderboardPage,CommunityStatsModal,activity_chart,"Daily community token activity",,active
+leaderboard.community.modal.activity_chart,ui,LeaderboardPage,CommunityStatsModal,activity_chart,Daily tokens across all TokenTracker Community users.,,active
 leaderboard.community.modal.developers_short,ui,LeaderboardPage,CommunityStatsModal,developers_short,"users",,active
 leaderboard.community.modal.daily_tokens,ui,LeaderboardPage,CommunityStatsModal,daily_tokens,"Daily tokens",,active
 leaderboard.community.modal.seven_day_average,ui,LeaderboardPage,CommunityStatsModal,seven_day_average,"7-day average",,active
@@ -1677,7 +1677,7 @@ quota.close,ui,QuotaWidget,QuotaWidget,close,"Close widget",,active
 quota.close_hint,ui,QuotaWidget,QuotaWidget,close_hint,"Close widget; reopen from the tray menu",,active
 nav.communities,dashboard,CommunityPages,CommunityPages,communities,"Communities",,active
 communities.title,dashboard,CommunityPages,CommunityPages,title,"Communities",,active
-communities.subtitle,dashboard,CommunityPages,CommunityPages,subtitle,"Your private circles. A shared view of token usage.",,active
+communities.subtitle,dashboard,CommunityPages,CommunityPages,subtitle,"Create a community, join with an invite, and manage your memberships.",,active
 communities.refresh,dashboard,CommunityPages,CommunityPages,refresh,"Refresh",,active
 communities.retry,dashboard,CommunityPages,CommunityPages,retry,"Try again",,active
 communities.loading,dashboard,CommunityPages,CommunityPages,loading,"Loading community…",,active
@@ -1773,3 +1773,20 @@ communities.error.confirmation,dashboard,CommunityPages,CommunityPages,error_con
 communities.error.invalid_input,dashboard,CommunityPages,CommunityPages,error_invalid_input,"Check the name, invite code or selected member and try again.",,active
 communities.error.network,dashboard,CommunityPages,CommunityPages,error_network,"The request could not be completed. Refresh before retrying a creation or transfer.",,active
 communities.error.generic,dashboard,CommunityPages,CommunityPages,error_generic,"The request failed. Refresh the page and try again.",,active
+
+leaderboard.scope.label,ui,LeaderboardPage,LeaderboardPage,scope_label,"Leaderboard scope",,active
+leaderboard.scope.global,ui,LeaderboardPage,LeaderboardPage,scope_global,"Global",,active
+leaderboard.scope.community,ui,LeaderboardPage,LeaderboardPage,scope_community,"Communities",,active
+communities.choose,dashboard,CommunityPages,CommunityPages,choose,"Choose a community",,active
+communities.view_leaderboard,dashboard,CommunityPages,CommunityPages,view_leaderboard,"View leaderboard",,active
+communities.manage,dashboard,CommunityPages,CommunityPages,manage,"Manage community",,active
+communities.no_memberships,dashboard,CommunityPages,CommunityPages,no_memberships,"Join or create a community to view its leaderboard.",,active
+communities.rank_unavailable,dashboard,CommunityPages,CommunityPages,rank_unavailable,"This community was deleted or you are no longer a member. Select another community or manage your memberships.",,active
+communities.refreshing,dashboard,CommunityPages,CommunityPages,refreshing,"Updating…",,active
+communities.rank_members,dashboard,CommunityPages,CommunityPages,rank_members,"{{count}} members",,active
+communities.rank_sync_hint,dashboard,CommunityPages,CommunityPages,rank_sync_hint,"Community rankings use usage already synced to the cloud. Enable cloud sync in Settings to include your latest usage.",,active
+communities.created_notice,dashboard,CommunityPages,CommunityPages,created_notice,"Community created.",,active
+communities.joined_notice,dashboard,CommunityPages,CommunityPages,joined_notice,"Joined community.",,active
+communities.memberships,dashboard,CommunityPages,CommunityPages,memberships,"Manage communities",,active
+communities.list_more,dashboard,CommunityPages,CommunityPages,list_more,"More communities",,active
+communities.select_placeholder,dashboard,CommunityPages,CommunityPages,select_placeholder,"Select a community",,active

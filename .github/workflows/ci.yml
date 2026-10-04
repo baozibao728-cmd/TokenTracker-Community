@@ -77,6 +77,16 @@ jobs:
           src/lib/cloud-sync.test.ts
           src/hooks/use-cloud-usage-sync.test.jsx
 
+      - name: Test Community navigation and session-scoped reads
+        run: >-
+          npm --prefix dashboard test --
+          src/lib/community-api.test.js
+          src/lib/community-query-cache.test.js
+          src/hooks/use-communities.test.jsx
+          src/contexts/__tests__/InsforgeAuthContext.session-epoch.test.jsx
+          src/pages/CommunityPages.test.jsx
+          src/pages/CommunityLeaderboardPage.test.jsx
+
       # The bot character's renderer and its cross-host contracts live on the dashboard
       # side, so npm test alone does not cover them; test/bot-parity.test.js only pins
       # the values, not the rendering.

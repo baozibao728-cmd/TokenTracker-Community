@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { getOrCreateInsforgeClient, isCloudInsforgeConfigured } from "../lib/insforge-config";
 import { clearCloudDeviceSession, setCloudSyncEnabled } from "../lib/cloud-sync-prefs";
 import { isLikelyExpiredAccessToken } from "../lib/auth-token";
@@ -7,6 +7,7 @@ import { clearLocalApiAuthToken, getLocalApiAuthHeaders } from "../lib/local-api
 import { copy } from "../lib/copy";
 import { getNativeOAuthBridge, isNativeLinuxApp, isNativeWindowsApp } from "../lib/native-bridge.js";
 import { restoreInsforgeUser } from "../lib/insforge-session-recovery.mjs";
+import { clearCommunitySession } from "../lib/community-query-cache.js";
 
 const InsforgeAuthContext = createContext(null);
 
@@ -85,16 +86,35 @@ export function InsforgeAuthProvider({ children }) {
   const [client, setClient] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const userRef = useRef(null);
+  const sessionEpochRef = useRef(0);
+  const [sessionEpoch, setSessionEpoch] = useState(0);
+
+  const commitUser = useCallback((nextUser, { newSession = false } = {}) => {
+    const previousUser = userRef.current;
+    const previousId = previousUser?.id || null;
+    const nextId = nextUser?.id || null;
+    const changed = previousId !== nextId;
+    if (previousId && (changed || newSession || !nextId)) {
+      clearCommunitySession(`${previousId}:${sessionEpochRef.current}`);
+    }
+    if (changed || newSession || (previousId && !nextId)) {
+      sessionEpochRef.current += 1;
+      setSessionEpoch(sessionEpochRef.current);
+    }
+    userRef.current = nextUser;
+    setUser(nextUser);
+  }, []);
 
   useEffect(() => {
     if (!isCloudInsforgeConfigured()) {
       setClient(null);
-      setUser(null);
+      commitUser(null);
       setLoading(false);
       return;
     }
     setClient(getOrCreateInsforgeClient());
-  }, []);
+  }, [commitUser]);
 
   useEffect(() => {
     if (!client) return;
@@ -105,12 +125,12 @@ export function InsforgeAuthProvider({ children }) {
         const { data, error } = await restoreInsforgeUser(client.auth, { isActive: () => active });
         if (!active) return;
         if (error) {
-          setUser(null);
+          commitUser(null);
           return;
         }
-        setUser(data?.user ?? null);
+        commitUser(data?.user ?? null, { newSession: Boolean(data?.user) });
       } catch {
-        if (active) setUser(null);
+        if (active) commitUser(null);
       } finally {
         if (active) setLoading(false);
       }
@@ -118,7 +138,7 @@ export function InsforgeAuthProvider({ children }) {
     return () => {
       active = false;
     };
-  }, [client]);
+  }, [client, commitUser]);
 
   const refreshUser = useCallback(async () => {
     if (!client) return;
@@ -131,14 +151,14 @@ export function InsforgeAuthProvider({ children }) {
         error = again.error;
       }
       if (error) {
-        setUser(null);
+        commitUser(null);
         return;
       }
-      setUser(data?.user ?? null);
+      commitUser(data?.user ?? null);
     } catch {
-      setUser(null);
+      commitUser(null);
     }
-  }, [client]);
+  }, [client, commitUser]);
 
   const signInWithOAuth = useCallback(
     async (provider, redirectToOverride) => {
@@ -205,20 +225,20 @@ export function InsforgeAuthProvider({ children }) {
     async (request) => {
       if (!client) return { data: null, error: new Error("InsForge client not configured") };
       const { data, error } = await client.auth.signInWithPassword(request);
-      if (data?.user) setUser(data.user);
+      if (data?.user) commitUser(data.user, { newSession: true });
       return { data, error };
     },
-    [client],
+    [client, commitUser],
   );
 
   const signUp = useCallback(
     async (request) => {
       if (!client) return { data: null, error: new Error("InsForge client not configured") };
       const { data, error } = await client.auth.signUp(request);
-      if (data?.user && data?.accessToken) setUser(data.user);
+      if (data?.user && data?.accessToken) commitUser(data.user, { newSession: true });
       return { data, error };
     },
-    [client],
+    [client, commitUser],
   );
 
   const sendResetPasswordEmail = useCallback(
@@ -262,8 +282,8 @@ export function InsforgeAuthProvider({ children }) {
     // auth-loading window instead of painting local data immediately.
     setCloudSyncEnabled(false);
     clearLocalApiAuthToken();
-    setUser(null);
-  }, [client]);
+    commitUser(null);
+  }, [client, commitUser]);
 
   const getAccessToken = useCallback(async () => {
     return resolveInsforgeClientAccessToken(client);
@@ -315,6 +335,7 @@ export function InsforgeAuthProvider({ children }) {
         enabled: false,
         client: null,
         user: null,
+        sessionEpoch,
         signedIn: false,
         loading: false,
         displayName: "",
@@ -335,6 +356,7 @@ export function InsforgeAuthProvider({ children }) {
       enabled: true,
       client,
       user,
+      sessionEpoch,
       signedIn: Boolean(user),
       loading,
       displayName,
@@ -353,6 +375,7 @@ export function InsforgeAuthProvider({ children }) {
   }, [
     client,
     user,
+    sessionEpoch,
     loading,
     displayName,
     refreshUser,

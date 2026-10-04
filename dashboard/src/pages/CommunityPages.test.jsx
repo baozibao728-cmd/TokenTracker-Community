@@ -8,6 +8,8 @@ import * as api from "../lib/api";
 import { CommunityApiError } from "../lib/community-api";
 import { CommunitiesPage } from "./CommunitiesPage.jsx";
 import { CommunityDetailPage } from "./CommunityDetailPage.jsx";
+import { CommunityLeaderboardPage } from "./CommunityLeaderboardPage.jsx";
+import { clearAllCommunityQueryCache } from "../lib/community-query-cache.js";
 
 const auth = vi.hoisted(() => ({ enabled: true, signedIn: true, loading: false, user: { id: "user-a" }, getAccessToken: vi.fn() }));
 vi.mock("../contexts/InsforgeAuthContext.jsx", () => ({ useInsforgeAuth: () => auth }));
@@ -34,9 +36,10 @@ function tree(detail = false) {
   return <MemoryRouter initialEntries={[detail ? "/communities/community-a" : "/communities"]}><Routes>
     <Route path="/communities" element={<CommunitiesPage />} />
     <Route path="/communities/community-a" element={<CommunityDetailPage communityId="community-a" />} />
+    <Route path="/leaderboard" element={<CommunityLeaderboardPage />} />
   </Routes></MemoryRouter>;
 }
-async function detailReady() { await screen.findByRole("heading", { name: community.name }); await screen.findByText(copy("communities.rank_basis")); }
+async function detailReady() { await screen.findByRole("heading", { name: community.name }); await screen.findAllByRole("link", { name: copy("communities.view_leaderboard") }); }
 function setupUser() {
   const user = userEvent.setup();
   return {
@@ -47,14 +50,15 @@ function setupUser() {
 
 describe("Community pages using existing Edge contracts", () => {
   beforeEach(() => {
+    clearAllCommunityQueryCache();
     vi.resetAllMocks();
-    Object.assign(auth, { enabled: true, signedIn: true, loading: false, user: { id: "user-a" } });
+    Object.assign(auth, { enabled: true, signedIn: true, loading: false, sessionEpoch: 1, user: { id: "user-a" } });
     auth.getAccessToken.mockResolvedValue("synthetic-user-session");
     api.getCommunities.mockResolvedValue(listData);
     api.getCommunityDetail.mockResolvedValue(ownerDetail);
     api.getCommunityLeaderboard.mockResolvedValue(board);
   });
-  afterEach(cleanup);
+  afterEach(() => { cleanup(); clearAllCommunityQueryCache(); vi.restoreAllMocks(); });
 
   it("requires cloud sign-in on localhost and does not query an Edge while auth loads", async () => {
     auth.signedIn = false; auth.user = null;
@@ -90,6 +94,7 @@ describe("Community pages using existing Edge contracts", () => {
     await user.type(screen.getByLabelText(copy("communities.create.description")), "Circle");
     await user.click(screen.getByRole("button", { name: copy("communities.create.submit") }));
     await detailReady();
+    expect(screen.getAllByRole("link", { name: copy("communities.view_leaderboard") }).every(link => link.getAttribute("href").includes("community=community-a"))).toBe(true);
     expect(api.createCommunity).toHaveBeenCalledWith({ accessToken: "synthetic-user-session", name: "Friends", description: "Circle" });
   });
   it("opens an existing membership after an idempotent join", async () => {
@@ -125,11 +130,13 @@ describe("Community pages using existing Edge contracts", () => {
   it("keeps exact bigint text and the current rank outside a paginated leaderboard", async () => {
     api.getCommunityLeaderboard.mockImplementation(async ({ offset }) => ({ ...board, ranked_count: 21, rows: offset ? [] : board.rows }));
     render(tree(true)); await detailReady();
-    expect(screen.getAllByText(new Intl.NumberFormat().format(BigInt(row.total_tokens))).length).toBeGreaterThan(0);
     const user = setupUser();
+    await user.click(screen.getByRole("link", { name: copy("communities.view_leaderboard") }));
+    await screen.findByText(copy("communities.rank_basis"));
+    expect(screen.getAllByText(new Intl.NumberFormat().format(BigInt(row.total_tokens))).length).toBeGreaterThan(0);
     await user.click(within(screen.getByRole("navigation", { name: copy("communities.rank_pagination") })).getByRole("button", { name: copy("leaderboard.pagination.next") }));
     await screen.findByText(copy("communities.rank_empty"));
-    expect(screen.getByText(copy("communities.rank", { rank: "1" }))).toBeInTheDocument();
+    expect(screen.getByText("#1")).toBeInTheDocument();
     expect(api.getCommunityLeaderboard).toHaveBeenLastCalledWith(expect.objectContaining({ offset: 20, period: "week" }));
     await user.click(screen.getByRole("tab", { name: copy("leaderboard.period.month") }));
     await waitFor(() => expect(api.getCommunityLeaderboard).toHaveBeenLastCalledWith(expect.objectContaining({ offset: 0, period: "month" })));
@@ -174,6 +181,8 @@ describe("Community pages using existing Edge contracts", () => {
       community: { ...community, owner_id: "user-b", invite_code: undefined },
       members: members.map((member) => ({ ...member, is_owner: member.user_id === "user-b" })),
     });
+    const now = Date.now();
+    vi.spyOn(Date, "now").mockReturnValue(now + 16_000);
     await act(async () => { window.dispatchEvent(new Event("focus")); });
     await waitFor(() => expect(screen.queryByLabelText(copy("communities.invite.title"))).not.toBeInTheDocument());
     expect(screen.getByRole("button", { name: copy("communities.leave.submit") })).toBeInTheDocument();

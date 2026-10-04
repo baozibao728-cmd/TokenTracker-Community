@@ -9,6 +9,8 @@ export interface InsforgeAuthValue {
   enabled: boolean;
   client: any;
   user: InsforgeAuthUser | null;
+  /** Opaque in-memory session generation; contains no credentials. */
+  sessionEpoch: number;
   signedIn: boolean;
   loading: boolean;
   displayName: string;
