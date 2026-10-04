@@ -124,6 +124,50 @@ describe("Unified community leaderboard navigation and server data", () => {
 });
 
 describe("Community board refresh and permission states", () => {
+  it.each(["top-bar refresh", "cache invalidation"])("settles after %s of a blocked session without automatic retries", async (trigger) => {
+    const onRender = vi.fn(() => {
+      if (onRender.mock.calls.length > 40) throw new Error("Community refresh exceeded render budget");
+    });
+    api.getCommunities.mockRejectedValueOnce(new CommunityApiError("UNAUTHORIZED", 401));
+    render(<React.Profiler id="blocked-community" onRender={onRender}>{tree()}</React.Profiler>);
+    await screen.findByRole("link", { name: copy("communities.sign_in") });
+    onRender.mockClear();
+    if (trigger === "top-bar refresh") {
+      await setupUser().click(screen.getByRole("button", { name: copy("communities.refresh") }));
+    } else {
+      act(() => invalidateCommunityQueries("user-a:1"));
+    }
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 25)); });
+    const settledRenders = onRender.mock.calls.length;
+    await act(async () => { window.dispatchEvent(new Event("focus")); await new Promise(resolve => setTimeout(resolve, 25)); });
+    expect(onRender.mock.calls.length).toBe(settledRenders);
+    expect(api.getCommunities).toHaveBeenCalledTimes(1);
+    expect(api.getCommunityLeaderboard).not.toHaveBeenCalled();
+    expect(screen.getByRole("link", { name: copy("communities.sign_in") })).toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
+  it.each(["explicit retry", "new login"])("recovers a blocked page after %s and resumes TTL reuse", async (recovery) => {
+    api.getCommunities.mockRejectedValueOnce(new CommunityApiError("UNAUTHORIZED", 401));
+    const view = render(tree());
+    await screen.findByRole("link", { name: copy("communities.sign_in") });
+    expect(api.getCommunities).toHaveBeenCalledTimes(1);
+    if (recovery === "explicit retry") {
+      await setupUser().click(screen.getByRole("button", { name: copy("communities.retry") }));
+    } else {
+      auth.sessionEpoch += 1;
+      view.rerender(tree());
+    }
+    await ready();
+    expect(screen.getByRole("heading", { name: "Owned circle" })).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(api.getCommunities).toHaveBeenCalledTimes(2);
+    expect(api.getCommunityLeaderboard).toHaveBeenCalledTimes(1);
+    act(() => window.dispatchEvent(new Event("focus")));
+    expect(api.getCommunities).toHaveBeenCalledTimes(2);
+    expect(api.getCommunityLeaderboard).toHaveBeenCalledTimes(1);
+  });
+
   it("waits for invalidated memberships before declaring a newly created community unavailable", async () => {
     await fetchCommunityQuery({ sessionKey: "user-a:1", queryKey: ["memberships"], loader: async () => ({ ...list, communities: [memberships[0]], joined_count: 1 }) });
     invalidateCommunityQueries("user-a:1");

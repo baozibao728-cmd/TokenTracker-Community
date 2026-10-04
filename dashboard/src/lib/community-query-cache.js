@@ -109,6 +109,7 @@ export async function fetchCommunityQuery({ sessionKey, queryKey, loader, ttlMs 
   const { session, key, entry } = getEntry(sessionKey, queryKey, true);
   if (entry.promise) return entry.promise;
   if (session.blocked && !force) {
+    entry.invalidated = false;
     entry.error = session.blockError || new Error("Community session is unauthorized");
     notify(entry);
     throw entry.error;

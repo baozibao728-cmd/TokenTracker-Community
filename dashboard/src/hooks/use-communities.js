@@ -49,8 +49,8 @@ export function useCommunityQuery(queryKey, loader, { enabled = true, ttlMs = CO
     const sync = () => setVersion((value) => value + 1);
     const unsubscribe = subscribeCommunityQuery(sessionKey, queryKey, sync);
     const snapshot = getCommunityQuerySnapshot(sessionKey, queryKey);
-    if (snapshot.invalidated || (!snapshot.data && !snapshot.error && !isCommunitySessionBlocked(sessionKey)) ||
-      (snapshot.data && !snapshot.error && !isCommunityQueryFresh(sessionKey, queryKey, ttlMs))) {
+    if (!isCommunitySessionBlocked(sessionKey) && (snapshot.invalidated || (!snapshot.data && !snapshot.error) ||
+      (snapshot.data && !snapshot.error && !isCommunityQueryFresh(sessionKey, queryKey, ttlMs)))) {
       void load(false);
     }
     return unsubscribe;
