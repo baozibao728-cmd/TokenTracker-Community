@@ -1,89 +1,142 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useInsforgeAuth } from "../contexts/InsforgeAuthContext.jsx";
 import { resolveAuthAccessTokenWithRetry } from "../lib/auth-token";
 import { CommunityApiError } from "../lib/community-api";
+import {
+  fetchCommunityQuery,
+  getCommunityQuerySnapshot,
+  isCommunityQueryFresh,
+  isCommunitySessionBlocked,
+  subscribeCommunityQuery,
+  invalidateCommunityQueries,
+  blockCommunitySession,
+  invalidateCommunityAccess,
+  COMMUNITY_QUERY_TTL_MS,
+} from "../lib/community-query-cache.js";
 
-// Local dashboard access is not a cloud session. These pages always need a
-// genuine user token, even on localhost or in the existing screenshot mode.
-export function useCommunityQuery(loader, { enabled = true } = {}) {
+export function useCommunityQuery(queryKey, loader, { enabled = true, ttlMs = COMMUNITY_QUERY_TTL_MS } = {}) {
   const auth = useInsforgeAuth();
   const userId = auth?.enabled && auth?.signedIn ? auth.user?.id : null;
-  const ready = Boolean(userId && !auth.loading && enabled);
+  const sessionKey = userId ? `${userId}:${auth?.sessionEpoch ?? 0}` : null;
+  const ready = Boolean(sessionKey && !auth.loading && enabled);
+  const keyString = useMemo(() => JSON.stringify(queryKey), [queryKey]);
   const [version, setVersion] = useState(0);
-  const [state, setState] = useState(null);
-  const reload = useCallback(() => setVersion((v) => v + 1), []);
+
+  const load = useCallback(async (force = false) => {
+    if (!ready) return null;
+    try {
+      return await fetchCommunityQuery({
+        sessionKey,
+        queryKey,
+        ttlMs,
+        force,
+        loader: async () => {
+          const token = await resolveAuthAccessTokenWithRetry({ getAccessToken: auth.getAccessToken });
+          if (!token) throw new CommunityApiError("UNAUTHORIZED", 401);
+          return loader(token, undefined);
+        },
+      });
+    } catch { return null; }
+  }, [ready, auth?.getAccessToken, sessionKey, keyString, loader, ttlMs]);
+
+  const onFocus = useCallback(() => {
+    if (ready && !isCommunityQueryFresh(sessionKey, queryKey, ttlMs) &&
+      !isCommunitySessionBlocked(sessionKey)) void load(false);
+  }, [ready, sessionKey, keyString, ttlMs, load]);
 
   useEffect(() => {
     if (!ready) return undefined;
-    window.addEventListener("focus", reload);
-    return () => window.removeEventListener("focus", reload);
-  }, [ready, reload]);
+    const sync = () => setVersion((value) => value + 1);
+    const unsubscribe = subscribeCommunityQuery(sessionKey, queryKey, sync);
+    const snapshot = getCommunityQuerySnapshot(sessionKey, queryKey);
+    if (snapshot.invalidated || (!snapshot.data && !snapshot.error && !isCommunitySessionBlocked(sessionKey)) ||
+      (snapshot.data && !snapshot.error && !isCommunityQueryFresh(sessionKey, queryKey, ttlMs))) {
+      void load(false);
+    }
+    return unsubscribe;
+  }, [ready, sessionKey, keyString, ttlMs, load, version]);
 
   useEffect(() => {
-    if (!ready) return undefined;
-    const controller = new AbortController();
-    let active = true;
-    const identity = { userId, loader, version };
-    setState({ ...identity, loading: true, data: null, error: null });
-    (async () => {
-      try {
-        const token = await resolveAuthAccessTokenWithRetry({ getAccessToken: auth.getAccessToken });
-        if (!active) return;
-        if (!token) throw new CommunityApiError("UNAUTHORIZED", 401);
-        const data = await loader(token, controller.signal);
-        if (active) setState({ ...identity, loading: false, data, error: null });
-      } catch (error) {
-        if (active) setState({ ...identity, loading: false, data: null, error });
-      }
-    })();
-    return () => { active = false; controller.abort(); };
-  }, [ready, userId, auth?.getAccessToken, loader, version]);
+    if (!ready) return;
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [ready, onFocus]);
 
-  const current = ready && state?.userId === userId && state.loader === loader && state.version === version;
+  const reload = useCallback(() => {
+    void load(true);
+  }, [load]);
+  const retry = reload;
+  const snapshot = ready ? getCommunityQuerySnapshot(sessionKey, queryKey) : null;
+  const data = snapshot?.data ?? null;
+  const error = snapshot?.error ?? null;
+  const refreshing = Boolean(snapshot?.refreshing || (snapshot?.invalidated && data && !error));
   return {
-    data: current ? state.data : null,
-    error: current ? state.error : null,
-    loading: Boolean(auth?.loading || (ready && (!current || state.loading))),
+    data,
+    error,
+    loading: Boolean(auth?.loading || (ready && !data && !error)),
+    refreshing,
     authRequired: !auth?.loading && !userId,
-    userId, reload,
+    userId,
+    sessionKey,
+    reload,
+    refresh: reload,
+    retry,
   };
 }
 
-// No automatic POST retry: create is intentionally not request-idempotent.
-// A result from an old account/route must not update the new account's UI.
+// POST mutations are never retried. Successful mutations invalidate the current
+// session cache so every active list/detail/leaderboard observer refreshes once.
 export function useCommunityMutation(scope) {
   const auth = useInsforgeAuth();
-  const identity = `${auth?.user?.id || ""}:${scope}`;
-  const current = useRef(identity);
-  current.current = identity;
-  const running = useRef(false);
-  const mounted = useRef(false);
+  const sessionKey = auth?.enabled && auth?.signedIn && auth?.user?.id
+    ? `${auth.user.id}:${auth?.sessionEpoch ?? 0}` : null;
+  const identity = `${sessionKey || ""}:${scope}`;
+  const identityRef = useRef(identity);
+  identityRef.current = identity;
+  const running = useRef(new Set());
+  const mounted = useRef(true);
   const [state, setState] = useState(null);
   useEffect(() => {
     mounted.current = true;
     return () => { mounted.current = false; };
   }, []);
+
   const run = async (action) => {
-    if (running.current) return null;
-    running.current = true;
+    if (running.current.has(identity)) return null;
+    running.current.add(identity);
     const started = identity;
     setState({ identity: started, busy: true, error: null });
     try {
       if (!auth?.enabled || !auth.signedIn) throw new CommunityApiError("UNAUTHORIZED", 401);
       const accessToken = await resolveAuthAccessTokenWithRetry({ getAccessToken: auth.getAccessToken });
-      if (!mounted.current || current.current !== started) return null;
+      if (!mounted.current || identityRef.current !== started) return null;
       if (!accessToken) throw new CommunityApiError("UNAUTHORIZED", 401);
       const result = await action(accessToken);
-      if (!mounted.current || current.current !== started) return null;
-      setState({ identity: started, busy: false, error: null });
+      if (!mounted.current || identityRef.current !== started) return null;
+      if (result) {
+        invalidateCommunityQueries(sessionKey);
+        setState({ identity: started, busy: false, error: null });
+      } else {
+        setState({ identity: started, busy: false, error: null });
+      }
       return result;
     } catch (error) {
-      if (mounted.current && current.current === started) setState({ identity: started, busy: false, error });
+      if (mounted.current && identityRef.current === started) {
+        if (error?.status === 401 || error?.code === "UNAUTHORIZED") {
+          blockCommunitySession(sessionKey, null, error);
+        } else if (error?.status === 403 || error?.code === "COMMUNITY_UNAVAILABLE") {
+          invalidateCommunityAccess(sessionKey, scope, error);
+        }
+        setState({ identity: started, busy: false, error });
+      }
       return null;
     } finally {
-      running.current = false;
+      running.current.delete(started);
     }
   };
-  return { run, busy: state?.identity === identity && state.busy,
-    error: state?.identity === identity ? state.error : null };
+  return {
+    run,
+    busy: state?.identity === identity && state.busy,
+    error: state?.identity === identity ? state.error : null,
+  };
 }

@@ -63,6 +63,13 @@ export function CommunityLoading() {
   return <div role="status" className="flex items-center justify-center gap-3 py-16 text-sm text-oai-gray-500"><LoaderCircle className="h-5 w-5 animate-spin motion-reduce:animate-none" aria-hidden />{copy("communities.loading")}</div>;
 }
 
+export function CommunityUpdating({ query }) {
+  if (!query.data) return null;
+  // Keep a stable slot so focus-driven updates do not move the controls under
+  // the pointer while a user is returning to the window.
+  return <div className="h-4">{query.refreshing ? <p role="status" className="flex items-center gap-2 text-xs text-oai-gray-500"><LoaderCircle className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" aria-hidden />{copy("communities.refreshing")}</p> : null}</div>;
+}
+
 export function CommunityPagination({ page, pageSize, total, onChange, disabled = false, label }) {
   const pages = Math.max(1, Math.ceil(Number(total || 0) / pageSize));
   const { canPrev, canNext } = getPaginationFlags({ page: page + 1, totalPages: pages });

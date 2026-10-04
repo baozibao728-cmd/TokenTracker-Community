@@ -51,6 +51,8 @@ import {
 } from "../lib/cloud-sync-prefs";
 import { runCloudUsageSyncNow } from "../lib/cloud-sync";
 import { LeaderboardAvatar } from "../components/LeaderboardAvatar.jsx";
+import { LeaderboardScopeControl } from "../components/leaderboard/LeaderboardScopeControl.jsx";
+import { CommunityLeaderboardPage } from "./CommunityLeaderboardPage.jsx";
 import { LeaderboardProviderColumnHeader } from "../components/LeaderboardProviderColumnHeader.jsx";
 import { BadgeMini } from "../ui/achievements/BadgeMini.jsx";
 
@@ -473,6 +475,17 @@ function GithubLinkWithTooltip({ githubUrl }) {
 }
 
 export function LeaderboardPage({
+  auth,
+  signedIn,
+  sessionSoftExpired,
+}) {
+  const location = useLocation();
+  return new URLSearchParams(location.search).get("scope") === "community"
+    ? <CommunityLeaderboardPage />
+    : <GlobalLeaderboardPage auth={auth} signedIn={signedIn} sessionSoftExpired={sessionSoftExpired} />;
+}
+
+function GlobalLeaderboardPage({
   auth,
   signedIn,
   sessionSoftExpired,
@@ -1049,9 +1062,10 @@ export function LeaderboardPage({
       <main className="flex-1 pt-8 sm:pt-10 pb-12 sm:pb-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-3.5 sm:mb-8 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-4">
-            <h1 className="col-start-1 row-start-1 min-w-0 whitespace-nowrap text-3xl font-semibold tracking-tight text-oai-black dark:text-white sm:col-span-2 sm:row-start-1 sm:text-4xl">
-              {copy("leaderboard.title")}
-            </h1>
+            <div className="col-start-1 row-start-1 flex min-w-0 flex-wrap items-center gap-3 sm:col-span-2">
+              <h1 className="text-3xl font-semibold tracking-tight text-oai-black dark:text-white sm:text-4xl">{copy("leaderboard.title")}</h1>
+              <LeaderboardScopeControl />
+            </div>
             <p className="col-span-2 row-start-2 hidden text-sm text-oai-gray-500 dark:text-oai-gray-400 sm:block sm:row-start-2 sm:text-base">
               {period === "total"
                 ? copy("leaderboard.range.total")

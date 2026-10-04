@@ -611,7 +611,7 @@
   "quota.close_hint": "关闭组件；可从托盘菜单重新打开",
   "nav.communities": "社区",
   "communities.title": "社区",
-  "communities.subtitle": "通过邀请加入，一起查看 Token 用量排行。",
+  "communities.subtitle": "创建社区、通过邀请加入，并管理你的社区成员关系。",
   "communities.refresh": "刷新",
   "communities.retry": "重试",
   "communities.loading": "正在读取社区…",

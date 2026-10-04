@@ -38,6 +38,7 @@ export function LeaderboardMeChip({
   onOpenProfile,
   onJumpToMe,
   canJump,
+  showPercentile = true,
   className,
 }) {
   const rank = me && typeof me.rank === "number" ? me.rank : null;
@@ -90,7 +91,7 @@ export function LeaderboardMeChip({
       <span className="text-xs font-bold tabular-nums text-oai-gray-800 dark:text-white">
         #{rank.toLocaleString()}
       </span>
-      {percentile != null && percentile <= PERCENTILE_BADGE_MAX && (
+      {showPercentile && percentile != null && percentile <= PERCENTILE_BADGE_MAX && (
         <span
           className={cn(
             "hidden sm:inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-extrabold tracking-wider tabular-nums uppercase transition-colors duration-300 ring-1",
