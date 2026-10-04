@@ -43,6 +43,249 @@ function tmpdir(t) {
   return dir;
 }
 
+function configureClaudeRoots(home, roots) {
+  const tracker = path.join(home, ".tokentracker-community", "tracker");
+  fs.mkdirSync(tracker, { recursive: true });
+  fs.writeFileSync(path.join(tracker, "config.json"), JSON.stringify({ scanRoots: { claude: roots } }));
+}
+
+test("removing a configured root permits continuing ordinary and forced sidecar persistence", async (t) => {
+  const home = tmpdir(t);
+  const native = path.join(home, ".claude");
+  const extra = path.join(home, "extra-claude");
+  writeClaudeSession(native, "p1", "11111111-1111-4111-8111-111111111111");
+  writeClaudeSession(extra, "p2", "22222222-2222-4222-8222-222222222222");
+  configureClaudeRoots(home, [extra]);
+  assert.equal((await buildSessionAnalytics({ home, force: true })).length, 2);
+  const sidecar = resolveSessionSidecarPath(home);
+  const initial = fs.readFileSync(sidecar, "utf8");
+  configureClaudeRoots(home, []);
+  assert.ok(fs.existsSync(path.join(extra, "projects", "p2")), "removed scope still exists on disk");
+  writeClaudeSession(native, "p1", "33333333-3333-4333-8333-333333333333");
+  const refreshed = await buildSessionAnalytics({ home, cacheTtlMs: 0 });
+  assert.equal(refreshed.incompleteDirs.length, 0, "intentional removal is a complete discovery");
+  assert.deepEqual(refreshed.map((row) => row.session_id).sort(), [
+    "11111111-1111-4111-8111-111111111111", "33333333-3333-4333-8333-333333333333",
+  ]);
+  assert.notEqual(fs.readFileSync(sidecar, "utf8"), initial);
+  writeClaudeSession(native, "p3", "44444444-4444-4444-8444-444444444444");
+  assert.equal((await buildSessionAnalytics({ home, force: true })).length, 3);
+  assert.equal(fs.readFileSync(sidecar, "utf8").trim().split("\n").length, 3);
+  assert.equal((await buildSessionAnalytics({ home, cacheTtlMs: 0 })).length, 3,
+    "ordinary read must not revert to the old complete list after force");
+  writeClaudeSession(native, "p3", "55555555-5555-4555-8555-555555555555");
+  assert.equal((await buildSessionAnalytics({ home, cacheTtlMs: 0 })).length, 4);
+  assert.equal(fs.readFileSync(sidecar, "utf8").trim().split("\n").length, 4);
+});
+
+for (const level of ["root", "project"]) {
+  for (const fault of ["missing", "EACCES"]) {
+    test(`scope removal still protects complete history when retained ${level} is ${fault}`, async (t) => {
+      const home = tmpdir(t);
+      const native = path.join(home, ".claude");
+      const extra = path.join(home, "extra-claude");
+      writeClaudeSession(native, "p1", "11111111-1111-4111-8111-111111111111");
+      writeClaudeSession(extra, "p2", "22222222-2222-4222-8222-222222222222");
+      configureClaudeRoots(home, [extra]);
+      await buildSessionAnalytics({ home, force: true });
+      const sidecar = resolveSessionSidecarPath(home);
+      const meta = `${sidecar}.meta.json`;
+      const before = [fs.readFileSync(sidecar, "utf8"), fs.readFileSync(meta, "utf8")];
+      configureClaudeRoots(home, []);
+      const target = level === "root" ? native : path.join(native, "projects", "p1");
+      const offline = path.join(home, "offline");
+      const fsp = require("node:fs/promises");
+      const readdir = fsp.readdir;
+      const opendir = fs.opendirSync;
+      const mocks = [];
+      if (fault === "missing") fs.renameSync(target, offline);
+      else {
+        mocks.push(t.mock.method(fsp, "readdir", async (dir, ...args) => {
+          if (String(dir) === target || String(dir).startsWith(target + path.sep)) {
+            throw Object.assign(new Error(`fixture denied ${target}`), { code: "EACCES" });
+          }
+          return readdir(dir, ...args);
+        }));
+        mocks.push(t.mock.method(fs, "opendirSync", (dir, ...args) => {
+          if (String(dir) === target || String(dir).startsWith(target + path.sep)) {
+            throw Object.assign(new Error(`fixture denied ${target}`), { code: "EACCES" });
+          }
+          return opendir(dir, ...args);
+        }));
+      }
+      try {
+        const cached = await buildSessionAnalytics({ home, cacheTtlMs: 0 });
+        assert.equal(cached.length, 2);
+        assert.ok(cached.incompleteDirs.length);
+        const forced = await buildSessionAnalytics({ home, force: true });
+        assert.ok(forced.incompleteDirs.length);
+        assert.deepEqual([fs.readFileSync(sidecar, "utf8"), fs.readFileSync(meta, "utf8")], before,
+          "scope change and force must not bypass a retained directory failure");
+      } finally {
+        mocks.forEach((mock) => mock.mock.restore());
+        if (fault === "missing") fs.renameSync(offline, target);
+      }
+      writeClaudeSession(native, "p1", "33333333-3333-4333-8333-333333333333");
+      const recovered = await buildSessionAnalytics({ home, cacheTtlMs: 0 });
+      assert.equal(recovered.incompleteDirs.length, 0);
+      assert.equal(recovered.length, 2);
+      assert.notEqual(fs.readFileSync(sidecar, "utf8"), before[0]);
+    });
+  }
+}
+
+test("incomplete session discovery warnings retain codes and counts without raw fixture paths", async (t) => {
+  const home = tmpdir(t);
+  const missing = path.join(home, "private-project", "missing-claude");
+  configureClaudeRoots(home, [missing]);
+  const warnings = [];
+  t.mock.method(console, "warn", (...args) => warnings.push(args.join(" ")));
+  const testContext = process.env.NODE_TEST_CONTEXT;
+  delete process.env.NODE_TEST_CONTEXT;
+  try { await buildSessionAnalytics({ home, cacheTtlMs: 0 }); }
+  finally {
+    if (testContext !== undefined) process.env.NODE_TEST_CONTEXT = testContext;
+  }
+  assert.ok(warnings.length > 0, "exercise the production warning path");
+  assert.equal(warnings.some((line) => line.includes(home) || line.includes(missing)), false,
+    "warnings must not reveal HOME or project directories");
+  assert.match(warnings.join("\n"), /claude.*ENOENT.*1/);
+});
+
+test("legacy global inventories migrate only after a complete scan, then scope removal is supported", async (t) => {
+  const home = tmpdir(t);
+  const native = path.join(home, ".claude");
+  const extra = path.join(home, "extra-claude");
+  writeClaudeSession(native, "p1", "11111111-1111-4111-8111-111111111111");
+  writeClaudeSession(extra, "p2", "22222222-2222-4222-8222-222222222222");
+  configureClaudeRoots(home, [extra]);
+  await buildSessionAnalytics({ home, force: true });
+  const sidecar = resolveSessionSidecarPath(home);
+  const metaPath = `${sidecar}.meta.json`;
+  const legacy = JSON.parse(fs.readFileSync(metaPath, "utf8"));
+  delete legacy.directory_roots;
+  fs.writeFileSync(metaPath, JSON.stringify(legacy));
+  const before = [fs.readFileSync(sidecar, "utf8"), fs.readFileSync(metaPath, "utf8")];
+  configureClaudeRoots(home, []);
+  assert.equal((await buildSessionAnalytics({ home, cacheTtlMs: 0 })).length, 2,
+    "legacy hashes cannot safely infer which removed root owned a missing directory");
+  assert.ok((await buildSessionAnalytics({ home, force: true })).incompleteDirs.length);
+  assert.deepEqual([fs.readFileSync(sidecar, "utf8"), fs.readFileSync(metaPath, "utf8")], before);
+  configureClaudeRoots(home, [extra]);
+  const offline = path.join(home, "offline");
+  fs.renameSync(path.join(native, "projects", "p1"), offline);
+  try {
+    assert.ok((await buildSessionAnalytics({ home, force: true })).incompleteDirs.length);
+    assert.deepEqual([fs.readFileSync(sidecar, "utf8"), fs.readFileSync(metaPath, "utf8")], before);
+  } finally { fs.renameSync(offline, path.join(native, "projects", "p1")); }
+  await buildSessionAnalytics({ home, cacheTtlMs: 0 });
+  const migrated = JSON.parse(fs.readFileSync(metaPath, "utf8"));
+  assert.ok(migrated.directory_roots.length >= 2);
+  assert.deepEqual(migrated.directory_keys, legacy.directory_keys, "complete migration retains the full inventory");
+  assert.equal(JSON.stringify(migrated.directory_roots).includes(home), false, "only hashed identities persist");
+  configureClaudeRoots(home, []);
+  assert.equal((await buildSessionAnalytics({ home, cacheTtlMs: 0 })).length, 1);
+  assert.equal(fs.readFileSync(sidecar, "utf8").trim().split("\n").length, 1);
+});
+
+test("removing a shared-projects alias retains its other owner's directory protection", async (t) => {
+  const home = tmpdir(t);
+  const native = path.join(home, ".claude");
+  const alias = path.join(home, "extra-profile");
+  writeClaudeSession(native, "p1", "11111111-1111-4111-8111-111111111111");
+  fs.mkdirSync(alias);
+  fs.symlinkSync(path.join(native, "projects"), path.join(alias, "projects"), process.platform === "win32" ? "junction" : "dir");
+  configureClaudeRoots(home, [alias]);
+  assert.equal((await buildSessionAnalytics({ home, force: true })).length, 1);
+  const sidecar = resolveSessionSidecarPath(home);
+  const before = fs.readFileSync(sidecar, "utf8");
+  configureClaudeRoots(home, []);
+  const offline = path.join(home, "offline");
+  fs.renameSync(path.join(native, "projects", "p1"), offline);
+  try {
+    const cached = await buildSessionAnalytics({ home, cacheTtlMs: 0 });
+    assert.equal(cached.length, 1);
+    assert.ok(cached.incompleteDirs.length);
+    assert.equal(fs.readFileSync(sidecar, "utf8"), before);
+  } finally { fs.renameSync(offline, path.join(native, "projects", "p1")); }
+  writeClaudeSession(native, "p1", "33333333-3333-4333-8333-333333333333");
+  assert.equal((await buildSessionAnalytics({ home, cacheTtlMs: 0 })).length, 2);
+  assert.equal(fs.readFileSync(sidecar, "utf8").trim().split("\n").length, 2);
+});
+
+test("an undetected WSL root is not an intentional scope removal while WSL probing remains enabled", async (t) => {
+  const home = tmpdir(t);
+  const wslRoot = path.join(home, "fixture-wsl", ".claude");
+  writeClaudeSession(wslRoot, "p1", "11111111-1111-4111-8111-111111111111");
+  const env = { TOKENTRACKER_WSL_MODE: "both" };
+  const deps = { platform: "win32", homedir: () => home, scanRootsConfig: null,
+    discoverWslHome: (provider) => provider === ".claude" ? wslRoot : null };
+  const complete = await discoverSessionFiles(home, env, deps);
+  assert.ok(complete.directoryRoots.some((root) => root.origin === "wsl"));
+  const offline = await discoverSessionFiles(home, env, { ...deps, discoverWslHome: () => null,
+    previousDirectoryRoots: complete.directoryRoots });
+  assert.ok(offline.incomplete.length, "failed WSL detection cannot discard established history");
+  const nativeOnly = await discoverSessionFiles(home, { TOKENTRACKER_WSL_MODE: "native-only" }, {
+    ...deps, previousDirectoryRoots: complete.directoryRoots });
+  assert.equal(nativeOnly.incomplete.length, 0, "explicit WSL policy changes can remove that scope");
+});
+
+test("another provider observing the same realpath cannot hide a retained Claude projects loss", async (t) => {
+  const home = tmpdir(t);
+  const donor = path.join(home, "shared-provider-tree");
+  writeClaudeSession(donor, "p1", "11111111-1111-4111-8111-111111111111");
+  const shared = path.join(donor, "projects");
+  const claude = path.join(home, ".claude");
+  const codex = path.join(home, ".codex");
+  fs.mkdirSync(claude); fs.mkdirSync(codex);
+  const type = process.platform === "win32" ? "junction" : "dir";
+  const claudeLink = path.join(claude, "projects");
+  fs.symlinkSync(shared, claudeLink, type);
+  fs.symlinkSync(shared, path.join(codex, "sessions"), type);
+  const complete = await buildSessionAnalytics({ home, force: true });
+  assert.ok(complete.some((row) => row.source === "claude"));
+  const sidecar = resolveSessionSidecarPath(home);
+  const before = [fs.readFileSync(sidecar, "utf8"), fs.readFileSync(`${sidecar}.meta.json`, "utf8")];
+  fs.unlinkSync(claudeLink);
+  try {
+    const cached = await buildSessionAnalytics({ home, cacheTtlMs: 0 });
+    assert.ok(cached.incompleteDirs.length, "Codex directory hashes cannot prove Claude discovery complete");
+    assert.ok(cached.some((row) => row.source === "claude"));
+    assert.ok((await buildSessionAnalytics({ home, force: true })).incompleteDirs.length);
+    assert.deepEqual([fs.readFileSync(sidecar, "utf8"), fs.readFileSync(`${sidecar}.meta.json`, "utf8")], before);
+  } finally { fs.symlinkSync(shared, claudeLink, type); }
+});
+
+test("canonical projects faults log the provider without the target path or exception message", async (t) => {
+  const home = tmpdir(t);
+  const donor = path.join(home, "private-donor");
+  writeClaudeSession(donor, "p1", "11111111-1111-4111-8111-111111111111");
+  const native = path.join(home, ".claude");
+  const shared = path.join(donor, "projects");
+  fs.mkdirSync(native);
+  fs.symlinkSync(shared, path.join(native, "projects"), process.platform === "win32" ? "junction" : "dir");
+  const fsp = require("node:fs/promises");
+  const readdir = fsp.readdir;
+  const opendir = fs.opendirSync;
+  const denied = () => Object.assign(new Error(`private fixture denied ${shared}`), { code: "EACCES" });
+  t.mock.method(fsp, "readdir", async (dir, ...args) => {
+    if (String(dir) === shared) throw denied();
+    return readdir(dir, ...args);
+  });
+  t.mock.method(fs, "opendirSync", (dir, ...args) => {
+    if (String(dir) === shared) throw denied();
+    return opendir(dir, ...args);
+  });
+  const warnings = [];
+  t.mock.method(console, "warn", (...args) => warnings.push(args.join(" ")));
+  const testContext = process.env.NODE_TEST_CONTEXT;
+  delete process.env.NODE_TEST_CONTEXT;
+  try { await buildSessionAnalytics({ home, force: true }); }
+  finally { if (testContext !== undefined) process.env.NODE_TEST_CONTEXT = testContext; }
+  assert.equal(warnings.join("\n"), "[session-analytics] inventory incomplete: claude EACCES: 1");
+  assert.equal(warnings.some((line) => line.includes(home) || line.includes(shared) || line.includes("private fixture")), false);
+});
+
 for (const targetLevel of ["root", "projects", "project"]) {
   for (const fault of ["missing", "EACCES"]) {
     test(`Community sidecar survives ${targetLevel} ${fault}, including forced refresh, then recovers`, async (t) => {

@@ -43,6 +43,7 @@ const {
   loadScanRootsConfig,
   normalizeScanRootsConfig,
   scanRootDirState,
+  summarizeScanFailures,
 } = require("./scan-roots");
 
 // Bump the sidecar when derived metrics change so cached rows are rebuilt
@@ -1322,26 +1323,86 @@ async function discoverSessionFiles(home, env = process.env, deps = {}) {
   for (const failure of discovery.failures.values()) {
     if (!incomplete.some((entry) => entry.path === failure.path)) incomplete.push(failure);
   }
-  // Only hashes reach metadata: directory paths remain local in memory.
-  const directoryKeys = [...discovery.directories].map((dir) =>
-    crypto.createHash("sha256").update(canonicalScanRoot(dir, home)).digest("hex"));
+  // Keep both the request spelling and canonical identity: a missing mount or
+  // alias cannot make a still-selected root look intentionally removed.
+  // All persisted identities remain hashes, never provider directory paths.
+  const directoryKey = (dir) => crypto.createHash("sha256").update(dir).digest("hex");
+  const rootKeys = (root) => [...new Set([path.resolve(root), canonicalScanRoot(root, home)])].map(directoryKey);
+  const within = (dir, root) => dir === root || dir.startsWith(root + path.sep);
+  const observedDirs = [...discovery.directories].map((dir) => canonicalScanRoot(dir, home));
+  const directoryKeys = [...new Set(observedDirs.map(directoryKey))].sort();
+  const directoryRoots = [];
+  const scanScopes = [];
+  for (const [provider, roots, nativeName, envKey] of [
+    ["claude", requestedClaudeRoots, ".claude", "CLAUDE_CONFIG_DIR"],
+    ["codex", requestedCodexRoots, ".codex", "CODEX_HOME"],
+  ]) {
+    const explicitKeys = [...extraRootsFor(provider), expandHome(env[envKey], home)]
+      .filter(Boolean).flatMap(rootKeys);
+    const nativeKeys = rootKeys(path.join(home, nativeName));
+    for (const root of roots) {
+      const keys = rootKeys(root);
+      const scanPaths = (provider === "claude" ? ["projects"] : ["sessions", "archived_sessions"])
+        .map((child) => canonicalScanRoot(path.join(root, child), home));
+      scanScopes.push({ provider, paths: scanPaths });
+      directoryRoots.push({
+        provider,
+        root_keys: keys,
+        origin: keys.some((key) => nativeKeys.includes(key)) ? "native"
+          : keys.some((key) => explicitKeys.includes(key)) ? "explicit" : "wsl",
+        directory_keys: [...new Set(observedDirs
+          .filter((dir) => scanPaths.some((scanPath) => within(dir, scanPath))).map(directoryKey))].sort(),
+      });
+    }
+  }
   const currentDirectoryKeys = new Set(directoryKeys);
-  if (incomplete.length === 0 && (deps.previousDirectoryKeys || []).some((key) => !currentDirectoryKeys.has(key))) {
+  // Compare history only for roots still selected. A deliberately removed
+  // configured/env root no longer owns the current inventory, but a WSL root
+  // disappearing from detection is still required while WSL remains enabled.
+  if (incomplete.length === 0 && Array.isArray(deps.previousDirectoryRoots)) {
+    const probeWsl = deps.probeWsl !== undefined ? Boolean(deps.probeWsl)
+      : path.resolve(home) === path.resolve((deps.homedir || os.homedir)());
+    const wslEnabled = (deps.platform || process.platform) === "win32" && probeWsl && wsl.shouldProbeWsl(env);
+    for (const previous of deps.previousDirectoryRoots) {
+      const retained = directoryRoots.some((root) => root.provider === previous.provider
+        && root.root_keys.some((key) => (previous.root_keys || []).includes(key)));
+      const providerDirectoryKeys = new Set(directoryRoots
+        .filter((root) => root.provider === previous.provider).flatMap((root) => root.directory_keys));
+      if ((retained || (previous.origin === "wsl" && wslEnabled))
+        && (previous.directory_keys || []).some((key) => !providerDirectoryKeys.has(key))) {
+        const failure = { path: `previous session directory (${previous.root_keys[0]})`, error: "ENOENT" };
+        Object.defineProperty(failure, "provider", { value: previous.provider });
+        incomplete.push(failure);
+      }
+    }
+  } else if (incomplete.length === 0 && !Array.isArray(deps.previousDirectoryRoots)
+    && (deps.previousDirectoryKeys || []).some((key) => !currentDirectoryKeys.has(key))) {
+    // Legacy hashes cannot prove ownership. Keep their protection until one
+    // complete scan matches them and safely establishes the per-root inventory.
     incomplete.push({ path: "previously discovered session directory", error: "ENOENT" });
   }
-  return { claude, codex: groupCodexFiles([...codex, ...archived]), grok, incomplete, directoryKeys };
+  for (const failure of incomplete) {
+    if (failure.provider) continue;
+    const provider = scanScopes.find((scope) => scope.paths.some((root) => within(failure.path, root)))?.provider
+      || (requestedClaudeRoots.some((root) => within(failure.path, root)) ? "claude"
+        : requestedCodexRoots.some((root) => within(failure.path, root)) ? "codex" : "unknown");
+    Object.defineProperty(failure, "provider", { value: provider });
+  }
+  return { claude, codex: groupCodexFiles([...codex, ...archived]), grok, incomplete, directoryKeys, directoryRoots };
 }
 
 // Warn once per unreadable directory per process: the dashboard polls this
 // path, and a line per poll would flood the serve log.
 const warnedIncompleteDiscovery = new Set();
 function warnIncompleteDiscovery(incomplete) {
+  const newlyWarned = [];
   for (const entry of incomplete) {
     if (warnedIncompleteDiscovery.has(entry.path)) continue;
     warnedIncompleteDiscovery.add(entry.path);
-    if (!process.env.NODE_TEST_CONTEXT) {
-      console.warn(`[session-analytics] session directory unreadable (${entry.error}), inventory incomplete: ${entry.path}`);
-    }
+    newlyWarned.push(entry);
+  }
+  if (newlyWarned.length > 0 && !process.env.NODE_TEST_CONTEXT) {
+    console.warn(`[session-analytics] inventory incomplete: ${summarizeScanFailures(newlyWarned)}`);
   }
 }
 
@@ -1473,6 +1534,7 @@ async function buildSessionAnalyticsInternal({ home = os.homedir(), force = fals
   }
   const discovered = await discoverSessionFiles(home, process.env, {
     previousDirectoryKeys: previousMeta?.directory_keys || [],
+    previousDirectoryRoots: previousMeta?.directory_roots,
   });
   // Incomplete discovery (an unreadable projects/ or sessions/ dir): never let
   // a partial inventory replace a complete snapshot. Serve the last complete
@@ -1500,7 +1562,7 @@ async function buildSessionAnalyticsInternal({ home = os.homedir(), force = fals
     ...discovered.grok.map(grokSignalsPathFor),
   ]);
   if (incompleteDirs.length === 0 && !force && previousMeta?.version === SIDECAR_VERSION && previousMeta.signature === signature) {
-    await writeAtomic(metaPath, `${JSON.stringify({ ...previousMeta, directory_keys: discovered.directoryKeys, checked_at: new Date().toISOString() })}\n`);
+    await writeAtomic(metaPath, `${JSON.stringify({ ...previousMeta, directory_keys: discovered.directoryKeys, directory_roots: discovered.directoryRoots, checked_at: new Date().toISOString() })}\n`);
     return readSidecar(sidecarPath);
   }
 
@@ -1567,6 +1629,7 @@ async function buildSessionAnalyticsInternal({ home = os.homedir(), force = fals
       checked_at: generatedAt,
       files: nextFiles,
       directory_keys: discovered.directoryKeys,
+      directory_roots: discovered.directoryRoots,
     })}\n`);
   }
   // Non-enumerable so the array still behaves exactly like a plain row list

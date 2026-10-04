@@ -448,3 +448,21 @@ test("full scan defers the Claude ground-truth repair while a configured root's 
     assert.ok((await readMigrations())[migrationKey], "repair ran once projects/ was readable");
   });
 });
+
+test("Claude deferred repair warning retains provider, code and count without raw fixture paths", async (t) => {
+  await withTempSyncEnv(async (home) => {
+    const missing = path.join(home, "private-project", "missing-claude");
+    await writeConfig(home, { scanRoots: { claude: [missing] } });
+    const stderr = [];
+    const write = process.stderr.write;
+    const mock = t.mock.method(process.stderr, "write", function (chunk, ...args) {
+      if (String(chunk).includes("Claude ground-truth repair deferred")) { stderr.push(String(chunk)); return true; }
+      return write.call(this, chunk, ...args);
+    });
+    try { await cmdSync([]); }
+    finally { mock.mock.restore(); }
+    assert.equal(stderr.length, 1);
+    assert.equal(stderr.some((line) => line.includes(home) || line.includes(missing)), false);
+    assert.match(stderr[0], /Claude.*ENOENT.*1/);
+  });
+});

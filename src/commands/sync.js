@@ -180,6 +180,7 @@ const {
   resolveEnvRoot,
   resolveScanRoots,
   scanRootDirState,
+  summarizeScanFailures,
 } = require("../lib/scan-roots");
 const { resolveRuntimeConfig, isLegacyInsforgeBaseUrl } = require("../lib/runtime-config");
 const { extractTokenCount } = require("../lib/codex-rollout-parser");
@@ -1144,7 +1145,10 @@ async function cmdSync(argv, context = {}) {
           if (projectsState.error !== null) return true;
           return !projectsState.exists && rootPreviouslySuppliedFiles(entry.path);
         })
-        .map((entry) => entry.path);
+        .map((entry) => ({
+          path: entry.path,
+          error: entry.error || scanRootDirState(path.join(entry.path, "projects")).error || "ENOENT",
+        }));
       // A nested project directory can disappear or become unreadable too.
       // Cursor paths are the existing history inventory, so no new provider
       // state or writes to provider roots are needed to protect those rows.
@@ -1152,13 +1156,13 @@ async function cmdSync(argv, context = {}) {
         .filter((file) => claudeProjectsDirs.some((root) => file.startsWith(root + path.sep)))
         .map((file) => path.dirname(file)))) {
         const state = scanRootDirState(dir);
-        if (!state.exists) unavailableClaudeRoots.push(dir);
+        if (!state.exists) unavailableClaudeRoots.push({ path: dir, error: state.error || "ENOENT" });
       }
-      unavailableClaudeRoots.push(...claudeDiscovery.failures.keys());
+      unavailableClaudeRoots.push(...claudeDiscovery.failures.values());
       if (unavailableClaudeRoots.length > 0) {
         if (!opts.auto) {
           process.stderr.write(
-            `Claude ground-truth repair deferred: configured scan root(s) unavailable: ${unavailableClaudeRoots.join(", ")}\n`,
+            `Claude ground-truth repair deferred: scan directories unavailable (${summarizeScanFailures(unavailableClaudeRoots.map((entry) => ({ ...entry, provider: "claude" })))}).\n`,
           );
         }
       } else {

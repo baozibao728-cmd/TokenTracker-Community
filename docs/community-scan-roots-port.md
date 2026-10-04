@@ -88,6 +88,37 @@ directory inventory cannot identify a previously removed nested directory
 until a complete refresh has established that inventory; configured-root
 absence and present-directory read failures are protected immediately.
 
+### PR #3 review follow-up
+
+Directory metadata now records hashed identities and inventories per selected
+provider root. Removing an extra config/env root permits complete, persistent
+refreshes of the remaining scope. Missing/unreadable retained roots or nested
+directories still preserve the last complete sidecar, even during a scope
+change or forced refresh. Shared projects and aliases retain their surviving
+owner; an undetected WSL root remains required while WSL probing is enabled.
+No parser, token normalization, pricing, version or cloud contract changed.
+
+The `51bee187` metadata format has only global directory hashes and cannot
+prove which root owned a disappeared directory. It remains conservatively
+protected until one complete scan of the original scope establishes the
+per-root inventory. If the scope was already reduced before that migration,
+restore the original scope for one complete refresh, then remove the extra
+root again. Neither deleting the old inventory nor forcing a partial snapshot
+is used as a migration shortcut. This compatibility limitation is retained.
+
+New incomplete-discovery and deferred-repair warnings aggregate only a safe
+provider identifier, errno and count. Raw directory paths and exception
+messages stay out of these fault logs; local diagnostic/status path display
+and existing parser warnings are outside this follow-up.
+
+Follow-up verification: 14 affected test files ran with Node's default process
+isolation and sanitized fixture preload: **231 tests, 226 PASS, 0 FAIL,
+5 existing platform/integration skips**. The seven initial review regressions
+failed against `51bee187` before the fix; an additional cross-provider shared
+directory regression failed before the provider-scoped comparison was added.
+Version consistency and architecture guardrails passed. Final CI/RC links and
+new package checksums are recorded separately without changing packaged HEAD.
+
 This candidate does not change the accepted first technical-preview PASS.
 Cloud account/Community ranking comparison and macOS/Linux GUI/runtime remain
 outside this batch. Stable release status remains **NOT_READY**.

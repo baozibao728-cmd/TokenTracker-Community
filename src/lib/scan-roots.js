@@ -270,6 +270,23 @@ function createScanDiscovery(roots) {
   };
 }
 
+// Paths are useful for in-process deduplication, never for fault log output.
+function summarizeScanFailures(failures) {
+  const groups = new Map();
+  const seen = new Set();
+  for (const entry of failures) {
+    const provider = ["claude", "codex"].includes(entry.provider) ? entry.provider : "unknown";
+    const error = /^[A-Z][A-Z0-9_]{0,31}$/.test(entry.error || "") ? entry.error : "EUNKNOWN";
+    const identity = `${provider}\0${entry.path}`;
+    if (seen.has(identity)) continue;
+    seen.add(identity);
+    const key = `${provider} ${error}`;
+    groups.set(key, (groups.get(key) || 0) + 1);
+  }
+  return [...groups].sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, count]) => `${key}: ${count}`).join("; ");
+}
+
 // Human label for status / doctor output.
 function describeScanRootOrigin(entry, provider) {
   if (!entry || entry.origin === "native") return "native";
@@ -308,4 +325,5 @@ module.exports = {
   resolveEnvRoot,
   resolveScanRoots,
   scanRootDirState,
+  summarizeScanFailures,
 };

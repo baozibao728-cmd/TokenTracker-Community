@@ -32,7 +32,21 @@ const {
   resolveEnvRoot,
   resolveScanRoots,
   scanRootDirState,
+  summarizeScanFailures,
 } = require("../src/lib/scan-roots");
+
+test("scan failure summaries aggregate safe identifiers and reject path-bearing error text", () => {
+  const privatePath = path.join("private-home", "private-project");
+  const summary = summarizeScanFailures([
+    { provider: "claude", error: "EACCES", path: privatePath },
+    { provider: "claude", error: "EACCES", path: privatePath },
+    { provider: "claude", error: "EACCES", path: privatePath + "-other" },
+    { provider: "codex", error: "ENOENT", path: privatePath },
+    { provider: privatePath, error: `EACCES: ${privatePath}`, path: privatePath },
+  ]);
+  assert.equal(summary, "claude EACCES: 2; codex ENOENT: 1; unknown EUNKNOWN: 1");
+  assert.equal(summary.includes(privatePath), false);
+});
 
 const { withCommunityHome } = require("./helpers/with-community-home");
 
