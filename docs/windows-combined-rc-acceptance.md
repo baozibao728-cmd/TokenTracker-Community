@@ -220,4 +220,32 @@ Claude 新增根 24、失联时历史 / inode / offset 保留与 deferred repair
 
 ### 提交、CI 与新 RC
 
-本修复允许独立分支 commit / push、Draft PR、普通 CI 与新源码 build-only RC；本节将在实际运行完成后记录固定源码、检查链接和原始交付物校验。未安装新候选、未合并、未操作公开预览资产或云端。原 130 Token / Auth 两用户 / 空 Community 三表使用前节已验基线；本轮无业务写入，也不把既有只读结果冒充新查询。
+本修复已完成独立分支 commit / push、Draft PR、普通 CI 与新源码 build-only RC，并下载原始交付物回核。未安装新候选、未合并、未操作公开预览资产或云端。原 130 Token / Auth 两用户 / 空 Community 三表使用前节已验基线；本轮无业务写入，也不把既有只读结果冒充新查询。
+
+- 修复源码 / RC source：`6321b24e0c46699db2695995491fea5bae97b359`（`fix: persist native logout across restarts`）。
+- [Draft PR #5](https://github.com/baozibao728-cmd/TokenTracker-Community/pull/5)，base 为固定 f0；保持 Draft，不执行合并。
+- [源码普通 CI 37225559795](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37225559795)：4/4 PASS。四 job 实际 checkout 均为 PR 测试合并 SHA `e414f6fd246551af6ae10c1b640d8430ad8dc426`，与打包源码 SHA 分开记录；Windows 新增 Node logout / relay、.NET 8 日志 / updater / identity 检查均实际成功。
+- [新 RC 37225559792](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37225559792)：candidate、Windows、macOS、Linux、delivery 全部 PASS。五 job 的实际 checkout 和候选校验均为完整 `6321b24e0c46699db2695995491fea5bae97b359`，无打包失败或重跑。
+- Windows 实际 ZIP / Setup payload 完整且逐文件一致；macOS 挂载 DMG 检查 runtime、独立 identity 与 ad-hoc 签名；Linux 分别解包 AppImage / deb / rpm 核对 runtime、独立包身份与协议。以上为 runner 的 BUILD/PACKAGE 检查，不能替代 GUI / 本机登出验收。
+- 新 [delivery artifact 11311863214](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37225559792/artifacts/11311863214)，499127642 字节；下载后外层 ZIP 摘要与 Actions 的 `2ede3a978c2a06e61e2d3a9c82c3d050141977fb271cd4b5ceee2c7a2629d30a` 一致。包内六包的实际字节数、SHA-256、SHA256SUMS 与 manifest 全部回核 PASS，不把外层摘要当安装包摘要。交付版本为 1.2.0，source / checkout 均为上述修复源码。
+
+只修改本地 Auth 代理、正式回归、Windows CI 覆盖及本报告四文件。Backend、migration、Edge、Dashboard 产品逻辑、Parser / Cost Engine / Provider、版本与公开资产均未改动。普通 CI 与 build-only active，其他 10 个继承 / 发布 workflow 保持 disabled_manually。
+
+| 新候选原文件 | 字节数 | SHA-256 |
+|---|---:|---|
+| TokenTracker-Community-Setup.exe | 80754105 | `e2996f510dfc6c8d4fee9bd57f5b24d2e68a55d40de2a264b4ddbdb056b1958b` |
+| TokenTracker-Community-win-x64.zip | 114910002 | `576e5d72f69c2d031bc2f59c6b91b35784fa2661cc9d5be10622f3bffd502703` |
+| TokenTrackerCommunity.dmg | 61953630 | `c0d73971b7f4a640b2a052b59c52514b9e34e85e7db8547c95d10f1beaf7eb4e` |
+| TokenTracker-Community-linux-x86_64.AppImage | 127502840 | `dcac2b0898266a7a74fd24bb1b0c756c2ca3dbf57165cbdca2c669f9eee3aa89` |
+| TokenTracker-Community-linux-x86_64.deb | 57011188 | `f0b72ac0fb0ccebcf2fbfbb2fe1e93c962df90b37c0f4028148a8a49346942c6` |
+| TokenTracker-Community-linux-x86_64.rpm | 56992428 | `9c6e5c847b6cae2e052df87aabf257e279da90d2baaf22363eff951d093c0205` |
+| SHA256SUMS | 615 | `04c74fed3cc2453c60b8edb9a9e288000fb6a91573883aec9cac522dfb4392ee` |
+| RC_MANIFEST.json | 1598 | `29e42ff60c9a9ef3c9e2808f7aaeba8387fb491b0d464aaf3c5ae8120c7d348f` |
+
+下载后的 Windows ZIP 仅解压到本轮临时目录，没有运行安装器或桌面 exe。实际 EmbeddedServer Node v22.22.2、自有 client-config、独立 updater 指向及必需 runtime 内容再次检查 PASS。包内 `src/lib/local-api.js` 与固定提交仅有 checkout CRLF / Git LF 行尾差异，归一行尾后完全一致；包内文件 SHA-256 为 `aa40bcfd118bfaa194ae6506234e9824ff9fbe02c6858edb2e9708ded6a1423c`。在真实包内 Node 上运行同一组 13 项正式合成回归：13/13 PASS、0 skip，包含新进程在相同隔离数据目录无法恢复已登出会话。该检查不等于原生 GUI / 安装版→便携版验收。
+
+源码候选独立审查无 P1/P2 发现；本地敏感信息 / 路径扫描及 `git diff --check` 通过。临时归档源码、测试 fixture 及新包临时解压目录清理，原失败证据、下载的八个交付原件及安全摘要保留。随后纯文档收尾只更新本报告，不改变源码 / RC；最终报告 HEAD 和其后普通 CI 结果在 PR 与交付摘要记录，不为追记文档自身 SHA 循环追加提交。
+
+### 本次 review 停止点
+
+修复源码、正式 RED/GREEN、普通 CI、三平台 BUILD/PACKAGE 及下载回核 **PASS，交 review**。原 d294 包的退出登录持久性 FAIL / 整体 BLOCKED 保留。新 Windows 包的安装版登出→同 exe 重启、安装版登出→便携版启动、正常重新登录且云同步持续关闭仍 **NOT_TESTED，等待审核后定向实机验收**。配置变更键名 / hook / notify 与写入者归因缺口仍未闭合，不推测也不恢复旧配置。macOS/Linux GUI、真实 WSL、完整更高版本更新链及既有 Dashboard 两个基线失败继续保留，不开始加载预读或其他功能。
