@@ -252,6 +252,7 @@ jobs:
           node --test test/openclaw-parser.test.js
           node --test --test-name-pattern="native Windows" test/usage-limits.test.js
           node --test test/command-runner.test.js
+          node --test test/local-auth-logout-boundary.test.js test/cookie-relay-persistence.test.js
 
       - name: Test Windows OAuth logs, updater install gate, and identity
         run: dotnet test TokenTrackerWin.Tests/TokenTrackerWin.Tests.csproj --configuration Release --logger "console;verbosity=normal"

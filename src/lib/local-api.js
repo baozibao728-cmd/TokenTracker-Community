@@ -1139,6 +1139,9 @@ function createLocalApiHandler({ queuePath }) {
   // Persisted to disk so cookies survive server restarts.
   const csrfRelayCookieName = "insforge_csrf_token";
   let relayCookies = new Map();
+  // Explicit POST logout invalidates every response started by the old session.
+  // A late refresh must not restore cookies, native account data, or sync tokens.
+  let relaySessionEpoch = 0;
   const localAuthToken = crypto.randomBytes(24).toString("hex");
   const trackerDataDir = path.join(resolveTrackerRoot(), "tracker");
   const cookiePath = path.join(trackerDataDir, "relay-cookies.json");
@@ -1201,18 +1204,21 @@ function createLocalApiHandler({ queuePath }) {
   }
 
   function clearRelayCookies(reason) {
-    if (relayCookies.size === 0) return;
     relayCookies.clear();
     try {
-      if (fs.existsSync(cookiePath)) fs.unlinkSync(cookiePath);
+      fs.unlinkSync(cookiePath);
     } catch (e) {
-      console.error("[LocalAPI] Failed to clear relay cookies:", e.message);
-      return;
+      if (e.code !== "ENOENT") {
+        console.error(`[LocalAPI] Failed to clear relay cookies (${e.code || "IO_ERROR"})`);
+        return false;
+      }
     }
     if (reason) console.warn(`[LocalAPI] Cleared relay cookies: ${reason}`);
+    return true;
   }
 
-  function captureSetCookies(headerValue) {
+  function captureSetCookies(headerValue, responseEpoch) {
+    if (responseEpoch !== relaySessionEpoch) return;
     if (!headerValue) return;
     const parts = headerValue.split(/,(?=\s*\w+=)/);
     let changed = false;
@@ -1260,7 +1266,8 @@ function createLocalApiHandler({ queuePath }) {
     }
   }
 
-  function captureAuthTokensFromBody(bodyBuffer, contentType) {
+  function captureAuthTokensFromBody(bodyBuffer, contentType, responseEpoch) {
+    if (responseEpoch !== relaySessionEpoch) return;
     if (!bodyBuffer || !String(contentType || "").toLowerCase().includes("application/json")) return;
     let parsed = null;
     try {
@@ -1326,7 +1333,8 @@ function createLocalApiHandler({ queuePath }) {
   function getRefreshTokenForCloud() {
     return getRelayCookieValue("insforge_refresh_token", { decode: true });
   }
-  function setRelayRefreshToken(token) {
+  function setRelayRefreshToken(token, responseEpoch) {
+    if (responseEpoch !== relaySessionEpoch) return;
     if (!token || typeof token !== "string") return;
     const cookie = `insforge_refresh_token=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax`;
     if (relayCookies.get("insforge_refresh_token") !== cookie) {
@@ -1334,7 +1342,8 @@ function createLocalApiHandler({ queuePath }) {
       persistRelayCookies();
     }
   }
-  function setRelayCsrfToken(token) {
+  function setRelayCsrfToken(token, responseEpoch) {
+    if (responseEpoch !== relaySessionEpoch) return;
     if (!token || typeof token !== "string") return;
     const cookie = `${csrfRelayCookieName}=${encodeURIComponent(token)}; Path=/; SameSite=Lax`;
     if (relayCookies.get(csrfRelayCookieName) !== cookie) {
@@ -1343,11 +1352,12 @@ function createLocalApiHandler({ queuePath }) {
     }
   }
 
-  function localSyncDeviceTokenCacheKey(refreshToken, machineId, baseUrl) {
-    return `${baseUrl}\0${refreshToken}\0${machineId}`;
+  function localSyncDeviceTokenCacheKey(refreshToken, machineId, baseUrl, epoch) {
+    return `${epoch}\0${baseUrl}\0${refreshToken}\0${machineId}`;
   }
 
   async function issueDeviceTokenForLocalSync(queuePathForMachineId, options = {}) {
+    const requestEpoch = relaySessionEpoch;
     if (!getCloudSyncPref()) return null;
     const refreshToken = getRefreshTokenForCloud();
     if (!refreshToken) return null;
@@ -1359,7 +1369,7 @@ function createLocalApiHandler({ queuePath }) {
       normalizeRemoteHttpBaseUrl(options.baseUrl) ||
       normalizeRemoteHttpBaseUrl(runtime.baseUrl) ||
       normalizeRemoteHttpBaseUrl(DEFAULT_BASE_URL);
-    const cacheKey = localSyncDeviceTokenCacheKey(refreshToken, machineId, baseUrl);
+    const cacheKey = localSyncDeviceTokenCacheKey(refreshToken, machineId, baseUrl, requestEpoch);
     const cachedToken = localSyncDeviceTokenCache.get(cacheKey);
     if (cachedToken) return cachedToken;
     const inflightToken = localSyncDeviceTokenInflight.get(cacheKey);
@@ -1372,13 +1382,14 @@ function createLocalApiHandler({ queuePath }) {
         refreshToken,
         timeoutMs: runtime.httpTimeoutMs,
       });
+      if (requestEpoch !== relaySessionEpoch) return null;
       if (!minted?.accessToken) return null;
       const rotatedRefreshToken =
         typeof minted.refreshToken === "string" && minted.refreshToken.trim()
           ? minted.refreshToken.trim()
           : "";
-      if (rotatedRefreshToken) setRelayRefreshToken(rotatedRefreshToken);
-      if (minted.csrfToken) setRelayCsrfToken(minted.csrfToken);
+      if (rotatedRefreshToken) setRelayRefreshToken(rotatedRefreshToken, requestEpoch);
+      if (minted.csrfToken) setRelayCsrfToken(minted.csrfToken, requestEpoch);
 
       const root = String(baseUrl || DEFAULT_BASE_URL).replace(/\/$/, "");
       const headers = {
@@ -1417,10 +1428,11 @@ function createLocalApiHandler({ queuePath }) {
       });
       if (!res.ok) return null;
       const data = await res.json().catch(() => null);
+      if (requestEpoch !== relaySessionEpoch) return null;
       const token = typeof data?.token === "string" ? data.token.trim() : "";
       if (token) {
         const activeRefreshToken = rotatedRefreshToken || refreshToken;
-        localSyncDeviceTokenCache.set(localSyncDeviceTokenCacheKey(activeRefreshToken, machineId, baseUrl), token);
+        localSyncDeviceTokenCache.set(localSyncDeviceTokenCacheKey(activeRefreshToken, machineId, baseUrl, requestEpoch), token);
       }
       return token || null;
     })();
@@ -1462,12 +1474,13 @@ function createLocalApiHandler({ queuePath }) {
   // the `X-TokenTracker-Account-Fallback` header, the popover — why the local
   // single-machine data is being served instead.
   async function tryServeAccountView(usageSlug, url, res) {
+    const requestEpoch = relaySessionEpoch;
     if (!getCloudSyncPref()) return ACCOUNT_FALLBACK_CLOUD_SYNC_OFF;
     const refreshToken = getRefreshTokenForCloud();
     if (!refreshToken) return ACCOUNT_FALLBACK_SIGNED_OUT;
     const runtime = resolveRuntimeConfig();
     const failureKey = `${runtime.baseUrl}\0${refreshToken}`;
-    const requestKey = `${failureKey}\0${usageSlug}\0${url.searchParams.toString()}`;
+    const requestKey = `${requestEpoch}\0${failureKey}\0${usageSlug}\0${url.searchParams.toString()}`;
     if (accountViewFailureUntil(failureKey) > Date.now()) {
       return "transient-backoff";
     }
@@ -1491,6 +1504,7 @@ function createLocalApiHandler({ queuePath }) {
         refreshToken,
         timeoutMs,
       });
+      if (requestEpoch !== relaySessionEpoch) return ACCOUNT_FALLBACK_SIGNED_OUT;
       // `null` here means the slug has no cloud equivalent, or the session
       // vanished mid-request — a routing/session fact, not an outage.
       if (!out) return ACCOUNT_FALLBACK_SIGNED_OUT;
@@ -1498,8 +1512,8 @@ function createLocalApiHandler({ queuePath }) {
         rememberAccountViewFailure(failureKey);
         return "transient-upstream";
       }
-      if (out.rotatedRefreshToken) setRelayRefreshToken(out.rotatedRefreshToken);
-      if (out.rotatedCsrfToken) setRelayCsrfToken(out.rotatedCsrfToken);
+      if (out.rotatedRefreshToken) setRelayRefreshToken(out.rotatedRefreshToken, requestEpoch);
+      if (out.rotatedCsrfToken) setRelayCsrfToken(out.rotatedCsrfToken, requestEpoch);
       accountViewFailures.delete(failureKey);
       res.writeHead(200, {
         "Content-Type": "application/json",
@@ -1509,6 +1523,7 @@ function createLocalApiHandler({ queuePath }) {
       res.end(JSON.stringify(out.data));
       return "served";
     } catch (e) {
+      if (requestEpoch !== relaySessionEpoch) return ACCOUNT_FALLBACK_SIGNED_OUT;
       // Signed in + cloud sync on, but the cloud read failed (offline, token
       // rejected, edge error, or timeout). Serve local data rather than
       // erroring, but say so: this is a *temporary* downgrade and the client
@@ -1683,6 +1698,13 @@ function createLocalApiHandler({ queuePath }) {
     if (p.startsWith("/api/auth/")) {
       const runtime = resolveRuntimeConfig();
       const insforgeBase = runtime.baseUrl || DEFAULT_BASE_URL;
+      const isPostLogout = p === "/api/auth/logout" && String(req.method || "GET").toUpperCase() === "POST";
+      if (isPostLogout && !hasAllowedLoopbackOrigin(req.headers)) {
+        json(res, { error: "Forbidden" }, 403);
+        return true;
+      }
+      let requestEpoch = relaySessionEpoch;
+      let logoutCleanupOk;
       try {
         const targetUrl = `${insforgeBase.replace(/\/$/, "")}${p}${url.search || ""}`;
         const proxyHeaders = buildProxyHeaders(req.headers);
@@ -1726,6 +1748,17 @@ function createLocalApiHandler({ queuePath }) {
           shouldInjectRelayCookies && relayCookies.size > 0 && mergedCookie !== originalCookieHeader;
         if (mergedCookie) proxyHeaders["cookie"] = mergedCookie;
 
+        // Keep the outbound cookie snapshot for remote revocation, but establish
+        // local logout before any await. The remote result does not undo intent.
+        if (isPostLogout) {
+          requestEpoch = ++relaySessionEpoch;
+          logoutCleanupOk = clearRelayCookies("sign out");
+          localSyncDeviceTokenCache.clear();
+          localSyncDeviceTokenInflight.clear();
+          accountViewFailures.clear();
+          accountViewInFlight.clear();
+        }
+
         const bodyChunks = [];
         for await (const chunk of req) bodyChunks.push(chunk);
         let proxyBody = bodyChunks.length > 0 ? Buffer.concat(bodyChunks) : undefined;
@@ -1744,6 +1777,10 @@ function createLocalApiHandler({ queuePath }) {
           redirect: "manual",
         });
         let resBody = Buffer.from(await proxyRes.arrayBuffer());
+        if (!isPostLogout && requestEpoch !== relaySessionEpoch) {
+          json(res, { error: "AUTH_SESSION_SUPERSEDED" }, 409);
+          return true;
+        }
 
         // Stale-CSRF rescue: 403 Invalid CSRF on refresh does NOT mean the
         // session is dead — background mobile rotations (cloud-account.js) can
@@ -1774,28 +1811,38 @@ function createLocalApiHandler({ queuePath }) {
             resBody = Buffer.from(await rescueRes.arrayBuffer());
           }
         }
+        if (!isPostLogout && requestEpoch !== relaySessionEpoch) {
+          json(res, { error: "AUTH_SESSION_SUPERSEDED" }, 409);
+          return true;
+        }
 
         // Error responses must not mutate relay state: a 403's deletion
         // set-cookie (insforge_refresh_token=; Expires=1970) would otherwise
         // destroy a still-valid persisted session.
-        const allowRelayCapture = proxyRes.status < 400;
+        const allowRelayCapture = !isPostLogout && proxyRes.status < 400;
         const responseHeaders = [...proxyRes.headers.entries()]
           .filter(([k]) => !["transfer-encoding", "connection"].includes(k.toLowerCase()))
           .map(([k, v]) => {
             if (k.toLowerCase() === "set-cookie") {
               const rewritten = v.replace(/;\s*[Dd]omain=[^;]*/g, "; Domain=localhost");
-              if (allowRelayCapture) captureSetCookies(rewritten);
+              if (allowRelayCapture) captureSetCookies(rewritten, requestEpoch);
               return [k, rewritten];
             }
             return [k, v];
           });
-        res.writeHead(proxyRes.status, Object.fromEntries(responseHeaders));
-        if (proxyRes.status >= 200 && proxyRes.status < 300) {
-          if (p === "/api/auth/logout") {
-            clearRelayCookies("sign out");
-          } else {
-            captureAuthTokensFromBody(resBody, proxyRes.headers.get("content-type"));
+        if (isPostLogout) {
+          responseHeaders.push(["X-TokenTracker-Local-Logout", logoutCleanupOk ? "cleared" : "failed"]);
+          // Keep remote failures (including 403) intact. A remote 2xx cannot
+          // conceal a failed local disk cleanup behind a successful status.
+          if (!logoutCleanupOk && proxyRes.status >= 200 && proxyRes.status < 300) {
+            res.writeHead(502, { "Content-Type": "application/json", "X-TokenTracker-Local-Logout": "failed" });
+            res.end(JSON.stringify({ error: "LOCAL_LOGOUT_PERSISTENCE_FAILED" }));
+            return true;
           }
+        }
+        res.writeHead(proxyRes.status, Object.fromEntries(responseHeaders));
+        if (!isPostLogout && proxyRes.status >= 200 && proxyRes.status < 300) {
+          captureAuthTokensFromBody(resBody, proxyRes.headers.get("content-type"), requestEpoch);
         }
         if (
           isStaleCsrf403
@@ -1807,7 +1854,12 @@ function createLocalApiHandler({ queuePath }) {
         }
         res.end(resBody);
       } catch (e) {
-        json(res, { error: `Auth proxy error: ${e?.message || e}` }, 502);
+        if (isPostLogout) {
+          res.writeHead(502, { "Content-Type": "application/json", "X-TokenTracker-Local-Logout": logoutCleanupOk ? "cleared" : "failed" });
+          res.end(JSON.stringify({ error: "AUTH_PROXY_ERROR" }));
+        } else {
+          json(res, { error: `Auth proxy error: ${e?.message || e}` }, 502);
+        }
       }
       return true;
     }
