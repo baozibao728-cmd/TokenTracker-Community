@@ -249,3 +249,49 @@ Claude 新增根 24、失联时历史 / inode / offset 保留与 deferred repair
 ### 本次 review 停止点
 
 修复源码、正式 RED/GREEN、普通 CI、三平台 BUILD/PACKAGE 及下载回核 **PASS，交 review**。原 d294 包的退出登录持久性 FAIL / 整体 BLOCKED 保留。新 Windows 包的安装版登出→同 exe 重启、安装版登出→便携版启动、正常重新登录且云同步持续关闭仍 **NOT_TESTED，等待审核后定向实机验收**。配置变更键名 / hook / notify 与写入者归因缺口仍未闭合，不推测也不恢复旧配置。macOS/Linux GUI、真实 WSL、完整更高版本更新链及既有 Dashboard 两个基线失败继续保留，不开始加载预读或其他功能。
+
+## Windows 登出持久性定向实机验收（2026-10-05）
+
+前节 NOT_TESTED 是源码 / 候选 review 时的状态。本节单独记录 review 授权后的新包实机证据，不覆盖 d294 旧包的真实自动恢复 FAIL，也不将旧截图或旧包验收改标为新源码。
+
+### 固定候选与安装保护
+
+- 审核 HEAD：`fdb803b21e8f480805290597e8f05e3e5455985e`。
+- 实际安装版 / 便携版源码与 manifest source：`6321b24e0c46699db2695995491fea5bae97b359`，包内版本 1.2.0；原 [artifact 11311863214](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37225559792/artifacts/11311863214)。本轮未重新构建、签名、压缩或修改原件。
+- Setup 原件：80754105 字节，SHA-256 `e2996f510dfc6c8d4fee9bd57f5b24d2e68a55d40de2a264b4ddbdb056b1958b`。
+- ZIP 原件：114910002 字节，SHA-256 `576e5d72f69c2d031bc2f59c6b91b35784fa2661cc9d5be10622f3bffd502703`。安装前实际回核与 manifest / SHA256SUMS 一致。
+- 覆盖安装前分别备份 Community CLI 数据 / 配置 17 文件、原生数据 1178 文件、安装内容 947 文件，逐文件摘要一致。备份与恢复说明仅保留在受限本机目录；含会话的备份不提交或上传。正常验收没有恢复旧 relay 或 WebView 会话。
+- 原 Setup 覆盖安装 exit 0；安装后与原 ZIP 的 944 个 payload 文件逐文件比较，差异 0。实际 exe ProductVersion 为 `1.2.0+6321b24e0c46699db2695995491fea5bae97b359`，SHA-256 `8421a7022e5ab626c63cc2419cee6c620d953514f0cf033195b3de9aa1d3f791`。
+- 每个场景分别核对真实运行的 exe 与其子 Node：安装版来自正式 Community 安装目录，Node 来自同目录 `EmbeddedServer/node.exe`；便携版二者均来自本轮 ZIP 临时解压目录。没有用开发服务或子进程回归替代 WebView 实测。
+
+### 三个场景分别记录
+
+| 场景 | 原生 UI 与持久状态证据 | 结果 |
+|---|---|---|
+| 安装版登出 → 同 exe 重启 | 用户正常退出登录、刷新页面并确认社区登录门禁；relay 文件由存在变为不存在。托盘正常退出后进程为 0；从同一正式安装 exe 重启，relay 仍不存在，Auth refresh 实际 401，用户确认仍未登录、社区提示正常 | PASS |
+| 安装版登出 → 便携版启动 | 用户在正式安装版正常重新登录，确认同步关闭；再次登出、刷新门禁并从托盘退出。守卫确认安装版进程为 0 后启动原 ZIP；相同 Community 数据目录中 relay 不存在，refresh 实际 401，用户确认便携版没有自动恢复账号、登录提示正常 | PASS |
+| 合法新登录 → 正式安装版重启 | 便携版正常退出后恢复正式安装版。用户通过现有原生入口正常新登录，同步仍关闭；合法 OAuth exchange / refresh 实际 200，relay 重新持久化。用户只退出应用而不登出，同 exe 重启后的平台 refresh 200、Community detail 200，用户确认仍登录、社区正常、同步关闭，并再次从托盘正常退出 | PASS |
+
+2026-10-05 台北时间 12:18 的首次正常 POST `/api/auth/logout` 实际返回 **403**；WebView 观察到 `X-TokenTracker-Local-Logout: cleared`，磁盘 relay 在响应完成前已删除。第二轮观察到相继的 POST logout **403 / cleared** 与 **200 / cleared**，均按实际记录，不推测重复请求的来源。403 的云端状态未伪装为成功；本地退出边界生效与云端会话撤销是两个独立结论。
+
+登出后同 exe / 便携版的 refresh 401、新登录的正常 exchange / refresh 200，与用户在 Settings / Community 页的确认共同作为证据。公共榜单出现用户名称不能证明当前登录，也没有以公共数据替代私有登录门禁检查。所有手动登录仅经现有原生页面；观察记录、报告与 Git 不含密码、Cookie、JWT、授权码、认证 headers 或原始回调 URL。
+
+最后重启的 refresh 200 由该次正式安装版的本地 Node 请求观察器捕获，Community detail 200 与登录后的空社区状态由真实 WebView 观察器捕获。WebView 观察器连接前的 refresh 未被该观察器捕获，不宣称两者都记录了此请求。收尾摘要首次只查 WebView refresh，因该证据来源遗漏返回 FINAL_EVIDENCE_INCOMPLETE；核对同次启动的 Node 安全事件后补齐来源，未重跑登录、改变产品或放宽业务判断。
+
+### 工具失败与配置限制
+
+本轮第一次启动的临时观察器预加载路径使用反斜杠，被 Node 参数解析成不存在的路径，导致 observer MODULE_NOT_FOUND；另有一次 phase helper 的 PowerShell 参数集错误。修正仅在忽略的本机观察工具中，未改包内产品字节。故障启动不计入有效候选验收，后续同一原包正常启动完成观察。
+
+一次用户初报退出时安装版进程尚在，守卫阻止便携版启动；再次通过托盘退出、确认进程为 0 后才继续，未强制结束其他程序。便携版退出后的目录清理首次遇到 DLL 锁，确认目录范围及便携进程为 0 后短暂等待再清理成功；未取得锁持有者证据，不归因为产品缺陷。
+
+官方 exe、Claude settings、home Codex config 与本轮 pre 指纹相同，官方协议未改变。活动 Codex config 的整文件哈希发生变化，但缺少写入者证据及对应可信 pre 原件，键名 / hook / notify 分类仍 **NOT_TESTED / 未归因**。不能以 Community 隔离 guard 存在替代写入者证明；本轮未恢复或改写这些配置。前节配置归因缺口继续保留，不宣称全部配置严格不变。
+
+### 本轮收尾状态
+
+用户完成最后重启确认并正常退出，进程为 0，合法新 relay 保留、云同步仍关闭。正式开始菜单入口及 Community OAuth 协议均指向正式安装目录；临时便携目录已清理，原 Setup / ZIP、恢复备份与安全证据保留在受限本机目录。观察器已停止，本轮临时 helpers 已清理；没有将它们、备份或原安装包加入 Git。
+
+只读云端 pre（2026-10-05 11:57 台北时间）与 post（14:24）严格比较：Auth 用户数 2、hourly 行数 1、`total_tokens="130"`、Community 三表 0/0/0 全部相同；hourly 全行内容指纹均为 `dad542fc78704f5f54220ca7e30850f3`。补充只读身份检查确认仍只有既有 User A / B，无新增用户。Node 与 WebView 安全观察器的 ingest 请求均为 0；偏好状态观察覆盖全部三个场景，记录的 6 次状态变化均为同步关闭。没有构造或上传 Token 样本，没有修改云端资源。
+
+**新候选 Windows 登出持久性定向实机验收：PASS。** 三个场景分别取得用户原生确认及本地 / HTTP 证据；原 d294 失败记录与配置归因限制保留。本轮只补新候选 Windows 登出持久性证据，不重跑 Community 生命周期、扫描、已有 CI / RC 或全量测试。产品源码及安装包仍对应固定 `6321b24e0c46699db2695995491fea5bae97b359`；后续纯文档 HEAD 单独记录于 PR，不改写包 manifest 来源。收尾仅提交本报告并更新 Draft PR #5，继续等待 review，不执行合并。
+
+Windows 未签名、macOS ad-hoc / GUI 未验、Linux GUI 未验、真实 WSL、完整更高版本 updater 下载升级，以及既有 Dashboard 两个基线失败继续保留。同版本覆盖安装不能计为完整升级链 PASS；本轮不 merge、发布、改版本、创建 tag / Release 或修改云端资源。
