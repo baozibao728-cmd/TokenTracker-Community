@@ -72,4 +72,8 @@ test('actual frontend and Windows consumers bind to generated resources', () => 
   }
   const wrapper = fs.readFileSync(path.join(root, 'TokenTrackerWin/scripts/make-icon.ps1'), 'utf8');
   assert.match(wrapper, /generate-brand-icons\.cjs.*--windows/); assert.doesNotMatch(wrapper, /boltPath|New-Pt|System\.Drawing/);
+  const petGenerator = fs.readFileSync(path.join(root, 'TokenTrackerWin/scripts/make-tray-mascot.ps1'), 'utf8');
+  assert.match(petGenerator, /tray-mascot-source\.png/);
+  assert.doesNotMatch(petGenerator, /MenuBarIcon|menubar_36/);
+  assert.doesNotMatch([...generatedAssets().keys()].join('\n'), /tray-mascot-source/);
 });

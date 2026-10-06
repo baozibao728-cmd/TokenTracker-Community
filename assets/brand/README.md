@@ -34,6 +34,10 @@ Swift output-directory arguments still generate only their respective layer or
 menu bar files. The generator does not write pets, animation frames, provider
 logos or ordinary feature icons.
 
+Windows pet regeneration now reads its separately preserved
+`TokenTrackerWin/assets/tray-mascot-source.png`, rather than the macOS static
+brand resource. Its existing light/dark ICOs retain their original bytes.
+
 `previous-icon.png` preserves the former app icon for the comparison only.
 `previews/actual-sizes.png` displays 16/32/48/256 pixels without scaling;
 `previews/small-pixels.png` enlarges the same small-size pixels with nearest

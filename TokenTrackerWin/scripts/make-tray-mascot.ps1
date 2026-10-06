@@ -1,7 +1,7 @@
 # ──────────────────────────────────────────────
 # make-tray-mascot.ps1
-# Builds the Clawd tray icons from the macOS menu-bar mascot
-# (TokenTrackerBar .../MenuBarIcon.imageset/menubar_36.png), recoloured for the
+# Builds the Clawd tray icons from their independent, preserved mascot source
+# (assets/tray-mascot-source.png), recoloured for the
 # Windows notification area:
 #   tray-mascot-onDark.ico   white glyph  — for the default dark taskbar
 #   tray-mascot-onLight.ico  dark glyph   — for a light taskbar
@@ -9,13 +9,14 @@
 #
 #   powershell -ExecutionPolicy Bypass -File scripts\make-tray-mascot.ps1
 # ──────────────────────────────────────────────
+param([string]$OutputDirectory)
 Add-Type -AssemblyName System.Drawing
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $WinProjDir = Split-Path -Parent $ScriptDir
-$RepoRoot  = Split-Path -Parent $WinProjDir
 $AssetsDir = Join-Path $WinProjDir 'assets'
-$Src = Join-Path $RepoRoot 'TokenTrackerBar\TokenTrackerBar\Assets.xcassets\MenuBarIcon.imageset\menubar_36.png'
+$Src = Join-Path $AssetsDir 'tray-mascot-source.png'
+if ($OutputDirectory) { $AssetsDir = [System.IO.Path]::GetFullPath($OutputDirectory) }
 New-Item -ItemType Directory -Force -Path $AssetsDir | Out-Null
 
 if (-not (Test-Path $Src)) { throw "Source mascot not found: $Src" }
