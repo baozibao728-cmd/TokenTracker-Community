@@ -26,7 +26,7 @@ test("RC workflow is own-repo PR-only, read-only, with explicit head checkout on
 
 test("RC checks this push's changes instead of rebuilding for documentation-only PR updates", () => {
   assert.equal(requiresBuild(["RELEASE_OWNERSHIP_CUTOVER_REPORT.md", "RELEASE_NOTES_DRAFT.md"]), false);
-  for (const file of ["dashboard/src/main.jsx", "TokenTrackerBar/project.yml", "TokenTrackerWin/TokenTrackerWin.csproj", "TokenTrackerLinux/src-tauri/tauri.conf.json", "scripts/rc/linux.sh", "package-lock.json", ".github/workflows/rc-build-only.yml"])
+  for (const file of ["assets/brand/app-icon.svg", "assets/brand/generated-manifest.json", "scripts/generate-brand-icons.cjs", "dashboard/src/main.jsx", "TokenTrackerBar/project.yml", "TokenTrackerWin/TokenTrackerWin.csproj", "TokenTrackerLinux/src-tauri/tauri.conf.json", "scripts/rc/linux.sh", "package-lock.json", ".github/workflows/rc-build-only.yml"])
     assert.equal(requiresBuild([file]), true);
   const workflow = fs.readFileSync(path.join(__dirname, "../.github/workflows/rc-build-only.yml"), "utf8");
   assert.match(workflow, /github\.event\.before \|\| github\.event\.pull_request\.base\.sha/);

@@ -4,8 +4,8 @@
     {
       "layers" : [
         {
-          "image-name" : "02-bolt.svg",
-          "name" : "02-bolt"
+          "image-name" : "02-orbit.svg",
+          "name" : "02-orbit"
         },
         {
           "image-name" : "01-background.svg",
@@ -21,11 +21,11 @@
       ],
       "shadow" : {
         "kind" : "neutral",
-        "opacity" : 0.5
+        "opacity" : 0
       },
       "translucency" : {
-        "enabled" : true,
-        "value" : 0.5
+        "enabled" : false,
+        "value" : 0
       }
     }
   ],

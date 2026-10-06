@@ -24,6 +24,8 @@ verify_payload() {
     return 1
   fi
   node scripts/rc/verify-runtime.cjs "$(dirname "$node_bin")" "$binary" linux
+  node scripts/rc/verify-brand-icon.cjs linux \
+    dashboard/public/icon.svg TokenTrackerLinux/src-tauri/icons/icon.png "$root"
   desktop="$(find "$root/usr/share/applications" -type f -name '*.desktop' -print -quit)"
   test -f "$desktop"
   grep -Fx 'Name=TokenTracker Community' "$desktop"

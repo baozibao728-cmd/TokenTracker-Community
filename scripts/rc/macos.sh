@@ -2,6 +2,15 @@
 set -euo pipefail
 repo_root="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$repo_root/TokenTrackerBar"
+# Exercise the retained Swift entry points against isolated outputs on macOS.
+mkdir -p build/brand-layers build/brand-menubar
+swift generate_icon_composer_assets.swift "$PWD/build/brand-layers"
+swift generate_menubar_icon.swift "$PWD/build/brand-menubar"
+cmp build/brand-layers/01-background.svg TokenTrackerBar/AppIcon.icon/Assets/01-background.svg
+cmp build/brand-layers/02-orbit.svg TokenTrackerBar/AppIcon.icon/Assets/02-orbit.svg
+for size in 18 36; do
+  cmp "build/brand-menubar/menubar_${size}.png" "TokenTrackerBar/Assets.xcassets/MenuBarIcon.imageset/menubar_${size}.png"
+done
 xcodegen generate
 ruby scripts/patch-pbxproj-icon.rb
 xcodebuild -scheme TokenTrackerBar -configuration Release -derivedDataPath build/DerivedData \
@@ -42,6 +51,17 @@ done
 codesign --verify --deep --strict --verbose=2 "$app"
 signature="$(codesign -dv --verbose=2 "$app" 2>&1)"
 grep -Fx 'Signature=adhoc' <<< "$signature"
+node scripts/rc/verify-brand-icon.cjs macos \
+  "$repo_root/dashboard/public/icon.svg" \
+  "$repo_root/TokenTrackerBar/TokenTrackerBar/AppIcon.icns" "$app"
+if command -v assetutil >/dev/null 2>&1; then
+  asset_info="$(assetutil --info "$app/Contents/Resources/Assets.car")"
+  if ! grep -Eq '"Name"[[:space:]]*:[[:space:]]*"AppIcon"' <<< "$asset_info"; then
+    echo '::error::Assets.car does not contain the AppIcon asset.' >&2
+    exit 1
+  fi
+  echo 'BRAND ICON PASS macOS Assets.car contains AppIcon'
+fi
 node scripts/rc/verify-runtime.cjs "$app/Contents/Resources/EmbeddedServer" "$app/Contents/MacOS/TokenTracker Community" macos
 echo 'PACKAGE PASS DMG: mounted payload, universal app/widget/Node, version, independent bundle/protocol and ad-hoc signature'
 node scripts/rc/artifacts.cjs record build/rc/macos macos "$RC_SOURCE_SHA"

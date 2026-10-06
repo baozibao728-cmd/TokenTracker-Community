@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "master": "assets/brand/app-icon.svg",
+  "master_sha256": "d6c5b81f32ee94b7ab63cf4ae347e7fc531bc0f5c5f1b81b3331f3cb303997d5",
+  "renderer": "closed M/L/C/Z paths; 64-step cubic flattening; 8x/4x scanline supersampling; pngjs RGBA",
+  "outputs": [
+    {
+      "file": "assets/brand/app-mark.svg",
+      "bytes": 894,
+      "sha256": "bc717cd5ec0381238d413f9298e90cd8ce586b580a94446d58532be8d6a9b83b"
+    },
+    {
+      "file": "dashboard/public/icon.svg",
+      "bytes": 1305,
+      "sha256": "d6c5b81f32ee94b7ab63cf4ae347e7fc531bc0f5c5f1b81b3331f3cb303997d5"
+    },
+    {
+      "file": "dashboard/public/app-icon.png",
+      "bytes": 8110,
+      "sha256": "87a0aa8327171c9f75b67a304906cc72bd252b6363742b7c1c1cb542e5bb4d2c"
+    },
+    {
+      "file": "dashboard/public/favicon-16.png",
+      "bytes": 537,
+      "sha256": "c8285322052707944871a86607ece251aece4e81fcdc726f67a9d801ffffa96d"
+    },
+    {
+      "file": "dashboard/public/favicon-32.png",
+      "bytes": 1158,
+      "sha256": "8d300367445c50f761a40493ad5cc8cd218c5512d8fd6c69e661c0405fe873ea"
+    },
+    {
+      "file": "dashboard/public/apple-touch-icon.png",
+      "bytes": 5517,
+      "sha256": "7cac2ed45fa418ee6aa2f99016d95adfbde0f84eb6d5e4266dcf1801220419fc"
+    },
+    {
+      "file": "dashboard/public/icon-192.png",
+      "bytes": 5995,
+      "sha256": "0ce778f4b2e3aa88c166c3535f2be885a51f4107c2fa6d46a6574be85723f22f"
+    },
+    {
+      "file": "dashboard/public/icon-512.png",
+      "bytes": 17394,
+      "sha256": "a16cd436b824a765b48dc25e8dff21947ecbdef50c72fe352f574f8692709fd9"
+    },
+    {
+      "file": "dashboard/public/favicon.ico",
+      "bytes": 3579,
+      "sha256": "392554341cdfda84af8aefdc2bead2f25400af1cae39c731e15df911647e8c5a"
+    },
+    {
+      "file": "TokenTrackerWin/assets/trayicon.ico",
+      "bytes": 14148,
+      "sha256": "37fb0bd82a78eeb0ced4ddb0b511da42fed1edb5dbe216444ee77fcffb3ec7e2"
+    },
+    {
+      "file": "TokenTrackerBar/TokenTrackerBar/AppIcon.icon/Assets/01-background.svg",
+      "bytes": 135,
+      "sha256": "d1c86b4eaf33922139451f2dbb07956e5b48657455383910afc2d9a2b822eea6"
+    },
+    {
+      "file": "TokenTrackerBar/TokenTrackerBar/AppIcon.icon/Assets/02-orbit.svg",
+      "bytes": 894,
+      "sha256": "ee82093d8115c50b99f7dbb27f86872ce2b18617f43e6c9dd9ad8342d76d1b94"
+    },
+    {
+      "file": "TokenTrackerBar/TokenTrackerBar/Assets.xcassets/MenuBarIcon.imageset/menubar_18.png",
+      "bytes": 350,
+      "sha256": "d2929f2ab72d17e790de9daa781e5d2a00b488cab82883c81fc4ca054f6ac27a"
+    },
+    {
+      "file": "TokenTrackerBar/TokenTrackerBar/Assets.xcassets/MenuBarIcon.imageset/menubar_36.png",
+      "bytes": 693,
+      "sha256": "85afcfd61c35130b92365dd07cdc5fca26f3e2747ce81d614c51494b6c97f2d8"
+    },
+    {
+      "file": "TokenTrackerBar/AppIcon-iOS-Default-1024x1024@1x.png",
+      "bytes": 38127,
+      "sha256": "9a92d7d530a0066f1f8d6ba0b51425369458a53ceef4fd1b00a31a8871b43f50"
+    },
+    {
+      "file": "TokenTrackerBar/TokenTrackerBar/AppIcon.icns",
+      "bytes": 100832,
+      "sha256": "27415e3eeccf4429830d6fad30217e937826889f0d486a88d5aecf752704ce9c"
+    },
+    {
+      "file": "TokenTrackerLinux/src-tauri/icons/icon.png",
+      "bytes": 17394,
+      "sha256": "a16cd436b824a765b48dc25e8dff21947ecbdef50c72fe352f574f8692709fd9"
+    }
+  ]
+}

@@ -39,6 +39,9 @@ jobs:
       - name: Install dashboard dependencies
         run: npm ci --prefix dashboard
 
+      - name: Verify generated brand icons
+        run: npm run validate:brand-icons
+
       - name: Dashboard typecheck
         run: npm --prefix dashboard run typecheck
 
