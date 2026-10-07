@@ -2,7 +2,7 @@
 const fs = require("node:fs");
 const { execFileSync } = require("node:child_process");
 function requiresBuild(files) {
-  return files.some(file => /^(?:\.github\/workflows\/(?:rc-build-only|ci)\.yml|scripts\/rc\/|scripts\/(?:prepare-release-client-config|validate-versions)\.cjs|package(?:-lock)?\.json|bin\/|src\/|dashboard\/|TokenTracker(?:Win|Bar|Linux)\/)/.test(file));
+  return files.some(file => /^(?:\.github\/workflows\/(?:rc-build-only|ci)\.yml|assets\/brand\/(?:app-icon\.svg|app-mark\.svg|generated-manifest\.json)|scripts\/rc\/|scripts\/(?:generate-brand-icons|prepare-release-client-config|validate-versions)\.cjs|package(?:-lock)?\.json|bin\/|src\/|dashboard\/|TokenTracker(?:Win|Bar|Linux)\/)/.test(file));
 }
 if (require.main === module) {
   const { RC_COMPARE_SHA: before, RC_SOURCE_SHA: head, GITHUB_OUTPUT: output } = process.env;

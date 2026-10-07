@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useInsforgeAuth } from "../contexts/InsforgeAuthContext.jsx";
 import { useLoginModal } from "../contexts/LoginModalContext.jsx";
 import { useLocale } from "../hooks/useLocale.js";
+import { brandAssetUrl } from "../lib/brand-assets.js";
 import { isNativeApp } from "../lib/native-bridge.js";
 import { copy } from "../lib/copy";
 import { cn } from "../lib/cn";
@@ -80,7 +81,7 @@ export function InsforgeUserHeaderControls({ className, variant = "header", coll
         >
           <span className="flex h-5 w-5 shrink-0 items-center justify-center">
             <img
-              src="/app-icon.png"
+              src={brandAssetUrl("app-icon.png")}
               alt=""
               width={18}
               height={18}

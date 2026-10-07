@@ -39,6 +39,8 @@
     "prepublishOnly": "node scripts/build-pricing-seed.cjs",
     "test": "node --test test/*.test.js",
     "gen:bot-frames": "node scripts/gen-bot-frames.cjs",
+    "gen:brand-icons": "node scripts/generate-brand-icons.cjs",
+    "validate:brand-icons": "node scripts/generate-brand-icons.cjs --check",
     "validate:bot-frames": "node scripts/gen-bot-frames.cjs --check",
     "validate:copy": "node scripts/validate-copy-registry.cjs",
     "validate:locale": "node scripts/validate-locale-coverage.cjs",

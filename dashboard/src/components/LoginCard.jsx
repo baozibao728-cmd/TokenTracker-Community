@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Mail, ArrowLeft } from "lucide-react";
 import { useInsforgeAuth } from "../contexts/InsforgeAuthContext.jsx";
+import { brandAssetUrl } from "../lib/brand-assets.js";
 import { getNativeOAuthBridge } from "../lib/native-bridge.js";
 import { useLocale } from "../hooks/useLocale.js";
 import { copy } from "../lib/copy";
@@ -302,7 +303,7 @@ export function LoginCard({
       <div className={cn("mb-6", isResetMode ? "text-left" : "text-center")}>
         {!hideLogo && !isResetMode && (
           <div className="flex items-center justify-center gap-2 mb-2">
-            <img src="/app-icon.png" alt="" width={28} height={28} className="rounded-md" />
+            <img src={brandAssetUrl("app-icon.png")} alt="" width={28} height={28} className="rounded-md" />
             <span className="text-lg font-semibold text-oai-black dark:text-white font-oai tracking-tight">
               {copy("shared.app_name")}
             </span>

@@ -1061,6 +1061,8 @@ internal sealed class TrayApplicationContext : ApplicationContext
         _petWindow?.ApplyCurrency(symbol, rate);
         _petWindow?.ApplyLocale(NativeLocalization.ResolveLocale(_localePreference));
         _petWindow?.ApplyLimits(_lastLimitsJson);
+        // Theme adaptation must also work before any usage sample is available.
+        RefreshTrayIconForTheme();
 
         if (_lastStats is not { } s)
         {
@@ -1080,7 +1082,6 @@ internal sealed class TrayApplicationContext : ApplicationContext
         _summaryItem.Text = text;
         // The tray-icon tooltip stays the app name (set once in the ctor). The floating
         // pet now surfaces live usage, so the hover tooltip no longer mirrors the summary.
-        RefreshTrayIconForTheme();
     }
 
     /// <summary>Cache the dashboard's current currency natively so a cold-launched pet
@@ -1122,22 +1123,22 @@ internal sealed class TrayApplicationContext : ApplicationContext
         catch { /* ignore */ }
     }
 
-    // ── Tray icon (Clawd mascot, themed to the taskbar) ────────────────
+    // ── Static brand icon (themed to the taskbar; separate from pet sprites) ──
 
     private bool? _lastIconLight;
 
     private Icon LoadTrayIcon()
     {
         _lastIconLight = IsTaskbarLight();
-        return LoadMascotIcon(_lastIconLight.Value) ?? SystemIcons.Application;
+        return LoadBrandTrayIcon(_lastIconLight.Value) ?? SystemIcons.Application;
     }
 
-    /// <summary>Swap the mascot glyph if the taskbar light/dark theme changed.</summary>
+    /// <summary>Swap the monochrome brand glyph if the taskbar theme changed.</summary>
     private void RefreshTrayIconForTheme()
     {
         bool light = IsTaskbarLight();
         if (_lastIconLight == light) return;
-        var icon = LoadMascotIcon(light);
+        var icon = LoadBrandTrayIcon(light);
         if (icon is null) return;
         _lastIconLight = light;
         var old = _trayIcon.Icon;
@@ -1145,9 +1146,10 @@ internal sealed class TrayApplicationContext : ApplicationContext
         old?.Dispose();
     }
 
-    private static Icon? LoadMascotIcon(bool taskbarLight)
+    private static Icon? LoadBrandTrayIcon(bool taskbarLight)
     {
-        // Light taskbar → dark glyph; dark taskbar → white glyph.
+        // Light taskbar → black glyph; dark taskbar → white glyph.
+        // These legacy resource names describe static icons, not animated pets.
         var file = taskbarLight ? "tray-mascot-onLight.ico" : "tray-mascot-onDark.ico";
         try
         {

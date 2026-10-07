@@ -48,6 +48,9 @@ foreach ($root in @($portable, $installed)) {
         if (-not (Test-Path "$root/$required")) { throw "Self-contained dependency missing: $required" }
     }
 }
+node scripts/rc/verify-brand-icon.cjs windows dashboard/public/icon.svg TokenTrackerWin/assets/trayicon.ico `
+    "$portable/TokenTrackerCommunity.exe" "$installed/TokenTrackerCommunity.exe" $setup
+node scripts/rc/verify-brand-icon.cjs windows-tray TokenTrackerWin/assets $portable $installed
 $uninstall = Get-ItemProperty 'HKCU:/Software/Microsoft/Windows/CurrentVersion/Uninstall/{638F4DBF-F2B4-4408-B654-5A5D0F5B7AC7}_is1'
 if ($uninstall.DisplayVersion -ne $version -or $uninstall.DisplayName -ne 'TokenTracker Community' -or $uninstall.Publisher -ne 'baozibao728-cmd') {
     throw 'Installer independent registration/version mismatch.'

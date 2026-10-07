@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Trophy, Download } from "lucide-react";
 import { MetalFx } from "metal-fx";
 import { copy } from "../lib/copy";
+import { brandAssetUrl } from "../lib/brand-assets.js";
 import { isNativeApp } from "../lib/native-bridge.js";
 import { useCurrency } from "../hooks/useCurrency.js";
 import { useTheme } from "../hooks/useTheme.js";
@@ -55,7 +56,7 @@ export function LeaderboardProfilePage({ auth, signedIn, sessionSoftExpired, use
               to="/"
               className="flex items-center gap-3 no-underline outline-none rounded-md focus-visible:ring-2 focus-visible:ring-indigo-500 transition-opacity hover:opacity-80 active:scale-95"
             >
-              <img src="/app-icon.png" alt="" width={24} height={24} className="rounded-md" />
+              <img src={brandAssetUrl("app-icon.png")} alt="" width={24} height={24} className="rounded-md" />
               <span className="text-sm font-semibold tracking-wide text-oai-black dark:text-white uppercase">
                 Token Tracker
               </span>

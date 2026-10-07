@@ -11,7 +11,7 @@ import AppKit
 ///              expressed through WHICH clip plays, not through speed
 /// - `pet`    — silhouette of the desktop pet selected on the Pet page, frames built
 ///              by `MenuBarPetFrameProvider` (a vector character routes to `bot`)
-/// - `static` — the original lightning-bolt icon, no animation
+/// - `static` — the static brand mark, no animation
 ///
 /// Runner styles sprint for `MenuBarRunnerPace.sprintWindow` after
 /// `noteActivity()` (queue.jsonl appends — i.e. the AI just burned tokens).
@@ -40,7 +40,7 @@ final class MenuBarAnimator {
     private let botFrameProvider = MenuBarBotFrameProvider()
     private var sprintUntil: Date = .distantPast
 
-    /// Static fallback icon (original lightning bolt)
+    /// Static brand mark used by the static style and while animated frames load.
     private let fallbackIcon: NSImage
 
     // SVG → canvas transform:
