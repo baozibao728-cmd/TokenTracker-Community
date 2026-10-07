@@ -153,3 +153,67 @@ Both static Windows tray resources now use the same orbit geometry with transpar
 Targeted local evidence: **33/33 tests PASS** (32 initial checks plus the additional schema-logo rejection case; its five-case file reran successfully), generation/check of **23 outputs PASS**, directed PowerShell tray generation reproduced both canonical ICO hashes, Dashboard typecheck PASS, and managed versions remain `1.2.0`. The new package verifier rejects stale/unkeyed HTML/schema logo, wrong content keys, an unkeyed application bundle, missing tray resources and swapped theme files. It checks real packaged HTML/bundle/ICO content during each RC build; test fixtures are not native acceptance.
 
 New source, ordinary CI, three-platform RC, downloaded artifact verification and retained-cache native acceptance are recorded below only after their actual completion. The first local Dashboard build encountered a transient Windows `EBUSY` while writing a generated HTML file; an unchanged retry completed successfully. The built HTML/bundle content-key validation also passed. No assertion or existing gate was weakened. A read-only workflow inventory confirmed ordinary CI and build-only RC active, and all ten inherited workflows still `disabled_manually`.
+
+### New candidate CI and package source
+
+- Fixed source and every explicit RC checkout: **`7e7b63d42e847f9387a4c83af24b9af415c534cd`**, version **1.2.0**. Master SVG SHA-256 remains `d6c5b81f32ee94b7ab63cf4ae347e7fc531bc0f5c5f1b81b3331f3cb303997d5`.
+- [Ordinary CI 37642728226](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37642728226): **4/4 PASS**; Windows .NET 8, macOS unit tests, Linux Rust and test/validate/build. Actual ordinary PR merge checkout: `96746fb79bb251438cfb6fe65fe9c73559fa888c`; own main remained `78f76216210cb9247465121821dbd0abf978057c`.
+- [Build-only RC 37642728091](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37642728091): **5/5 PASS**, first attempt, with six formal packages plus delivery. Actual Windows portable and runner-installed payloads contain both exact canonical monochrome tray ICOs; their exe and original Setup PE icons match. Mounted macOS DMG and each independently extracted AppImage/deb/rpm verify actual HTML/app bundle content keys and all eight public asset bytes. Backend/updater identity checks remain enabled. macOS compiled catalog/fallback and ad-hoc checks pass; this is not GUI or Developer ID acceptance.
+- [Delivery artifact 11493336381](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37642728091/artifacts/11493336381): expected outer ZIP size **498,863,415 bytes**, GitHub digest `8b23b4db807ea0aaf5a65948342daeb81c05068f2bb9a442f0fb19205f2f2ecd`. Local download/hash verification is recorded after it completes, separately from these runner results.
+
+### Downloaded new delivery — PASS
+
+The downloaded outer ZIP is **498,863,415 bytes** and its full SHA-256 equals GitHub's digest above. All eight original names/sizes/hashes were rechecked locally; manifest source/checkout both equal `7e7b63d42e847f9387a4c83af24b9af415c534cd`, version `1.2.0`. Both metadata files' own hashes are included. No archive was rebuilt, recompressed or resigned.
+
+| Original filename | Bytes | SHA-256 |
+|---|---:|---|
+| TokenTracker-Community-win-x64.zip | 114957795 | `3aeb64ddc00d44f71eaa2673166de92afff3f36cc6e2213a01d16517114320ab` |
+| TokenTracker-Community-Setup.exe | 80791207 | `648adb867c60c32fac4d94af0996c3e754cea85eddffa3db3c6c11cd393d6100` |
+| TokenTrackerCommunity.dmg | 61710518 | `2869f4532dd1d53f8f4bcec454ee3d174a13d6b3cb6a37c257461b13927bf7a9` |
+| TokenTracker-Community-linux-x86_64.AppImage | 127465976 | `a57f335b599770e7ff9f05f9d2ed394a2aeed9e648d77457b0e5f53a945e18ad` |
+| TokenTracker-Community-linux-x86_64.deb | 56981566 | `af1ddabb4ce84a3f341c3af17fe069defcfedf1f47573d2b10a6617288d470d7` |
+| TokenTracker-Community-linux-x86_64.rpm | 56952904 | `159746e9baa78d50e4b577a8ca3bbcf9454daedcb1af03ab20af5ef9d707c311` |
+| SHA256SUMS | 615 | `d8a16268474756068336dab3efc6f02af92814ed8da4b08d6043b62f5ab92ed0` |
+| RC_MANIFEST.json | 1598 | `90b3f0f7e2fd30dd656aff5bcc0ae117b5b3c6c65bcb12f40c620aee29414247` |
+
+Isolated local Windows ZIP/Setup inspection independently passed: all eight actual web image bytes and their HTML/application content keys, embedded Node version, own backend/update ownership, five-frame PE icon payloads, and both four-frame transparent tray theme files. This does not replace native screenshots.
+
+Download iterations are retained: initial 8 MiB range retries failed; smaller ranges progressed slowly; increased parallelism completed most data but one tail range failed after retries. A fresh download redirect and remaining-range retry completed, with the final full outer digest matching exactly. Partial files were never used as packages. A local wrapper initially read a stale native `$LASTEXITCODE` after successful PowerShell extraction; extraction itself completed, and direct eight-file verification passed. The first isolated runtime helper passed the apphost exe to a verifier whose Windows contract requires the managed DLL; correcting the helper input to the existing RC contract passed. These are local download/harness failures, not product or CI failures; no gate or product code changed to bypass them.
+
+### New Windows overlay installation with old image cache retained
+
+This evidence belongs only to source `7e7b63d42e847f9387a4c83af24b9af415c534cd` and the original downloaded Setup above. Before execution its full size and SHA-256 were rechecked. Community was normally exited; current native and CLI data were backed up into a unique current-user-only recovery directory and all **1,065 native files / 20 CLI files** were verified against an immutable snapshot.
+
+To reproduce the previously confirmed upgrade condition, the protected original HTTP-cache copy was restored byte-for-byte while Community was stopped: **156 files / 21,133,964 bytes**, including the old bare `/app-icon.png` lightning body (`5be9efa8ef3420e068d2bf0dd098c073b12777ffc9d74a6aee97ec4d31ea8d80`). The current HTTP cache was retained separately for recovery. This preparation did not clear caches: all **1,043 non-HTTP-cache native files** and account/Cookie/storage state remained identical. No official or global Windows cache was changed.
+
+The original Setup performed an overlay installation (exit **0**), including its existing Community desktop-shortcut task. Installed exe product version is `1.2.0+7e7b63d42e847f9387a4c83af24b9af415c534cd`; exe SHA-256 is `cfddd44add92aa2674ef2aaac0a1b6823f695e4c16d99db5bc8bb5796bf0cde2`. Before any application launch, strict pre/post comparison passed for all 1,043 non-HTTP-cache native files, 20 CLI files, 1,760 official installation files, 1,525 official data files, official protocol/uninstall values and the two protected tool configurations. The disabled cloud-sync preference remained false.
+
+The retained HTTP-cache inventory is still exactly **156 files**, aggregate content hash `114184186c89e5d0f1bfea2e1d50f18e68feb262e4b3e4f80eebdf4f71e1f889`, matching its protected original copy before and after installation. The installed managed runtime, own backend/updater, eight public image bytes/content-key references, five exe icon frames and both four-frame monochrome tray ICOs independently passed the existing package validators. Normal-startup rendering and actual tray/desktop screenshot evidence follow below; resource equality alone is not GUI acceptance.
+
+### Normal startup with retained old cache — PASS
+
+On 2026-10-08 the user started the installed candidate through the normal Start-menu entry and confirmed the new orbit header, the existing signed-in account and cloud sync still disabled. No cache clear, hard refresh or sign-out was performed. The actual Community exe and its own embedded Node process originate from the formal installation payload. A native window capture independently shows the new header; the screenshot below is cropped at original pixel size, omitting account details.
+
+![New native header after ordinary startup, with old image cache retained](brand-icon-native-windows/7e7b63d4/retained-cache-header.png)
+
+A directed read-only cache probe afterwards found **169 files**, with the old lightning PNG still present, the exact new `app-icon.png` bytes present, and the new `/app-icon.png?sha256=87a0aa8327171c9f75b67a304906cc72bd252b6363742b7c1c1cb542e5bb4d2c` key present. Only presence flags for these public static assets were recorded; no authentication headers, Cookies or private response content were extracted. The old and new images coexist, so success is not caused by clearing the stale resource. The on-disk cloud-sync preference was independently confirmed false.
+
+The user's observation that the notification-area icon has no black tile is consistent with the requested transparent monochrome tray design. The black rounded tile remains in the application/shortcut/header icon. Actual current-theme tray and desktop-shortcut evidence is recorded below separately from generated dark/light previews.
+
+### New native tray and desktop shortcut — PASS
+
+The user supplied the actual notification-area screenshot on 2026-10-08. Hovering the black transparent orbit displays **TokenTracker Community** on the light taskbar surface. The crop below preserves the original pixels without rescaling and omits unrelated chat content. This is actual new-candidate tray rendering, not the generated preview. Dark-taskbar white-resource generation and package checks passed; switching the real taskbar theme was not performed, so that additional GUI variant remains **NOT_TESTED**. Actual animated pets retain their existing appearance and resources.
+
+![New monochrome Community tray, actual light-taskbar screenshot](brand-icon-native-windows/7e7b63d4/tray-orbit-light.png)
+
+Windows Shell's search within the actual desktop directory displays the Community `.lnk` with the new rounded-black orbit icon and shortcut arrow. The link target was independently checked against the actual installed Community exe; its icon uses the target executable. The screenshot is an actual Explorer-rendered desktop shortcut, not an extracted/generated icon or a claim that the complete desktop grid was captured. It is cropped without rescaling; only the local folder text is obscured, leaving icon/name pixels unchanged. No official shortcut was modified, and no global icon cache reset or Explorer restart was used.
+
+![Actual desktop shortcut rendered by Windows Shell](brand-icon-native-windows/7e7b63d4/desktop-shortcut.png)
+
+An initial local shortcut helper used an incorrect environment-derived expected path and reported a target mismatch. Comparing to the independently verified running installation path passed; this was a helper expectation issue, not a changed or broken shortcut. Computer Use was later stopped by the physical Escape key; no further UI automation was performed, and the user supplied the remaining tray screenshot manually.
+
+### Follow-up review boundary
+
+**READY FOR REVIEW.** The new source's ordinary CI **4/4**, three-platform build-only RC **5/5**, eight-file download verification, installed payload checks, retained-cache normal startup, light-taskbar tray and actual desktop-shortcut rendering all passed. Account, local data and the disabled sync preference were retained. The original `06a3284d` evidence and its failed hard-refresh/recovery history remain separate above. Later screenshot/report commits do not change the fixed package source or manifest.
+
+Final documentation HEAD and its ordinary CI are recorded in the Draft PR summary. No local full business regression or cloud lifecycle was repeated for these images; no backend/database/Edge, version, identity, updater ownership or public preview asset was changed. macOS/Linux **GUI/RUNTIME NOT_TESTED**, Windows unsigned, macOS ad-hoc rather than Developer ID/notarization, full download/upgrade chain and existing baseline/WSL/metadata/config limitations remain. Same-version overlay installation is not a higher-version updater acceptance. Draft PR #8 remains unmerged and unpublished.
