@@ -22,6 +22,7 @@ import {
   Monitor,
 } from "lucide-react";
 import { copy } from "../../lib/copy";
+import { brandAssetUrl } from "../../lib/brand-assets.js";
 import { cn } from "../../lib/cn";
 import { useTheme } from "../../hooks/useTheme.js";
 import { useLocale } from "../../hooks/useLocale.js";
@@ -574,7 +575,7 @@ function MobileTopBar({ open, onOpenDrawer, menuButtonRef }) {
         className="flex items-center gap-2 no-underline hover:opacity-80 transition-opacity"
         aria-label="Token Tracker"
       >
-        <img src="/app-icon.png" alt="" width={24} height={24} className="rounded-md" />
+        <img src={brandAssetUrl("app-icon.png")} alt="" width={24} height={24} className="rounded-md" />
         <span className="text-sm font-semibold text-oai-black dark:text-oai-white">
           Token Tracker
         </span>

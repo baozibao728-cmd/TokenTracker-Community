@@ -1,0 +1,10 @@
+{
+  "icon.svg": "/icon.svg?sha256=d6c5b81f32ee94b7ab63cf4ae347e7fc531bc0f5c5f1b81b3331f3cb303997d5",
+  "app-icon.png": "/app-icon.png?sha256=87a0aa8327171c9f75b67a304906cc72bd252b6363742b7c1c1cb542e5bb4d2c",
+  "favicon-16.png": "/favicon-16.png?sha256=c8285322052707944871a86607ece251aece4e81fcdc726f67a9d801ffffa96d",
+  "favicon-32.png": "/favicon-32.png?sha256=8d300367445c50f761a40493ad5cc8cd218c5512d8fd6c69e661c0405fe873ea",
+  "apple-touch-icon.png": "/apple-touch-icon.png?sha256=7cac2ed45fa418ee6aa2f99016d95adfbde0f84eb6d5e4266dcf1801220419fc",
+  "icon-192.png": "/icon-192.png?sha256=0ce778f4b2e3aa88c166c3535f2be885a51f4107c2fa6d46a6574be85723f22f",
+  "icon-512.png": "/icon-512.png?sha256=a16cd436b824a765b48dc25e8dff21947ecbdef50c72fe352f574f8692709fd9",
+  "favicon.ico": "/favicon.ico?sha256=392554341cdfda84af8aefdc2bead2f25400af1cae39c731e15df911647e8c5a"
+}

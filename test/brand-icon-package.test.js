@@ -6,7 +6,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const zlib = require("node:zlib");
-const { comparePngPixels, verifyLinux, verifyMacos, verifyPeIconBuffer } = require("../scripts/rc/verify-brand-icon.cjs");
+const { comparePngPixels, verifyLinux, verifyMacos, verifyPeIconBuffer, verifyWindowsTray } = require("../scripts/rc/verify-brand-icon.cjs");
 
 const crcTable = Array.from({ length: 256 }, (_, n) => {
   let value = n;
@@ -90,6 +90,20 @@ function peWithIcons(iconPng) {
   return pe;
 }
 function temporaryDirectory(prefix) { return fs.mkdtempSync(path.join(os.tmpdir(), prefix)); }
+
+test('Windows payload rejects missing, stale or swapped static tray themes', () => {
+  const root = temporaryDirectory('brand-tray-payload-');
+  const canonicalAssets = path.resolve(__dirname, '../TokenTrackerWin/assets');
+  try {
+    fs.mkdirSync(path.join(root,'assets'));
+    for (const theme of ['Dark','Light']) fs.copyFileSync(path.join(canonicalAssets,`tray-mascot-on${theme}.ico`),path.join(root,'assets',`tray-mascot-on${theme}.ico`));
+    assert.doesNotThrow(()=>verifyWindowsTray({canonicalAssets,roots:[root]}));
+    fs.copyFileSync(path.join(canonicalAssets,'tray-mascot-onLight.ico'),path.join(root,'assets','tray-mascot-onDark.ico'));
+    assert.throws(()=>verifyWindowsTray({canonicalAssets,roots:[root]}),/differs from the canonical orbit/);
+    fs.rmSync(path.join(root,'assets','tray-mascot-onDark.ico'));
+    assert.throws(()=>verifyWindowsTray({canonicalAssets,roots:[root]}),/ENOENT/);
+  } finally { fs.rmSync(root,{recursive:true,force:true}); }
+});
 
 test("Windows PE RT_GROUP_ICON references RT_ICON PNG payloads from the canonical ICO", () => {
   const canonical = tinyPng([12, 34, 56, 255]);

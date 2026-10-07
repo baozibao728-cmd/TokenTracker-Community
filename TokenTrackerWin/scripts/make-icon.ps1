@@ -1,5 +1,5 @@
 # Generate the exe, window and installer icon from the shared SVG master.
-# The tray pets remain in their separate mascot resources.
+# Static notification icons share the master; desktop pet animations are separate.
 $ErrorActionPreference = 'Stop'
 $RepositoryRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 & node (Join-Path $RepositoryRoot 'scripts\generate-brand-icons.cjs') --windows --output-root $RepositoryRoot

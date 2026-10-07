@@ -248,6 +248,20 @@ function verifyWindows({ canonicalSvg, ico, executables }) {
   console.log(`BRAND ICON SOURCE SHA-256 ${sourceHash} (${path.relative(process.cwd(), canonicalSvg)})`);
 }
 
+function verifyWindowsTray({ canonicalAssets, roots }) {
+  for (const theme of ['Dark', 'Light']) {
+    const filename = `tray-mascot-on${theme}.ico`;
+    const expected = fs.readFileSync(path.join(canonicalAssets, filename));
+    const frames = parseIco(expected);
+    if (frames.map(frame => frame.width).join(',') !== '32,24,20,16') throw new Error('Static tray size set is incomplete.');
+    for (const root of roots) {
+      const actual = fs.readFileSync(path.join(root, 'assets', filename));
+      if (!actual.equals(expected)) throw new Error(`Packaged static tray ${filename} differs from the canonical orbit resource.`);
+    }
+  }
+  console.log(`BRAND TRAY PASS Windows: both transparent theme resources exact in ${roots.length} payload(s)`);
+}
+
 function listLinuxIcons(root) {
   const found = [];
   function walk(directory) {
@@ -291,6 +305,9 @@ function run(args) {
   if (platform === "windows") {
     if (rest.length < 3) throw new Error("Usage: windows <canonical-svg> <canonical-ico> <exe-or-setup.exe> [more PE files...]");
     verifyWindows({ canonicalSvg: rest[0], ico: rest[1], executables: rest.slice(2) });
+  } else if (platform === "windows-tray") {
+    if (rest.length < 2) throw new Error('Usage: windows-tray <canonical-assets-dir> <payload-root> [more roots...]');
+    verifyWindowsTray({canonicalAssets:rest[0], roots:rest.slice(1)});
   } else if (platform === "linux") {
     if (rest.length < 3) throw new Error("Usage: linux <canonical-svg> <canonical-png> <extracted-package-root> [more roots...]");
     verifyLinux({ canonicalSvg: rest[0], canonicalPng: rest[1], roots: rest.slice(2) });
@@ -307,5 +324,5 @@ if (require.main === module) {
 
 module.exports = {
   comparePngPixels, parsePng, parseIco, verifyPeIconBuffer,
-  verifyWindows, verifyLinux, verifyMacos, listLinuxIcons, run,
+  verifyWindows, verifyWindowsTray, verifyLinux, verifyMacos, listLinuxIcons, run,
 };

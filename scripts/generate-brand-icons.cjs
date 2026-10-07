@@ -64,8 +64,9 @@ function glyphSvg(paths, color = '#000000') {
     paths.filter(p => p.id !== 'background').map(p => `  <path fill="${color}" d="${p.d}"/>`).join('\n') + '\n</svg>\n';
 }
 
-function renderPng(paths, size, { monochrome = false } = {}) {
+function renderPng(paths, size, { monochrome = false, monochromeValue = 0 } = {}) {
   if (!Number.isInteger(size) || size < 1 || size > 1024) throw new Error('Invalid icon size');
+  if (monochromeValue !== 0 && monochromeValue !== 255) throw new Error('Monochrome must be black or white');
   const factor = size <= 64 ? 8 : 4, side = size * factor;
   const pixels = Buffer.alloc(side * side * 4);
   for (const layer of paths) {
@@ -78,7 +79,7 @@ function renderPng(paths, size, { monochrome = false } = {}) {
       .replace('M 739 292', 'M 712 309').replace('758 315', '778 329')
       .replace('L 684 374', 'L 704 388').replace('666 350 Z', '650 367 Z'));
     const points = contour.map(([x, y]) => [x * side / 1024, y * side / 1024]);
-    const value = monochrome || layer.id === 'background' ? 0 : 255;
+    const value = monochrome ? monochromeValue : layer.id === 'background' ? 0 : 255;
     const minY = Math.max(0, Math.floor(Math.min(...points.map(p => p[1]))));
     const maxY = Math.min(side, Math.ceil(Math.max(...points.map(p => p[1]))));
     for (let y = minY; y < maxY; y++) {
@@ -133,13 +134,28 @@ function createIcns(entries) {
   return Buffer.concat([header, ...chunks]);
 }
 
+function brandAssetUrls(assets) {
+  return Object.fromEntries([...assets].filter(([file]) => file.startsWith('dashboard/public/'))
+    .map(([file, bytes]) => [path.posix.basename(file), `/${path.posix.basename(file)}?sha256=${sha256(bytes)}`]));
+}
+
+function rewriteBrandReferences(html, urls) {
+  for (const [file, url] of Object.entries(urls)) {
+    const escaped = file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    html = html.replace(new RegExp(`(["'])/${escaped}(?:\\?sha256=[a-f0-9]+)?(?=\\1)`, 'g'), (_, quote) => quote + url);
+    // Preserve the existing schema logo host; don't rewrite third-party favicons.
+    if (file === 'icon-512.png') html = html.replace(new RegExp(`(https://www\\.tokentracker\\.cc)/${escaped}(?:\\?sha256=[a-f0-9]+)?(?=["'])`, 'g'), (_, host) => host + url);
+  }
+  return html;
+}
+
 function generatedAssets(options = {}) {
   const master = fs.readFileSync(path.join(root, masterFile));
   const paths = parseMaster(master.toString());
   const assets = new Map(), cache = new Map();
-  const png = (size, monochrome = false) => {
-    const key = `${size}:${monochrome}`;
-    if (!cache.has(key)) cache.set(key, renderPng(paths, size, { monochrome }));
+  const png = (size, monochrome = false, monochromeValue = 0) => {
+    const key = `${size}:${monochrome}:${monochromeValue}`;
+    if (!cache.has(key)) cache.set(key, renderPng(paths, size, { monochrome, monochromeValue }));
     return cache.get(key);
   };
   const put = (file, bytes) => assets.set(file.replaceAll('\\', '/'), Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes));
@@ -148,16 +164,30 @@ function generatedAssets(options = {}) {
     put(`${dir}/02-orbit.svg`, glyphSvg(paths, '#FFFFFF'));
   };
   const menuBar = dir => { for (const size of [18, 36]) put(`${dir}/menubar_${size}.png`, png(size, true)); };
+  const windowsTray = dir => {
+    for (const [theme, value] of [['Dark', 255], ['Light', 0]]) {
+      put(`${dir}/tray-mascot-on${theme}.ico`, createIco([32, 24, 20, 16].map(size => ({ size, png: png(size, true, value) }))));
+    }
+  };
   if (options.iconAssetsDir) { macLayers(options.iconAssetsDir); return assets; }
   if (options.menubarAssetsDir) { menuBar(options.menubarAssetsDir); return assets; }
+  if (options.trayAssetsDir) { windowsTray(options.trayAssetsDir); return assets; }
   const groups = options.groups || ['web', 'windows', 'macos', 'linux'];
   put('assets/brand/app-mark.svg', glyphSvg(paths));
   if (groups.includes('web')) {
     put('dashboard/public/icon.svg', master);
     for (const [file, size] of [['app-icon.png', 256], ['favicon-16.png', 16], ['favicon-32.png', 32], ['apple-touch-icon.png', 180], ['icon-192.png', 192], ['icon-512.png', 512]]) put(`dashboard/public/${file}`, png(size));
     put('dashboard/public/favicon.ico', createIco([16, 32, 48].map(size => ({ size, png: png(size) }))));
+    const urls = brandAssetUrls(assets);
+    put('dashboard/src/lib/brand-assets.json', JSON.stringify(urls, null, 2) + '\n');
+    for (const file of ['dashboard/index.html', 'dashboard/share.html']) {
+      put(file, rewriteBrandReferences(fs.readFileSync(path.join(root, file), 'utf8'), urls));
+    }
   }
-  if (groups.includes('windows')) put('TokenTrackerWin/assets/trayicon.ico', createIco([16, 32, 48, 64, 256].map(size => ({ size, png: png(size) }))));
+  if (groups.includes('windows')) {
+    put('TokenTrackerWin/assets/trayicon.ico', createIco([16, 32, 48, 64, 256].map(size => ({ size, png: png(size) }))));
+    windowsTray('TokenTrackerWin/assets');
+  }
   if (groups.includes('macos')) {
     macLayers('TokenTrackerBar/TokenTrackerBar/AppIcon.icon/Assets');
     menuBar('TokenTrackerBar/TokenTrackerBar/Assets.xcassets/MenuBarIcon.imageset');
@@ -171,7 +201,9 @@ function generatedAssets(options = {}) {
   if (groups.length === 4) put('assets/brand/generated-manifest.json', JSON.stringify({
     schema_version: 1, master: masterFile, master_sha256: sha256(master),
     renderer: 'closed M/L/C/Z paths; 64-step cubic flattening; 8x/4x scanline supersampling; pngjs RGBA',
-    outputs: [...assets].map(([file, bytes]) => ({ file, bytes: bytes.length, sha256: sha256(bytes) }))
+    // HTML templates retain their existing non-brand content; validate only their
+    // rewritten brand references, without making unrelated copy a raster input.
+    outputs: [...assets].filter(([file]) => !file.endsWith('.html')).map(([file, bytes]) => ({ file, bytes: bytes.length, sha256: sha256(bytes) }))
   }, null, 2) + '\n');
   return assets;
 }
@@ -196,14 +228,14 @@ if (require.main === module) {
     const arg = process.argv[i];
     if (arg === '--check') options.check = true;
     else if (['--web', '--windows', '--macos', '--linux'].includes(arg)) groups.push(arg.slice(2));
-    else if (['--output-root', '--icon-assets-dir', '--menubar-assets-dir'].includes(arg)) {
+    else if (['--output-root', '--icon-assets-dir', '--menubar-assets-dir', '--tray-assets-dir'].includes(arg)) {
       const value = process.argv[++i]; if (!value || value.startsWith('--')) throw new Error(`Missing value: ${arg}`);
-      options[{ '--output-root': 'outputRoot', '--icon-assets-dir': 'iconAssetsDir', '--menubar-assets-dir': 'menubarAssetsDir' }[arg]] = value;
+      options[{ '--output-root': 'outputRoot', '--icon-assets-dir': 'iconAssetsDir', '--menubar-assets-dir': 'menubarAssetsDir', '--tray-assets-dir': 'trayAssetsDir' }[arg]] = value;
     } else throw new Error(`Unknown option: ${arg}`);
   }
-  if (options.iconAssetsDir && options.menubarAssetsDir) throw new Error('Use only one directed macOS output');
+  if ([options.iconAssetsDir, options.menubarAssetsDir, options.trayAssetsDir].filter(Boolean).length > 1) throw new Error('Use only one directed icon output');
   if (groups.length) options.groups = [...new Set(groups)];
   console.log(`${options.check ? 'Verified' : 'Generated'} ${generate(options).length} brand assets.`);
 }
 
-module.exports = { parseMaster, flattenPath, glyphSvg, renderPng, createIco, createIcns, generatedAssets, generate };
+module.exports = { parseMaster, flattenPath, glyphSvg, renderPng, createIco, createIcns, brandAssetUrls, rewriteBrandReferences, generatedAssets, generate };

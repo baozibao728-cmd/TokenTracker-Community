@@ -2,4 +2,5 @@
 assets/brand/*.svg text eol=lf
 assets/brand/generated-manifest.json text eol=lf
 dashboard/public/icon.svg text eol=lf
+dashboard/src/lib/brand-assets.json text eol=lf
 TokenTrackerBar/TokenTrackerBar/AppIcon.icon/Assets/*.svg text eol=lf

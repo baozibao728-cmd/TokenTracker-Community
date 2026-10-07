@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { brandAssetUrl } from "../../lib/brand-assets.js";
 
 /**
  * Brand Logo component (kept for screenshot mode / standalone Shell usage)
@@ -8,7 +9,7 @@ function BrandLogo() {
   return (
     <Link to="/landing" className="flex items-center gap-2.5 no-underline hover:opacity-80 transition-opacity">
       <img
-        src="/app-icon.png"
+        src={brandAssetUrl("app-icon.png")}
         alt="Token Tracker"
         width={28}
         height={28}

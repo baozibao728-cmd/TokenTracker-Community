@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { PNG } = require('pngjs');
-const { parseMaster, flattenPath, renderPng, generatedAssets, generate } = require('../scripts/generate-brand-icons.cjs');
+const { parseMaster, flattenPath, renderPng, brandAssetUrls, rewriteBrandReferences, generatedAssets, generate } = require('../scripts/generate-brand-icons.cjs');
 const root = path.resolve(__dirname, '..');
 const master = fs.readFileSync(path.join(root, 'assets/brand/app-icon.svg'), 'utf8');
 
@@ -18,14 +18,14 @@ test('master renderer rejects unsupported SVG instead of dropping shapes', () =>
 test('all outputs reproduce exactly, detect drift, and leave pets/providers untouched', () => {
   const target = fs.mkdtempSync(path.join(os.tmpdir(), 'brand-generation-'));
   try {
-    const protectedFile = path.join(target, 'TokenTrackerWin/assets/tray-mascot-onDark.ico');
+    const protectedFile = path.join(target, 'dashboard/public/pets/sprout/spritesheet.webp');
     fs.mkdirSync(path.dirname(protectedFile), { recursive: true }); fs.writeFileSync(protectedFile, 'pet sentinel');
     generate({ outputRoot: target }); generate({ outputRoot: target, check: true });
     assert.equal(fs.readFileSync(protectedFile, 'utf8'), 'pet sentinel');
     fs.writeFileSync(path.join(target, 'dashboard/public/icon-192.png'), 'drift');
     assert.throws(() => generate({ outputRoot: target, check: true }), /icon-192\.png/);
     generate({ outputRoot: target }); generate({ outputRoot: target, check: true });
-    for (const file of generatedAssets().keys()) assert.doesNotMatch(file, /mascot|bot-|brand-logos|frames/);
+    for (const file of generatedAssets().keys()) assert.doesNotMatch(file, /tray-mascot-source|bot-|brand-logos|frames|spritesheet|\/clawd\//);
   } finally { fs.rmSync(target, { recursive: true, force: true }); }
 });
 
@@ -65,15 +65,63 @@ test('16/32/48 icons retain a separate satellite and connected ring/orbit', () =
 });
 
 test('actual frontend and Windows consumers bind to generated resources', () => {
-  assert.match(fs.readFileSync(path.join(root, 'dashboard/index.html'), 'utf8'), /href="\/icon\.svg"/);
-  assert.match(fs.readFileSync(path.join(root, 'dashboard/src/ui/components/Shell.jsx'), 'utf8'), /src="\/app-icon\.png"/);
+  assert.match(fs.readFileSync(path.join(root, 'dashboard/index.html'), 'utf8'), /href="\/icon\.svg\?sha256=[a-f0-9]{64}"/);
+  assert.match(fs.readFileSync(path.join(root, 'dashboard/src/ui/components/Shell.jsx'), 'utf8'), /brandAssetUrl\("app-icon\.png"\)/);
   for (const file of ['TokenTrackerWin/TokenTrackerWin.csproj', 'TokenTrackerWin/installer/TokenTracker.iss']) {
     const content = fs.readFileSync(path.join(root, file), 'utf8'); assert.match(content, /trayicon\.ico/);
   }
   const wrapper = fs.readFileSync(path.join(root, 'TokenTrackerWin/scripts/make-icon.ps1'), 'utf8');
   assert.match(wrapper, /generate-brand-icons\.cjs.*--windows/); assert.doesNotMatch(wrapper, /boltPath|New-Pt|System\.Drawing/);
-  const petGenerator = fs.readFileSync(path.join(root, 'TokenTrackerWin/scripts/make-tray-mascot.ps1'), 'utf8');
-  assert.match(petGenerator, /tray-mascot-source\.png/);
-  assert.doesNotMatch(petGenerator, /MenuBarIcon|menubar_36/);
+  const trayGenerator = fs.readFileSync(path.join(root, 'TokenTrackerWin/scripts/make-tray-mascot.ps1'), 'utf8');
+  assert.match(trayGenerator, /generate-brand-icons\.cjs.*--tray-assets-dir/);
+  assert.doesNotMatch(trayGenerator, /tray-mascot-source|System\.Drawing|MenuBarIcon|menubar_36/);
   assert.doesNotMatch([...generatedAssets().keys()].join('\n'), /tray-mascot-source/);
+});
+
+test('content changes create a new cache key within the same 1.2.0 package version', () => {
+  const first = generatedAssets({groups:['web']});
+  const next = new Map(first);
+  const altered = PNG.sync.read(next.get('dashboard/public/app-icon.png'));
+  altered.data[4 * (128 * altered.width + 128)] ^= 255;
+  next.set('dashboard/public/app-icon.png', PNG.sync.write(altered));
+  const before = brandAssetUrls(first), after = brandAssetUrls(next);
+  assert.notEqual(before['app-icon.png'], after['app-icon.png']);
+  assert.equal(before['icon.svg'], after['icon.svg'], 'unchanged content retains its cache key');
+  assert.equal(new URL(before['app-icon.png'], 'http://localhost').pathname, '/app-icon.png');
+  assert.equal(new URL(after['app-icon.png'], 'http://localhost').pathname, '/app-icon.png');
+});
+
+test('HTML brand rewrites are idempotent and preserve unrelated remote icons', () => {
+  const urls = brandAssetUrls(generatedAssets({groups:['web']}));
+  const source = '<link href="/icon.svg"><img src="https://provider.example/icon.svg">';
+  const actual = rewriteBrandReferences(source, urls);
+  assert.ok(actual.includes('href="' + urls['icon.svg'] + '"'));
+  assert.ok(actual.includes('src="https://provider.example/icon.svg"'));
+  assert.equal(rewriteBrandReferences(actual, urls), actual);
+});
+
+test('static tray glyph uses matching orbit alpha and opposite monochrome themes', () => {
+  const assets = generatedAssets({groups:['windows']});
+  const themes = ['Dark','Light'].map(theme => assets.get(`TokenTrackerWin/assets/tray-mascot-on${theme}.ico`));
+  for (const [i, size] of [32,24,20,16].entries()) {
+    const decoded = themes.map(ico => {
+      assert.equal(ico.readUInt16LE(4), 4);
+      const entry = 6 + i * 16;
+      const offset = ico.readUInt32LE(entry + 12), bytes = ico.readUInt32LE(entry + 8);
+      return PNG.sync.read(ico.subarray(offset, offset + bytes));
+    });
+    assert.equal(decoded[0].width, size);
+    assert.equal(decoded[0].data[3], 0, 'no opaque tile in notification area');
+    const expected = PNG.sync.read(renderPng(parseMaster(master), size, {monochrome:true}));
+    let ink = 0;
+    for (let p = 0; p < size * size; p++) {
+      const a = decoded[0].data[p * 4 + 3];
+      assert.equal(a, expected.data[p * 4 + 3], 'orbit alpha from SVG master');
+      assert.equal(a, decoded[1].data[p * 4 + 3], 'identical geometry between themes');
+      if (!a) continue;
+      ink++;
+      for (let c = 0; c < 3; c++) { assert.equal(decoded[0].data[p*4+c],255); assert.equal(decoded[1].data[p*4+c],0); }
+    }
+    assert.ok(ink > size, 'glyph must be visible');
+  }
 });

@@ -21,7 +21,7 @@ fixed cubic subdivision and supersampling. It rejects unsupported SVG features.
 At 16–24 pixels it widens the existing opening and moves the satellite by less
 than one output pixel to keep them separate. Larger sizes follow the master
 directly. The output manifest records exact bytes and SHA-256 per resource.
-Narrow Git LF attributes keep generated SVG bytes reproducible across platforms.
+Narrow Git LF attributes keep generated SVG/JSON bytes reproducible across platforms.
 
 Outputs include web SVG/PNG/ICO, Windows multi-size ICO, the actual macOS
 `AppIcon.icon` layer SVGs and fallback ICNS, transparent black menu bar PNGs,
@@ -29,16 +29,26 @@ and the Linux/Tauri RGBA PNG. Apple supplies the native outer mask; its
 Icon Composer background layer is therefore full bleed. The existing Linux
 sync script still derives the Tauri icon from `dashboard/public/icon-512.png`.
 
+`dashboard/src/lib/brand-assets.json` maps each web image to a URL containing
+the full SHA-256 of its actual bytes. React consumers use `brandAssetUrl`, and
+the generator updates both HTML entry points. Rerun it whenever a brand image
+changes; package version is not a cache key. HTTP caching can retain old entries
+without using them for the new content-keyed URL.
+
 The Windows and Swift generation entry points delegate to this master. Optional
 Swift output-directory arguments still generate only their respective layer or
 menu bar files. The generator does not write pets, animation frames, provider
 logos or ordinary feature icons.
 
-Windows pet regeneration now reads its separately preserved
-`TokenTrackerWin/assets/tray-mascot-source.png`, rather than the macOS static
-brand resource. Its existing light/dark ICOs retain their original bytes.
+The Windows static tray wrapper (`make-tray-mascot.ps1`, retaining its legacy
+name) generates transparent white/black orbit ICOs for dark/light taskbars from
+this master. The old `tray-mascot-source.png` lightning is retained for historical
+comparison only. These static notification-area icons are separate from the
+actual pet animation sprites, which remain unchanged.
 
 `previous-icon.png` preserves the former app icon for the comparison only.
 `previews/actual-sizes.png` displays 16/32/48/256 pixels without scaling;
 `previews/small-pixels.png` enlarges the same small-size pixels with nearest
 neighbor for inspection. Neither preview is a production resource.
+`previews/tray-themes.png` shows actual 16/20/24/32 px static tray frames against
+dark and light backgrounds alongside the original glyph.

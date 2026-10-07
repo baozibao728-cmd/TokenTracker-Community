@@ -51,6 +51,19 @@ function previews() {
   const pixel=canvas(384,144);
   for(const [i,size] of [16,32,48].entries()) { label(pixel,`${size} PX`,i*128+12,8); paste(pixel,PNG.sync.read(renderPng(paths,size)),i*128+12,28,96); }
   fs.writeFileSync(path.join(out,'small-pixels.png'),PNG.sync.write(pixel));
+  const tray=canvas(320,136);
+  label(tray,'OLD',8,8); label(tray,'NEW',64,8);
+  for (const [row,value] of [255,0].entries()) {
+    const bg=value ? 32 : 248, top=28+row*52;
+    for(let y=top;y<top+44;y++) for(let x=0;x<tray.width;x++) {
+      const p=(y*tray.width+x)*4; tray.data[p]=tray.data[p+1]=tray.data[p+2]=bg;
+    }
+    const old=PNG.sync.read(fs.readFileSync(path.join(root,'TokenTrackerWin/assets/tray-mascot-source.png')));
+    for(let p=0;p<old.data.length;p+=4) old.data[p]=old.data[p+1]=old.data[p+2]=value;
+    paste(tray,old,8,top+4,32);
+    for(const [i,size] of [16,20,24,32].entries()) paste(tray,PNG.sync.read(renderPng(paths,size,{monochrome:true,monochromeValue:value})),72+i*60,top+4);
+  }
+  fs.writeFileSync(path.join(out,'tray-themes.png'),PNG.sync.write(tray));
 }
 if(require.main===module) previews();
 module.exports={previews};

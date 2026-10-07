@@ -50,9 +50,24 @@
       "sha256": "392554341cdfda84af8aefdc2bead2f25400af1cae39c731e15df911647e8c5a"
     },
     {
+      "file": "dashboard/src/lib/brand-assets.json",
+      "bytes": 873,
+      "sha256": "1967b54d738638f75c281c66daf022aacae6a00978c3fc63daf7391d54e3c133"
+    },
+    {
       "file": "TokenTrackerWin/assets/trayicon.ico",
       "bytes": 14148,
       "sha256": "37fb0bd82a78eeb0ced4ddb0b511da42fed1edb5dbe216444ee77fcffb3ec7e2"
+    },
+    {
+      "file": "TokenTrackerWin/assets/tray-mascot-onDark.ico",
+      "bytes": 2108,
+      "sha256": "f44167a26d6e6b4a7a28b11d63df859295058aa55d2386c32dc6d4ad86a007a1"
+    },
+    {
+      "file": "TokenTrackerWin/assets/tray-mascot-onLight.ico",
+      "bytes": 1828,
+      "sha256": "e88aef31a65473212958542a5da9f3390cd9269aa69e595716b8b9f56a613168"
     },
     {
       "file": "TokenTrackerBar/TokenTrackerBar/AppIcon.icon/Assets/01-background.svg",

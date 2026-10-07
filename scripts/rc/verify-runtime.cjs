@@ -9,6 +9,25 @@ const WEB_BRAND_ASSETS = [
   "favicon-32.png", "favicon.ico", "icon-192.png", "icon-512.png",
 ];
 
+function verifyBrandCacheReferences(dist, hashes) {
+  const urls = require('../../dashboard/src/lib/brand-assets.json');
+  for (const file of WEB_BRAND_ASSETS) {
+    if (urls[file] !== `/${file}?sha256=${hashes[file]}`) throw new Error(`Brand cache key does not match package bytes: ${file}`);
+  }
+  for (const filename of ['index.html','share.html']) {
+    const html = fs.readFileSync(path.join(dist, filename), 'utf8');
+    for (const file of ['icon.svg','favicon.ico','favicon-32.png','favicon-16.png','apple-touch-icon.png']) {
+      if (!html.includes(`href="${urls[file]}"`)) throw new Error(`Packaged ${filename} has an unkeyed or stale brand link: ${file}`);
+    }
+    if (filename === 'index.html' && !html.includes(`https://www.tokentracker.cc${urls['icon-512.png']}`)) {
+      throw new Error('Packaged index.html has an unkeyed or stale schema logo.');
+    }
+  }
+  const javascript = walk(dist).filter(file => file.endsWith('.js')).map(file => fs.readFileSync(file,'utf8')).join('\n');
+  if (!javascript.includes(urls['app-icon.png'])) throw new Error('Packaged application brand URL is not content-keyed.');
+  console.log('BRAND CACHE PASS actual HTML and application bundle use content SHA-256 URLs');
+}
+
 function walk(root) {
   return fs.readdirSync(root, { withFileTypes: true }).flatMap(entry => {
     const file = path.join(root, entry.name);
@@ -44,6 +63,7 @@ function verifyRuntime(root, nativeBinary, platform) {
       throw new Error(`Packaged dashboard brand asset differs from the canonical public asset: ${file}`);
     brandSourceHashes[file] = crypto.createHash("sha256").update(sourceBytes).digest("hex");
   }
+  verifyBrandCacheReferences(path.join(tracker, 'dashboard/dist'), brandSourceHashes);
   const config = JSON.parse(fs.readFileSync(path.join(tracker, "src/lib/release-client-config.json")));
   // Compare without printing either public client credential. Never accept a management credential.
   if (config.baseUrl !== expected.baseUrl || config.anonKey !== expected.anonKey)
@@ -74,4 +94,4 @@ if (require.main === module) {
   try { verifyRuntime(...process.argv.slice(2)); }
   catch (error) { console.error(error.message); process.exitCode = 1; }
 }
-module.exports = { verifyRuntime, requiredRuntimeFiles, WEB_BRAND_ASSETS };
+module.exports = { verifyRuntime, requiredRuntimeFiles, WEB_BRAND_ASSETS, verifyBrandCacheReferences };
