@@ -32,7 +32,13 @@ fn fallback_tray_icon() -> tauri::Result<Image<'static>> {
 /// The upside is that libappindicator opens the context menu on *left* click
 /// too, so "Open TokenOrbit Dashboard" as the first item is the primary entry point.
 fn build_menu<R: Runtime, M: Manager<R>>(manager: &M) -> tauri::Result<Menu<R>> {
-    let open = MenuItem::with_id(manager, OPEN_ID, "Open TokenOrbit Dashboard", true, None::<&str>)?;
+    let open = MenuItem::with_id(
+        manager,
+        OPEN_ID,
+        "Open TokenOrbit Dashboard",
+        true,
+        None::<&str>,
+    )?;
     let quit = MenuItem::with_id(manager, QUIT_ID, "Quit TokenOrbit", true, None::<&str>)?;
     Menu::with_items(manager, &[&open, &quit])
 }
