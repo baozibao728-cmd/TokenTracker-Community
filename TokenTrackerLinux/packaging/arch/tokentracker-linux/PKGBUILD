@@ -2,7 +2,7 @@
 pkgname=tokentracker-community-linux
 pkgver=1.2.0
 pkgrel=1
-pkgdesc='TokenTracker Community Linux desktop client'
+pkgdesc='TokenOrbit Linux desktop client'
 arch=('x86_64')
 url='https://github.com/baozibao728-cmd/TokenTracker-Community'
 license=('MIT')

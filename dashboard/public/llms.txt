@@ -1,6 +1,6 @@
-# Token Tracker LLMs Index
+# TokenOrbit LLMs Index
 
-Token Tracker is a free, open-source, local-first AI coding usage and cost
+TokenOrbit is a free, open-source, local-first AI coding usage and cost
 tracker for 42 tools. Its distinctive desktop experience includes a pixel pet
 powered by real token activity, four desktop widgets, and achievements. The
 same data powers a cross-platform CLI, a native macOS menu bar app, a native

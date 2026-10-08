@@ -17,6 +17,7 @@ verify_payload() {
     return 1
   fi
   file "$binary" | grep -F 'x86-64'
+  test -x "$root/usr/lib/TokenTracker Community/EmbeddedServer/node"
   node_bin="$(find "$root/usr/lib" -type f -name node -path '*/EmbeddedServer/*' -print -quit)"
   if [ -z "$node_bin" ] || [ ! -x "$node_bin" ]; then
     echo "::error::$label embedded Node missing or not executable" >&2
@@ -28,17 +29,15 @@ verify_payload() {
     dashboard/public/icon.svg TokenTrackerLinux/src-tauri/icons/icon.png "$root"
   desktop="$(find "$root/usr/share/applications" -type f -name '*.desktop' -print -quit)"
   test -f "$desktop"
-  grep -Fx 'Name=TokenTracker Community' "$desktop"
+  grep -Fx 'Name=TokenOrbit' "$desktop"
+  grep -Fx 'MimeType=x-scheme-handler/tokentracker-community;' "$desktop"
+  grep -Eq '^Exec=.*tokentracker-community-linux %u$' "$desktop"
+  desktop-file-validate "$desktop"
   if [ "$label" = AppImage ]; then
-    # Tauri's AppImage desktop file has no deb/rpm desktopTemplate setting.
-    # The shipped binary explicitly registers its own handler at startup.
-    # Prove that declaration is in THIS binary, not just in the source tree.
+    # Tauri 2.11.3 uses deb.desktopTemplate for AppImage as well. Check the
+    # actual launcher above and retain the startup registration probe below.
     grep -aFq 'MimeType=x-scheme-handler/tokentracker-community;' "$binary"
     grep -aFq 'tokentracker-community-appimage.desktop' "$binary"
-  else
-    grep -Fx 'MimeType=x-scheme-handler/tokentracker-community;' "$desktop"
-    grep -Eq '^Exec=.*tokentracker-community-linux %u$' "$desktop"
-    desktop-file-validate "$desktop"
   fi
   echo "PACKAGE PASS $label: x86_64 payload, independent executable/desktop identity and protocol declaration"
 }

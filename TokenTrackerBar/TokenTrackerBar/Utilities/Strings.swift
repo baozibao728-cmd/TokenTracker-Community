@@ -26,9 +26,9 @@ enum Strings {
         }
     }
 
-    static var appTitle: String { "TokenTracker" }
+    static var appTitle: String { "TokenOrbit" }
     static var serverUnavailable: String { t("Server Unavailable", "服务器不可用", "伺服器不可用", "サーバーを利用できません", "서버를 사용할 수 없음") }
-    static var serverStarting: String { t("Starting TokenTracker", "正在启动 TokenTracker", "正在啟動 TokenTracker", "TokenTracker を起動中", "TokenTracker 시작 중") }
+    static var serverStarting: String { t("Starting TokenOrbit", "正在启动 TokenOrbit", "正在啟動 TokenOrbit", "TokenOrbit を起動中", "TokenOrbit 시작 중") }
     static var serverPreparing: String { t("This usually takes a few seconds.", "通常只需要几秒钟。", "通常只需要幾秒鐘。", "通常は数秒で完了します。", "보통 몇 초 정도 걸립니다.") }
     static var loadingData: String { t("Loading data…", "正在加载数据…", "正在載入資料…", "データを読み込み中…", "데이터 불러오는 중…") }
     static var noData: String { t("No data", "暂无数据", "暫無資料", "データなし", "데이터 없음") }
@@ -237,9 +237,9 @@ enum Strings {
     static var menuSyncNow: String { t("Sync Now", "立即同步", "立即同步", "今すぐ同期", "지금 동기화") }
     static var menuCheckForUpdates: String { t("Check for Updates…", "检查更新…", "檢查更新…", "アップデートを確認…", "업데이트 확인…") }
 
-    static var menuAbout: String { t("About TokenTracker", "关于 TokenTracker", "關於 TokenTracker", "TokenTracker について", "TokenTracker 정보") }
+    static var menuAbout: String { t("About TokenOrbit", "关于 TokenOrbit", "關於 TokenOrbit", "TokenOrbit について", "TokenOrbit 정보") }
 
-    static var menuHelp: String { t("TokenTracker Help", "TokenTracker 帮助", "TokenTracker 說明", "TokenTracker ヘルプ", "TokenTracker 도움말") }
+    static var menuHelp: String { t("TokenOrbit Help", "TokenOrbit 帮助", "TokenOrbit 說明", "TokenOrbit ヘルプ", "TokenOrbit 도움말") }
     static var menuLaunchAtLogin: String { t("Launch at Login", "登录时启动", "登入時啟動", "ログイン時に起動", "로그인 시 실행") }
     static var menuStarOnGitHub: String { t("★ Star on GitHub", "★ 在 GitHub 上标星", "★ 在 GitHub 上標星", "★ GitHub でスターを付ける", "★ GitHub에서 스타하기") }
     static var menuShowStats: String { t("Show Numeric Values", "显示数值", "顯示數值", "数値の表示", "수치 표시") }
@@ -254,7 +254,7 @@ enum Strings {
     static var alertHideIconConfirm: String { t("Hide Icon", "隐藏图标", "隱藏圖示", "アイコンを隠す", "아이콘 숨기기") }
     static var alertHideIconKeep: String { t("Keep Both", "两者都保留", "兩者都保留", "両方表示する", "둘 다 유지") }
     static var starButton: String { t("Star", "标星", "標星", "スター", "스타") }
-    static var openTokenTrackerWebsite: String { t("Open TokenTracker website", "打开 TokenTracker 官网", "開啟 TokenTracker 官網", "TokenTracker のサイトを開く", "TokenTracker 웹사이트 열기") }
+    static var openTokenTrackerWebsite: String { t("Open TokenOrbit website", "打开 TokenOrbit 官网", "開啟 TokenOrbit 官網", "TokenOrbit のサイトを開く", "TokenOrbit 웹사이트 열기") }
     static var menuMenuBarIcon: String { t("Menu Bar Icon", "菜单栏图标", "選單欄圖示", "メニューバーアイコン", "메뉴 막대 아이콘") }
     static var iconStyleCat: String { t("Cat", "小猫", "小貓", "ネコ", "고양이") }
     static var iconStyleMyPet: String { t("My Pet", "我的宠物", "我的寵物", "マイペット", "내 펫") }
@@ -281,25 +281,25 @@ enum Strings {
     static var heatmapLegendMore: String { t("More", "多", "多", "多い", "많음") }
     static var trendAccessibilityLabel: String { t("Token usage trend chart", "Token 使用趋势图", "Token 使用趨勢圖", "トークン使用量トレンドグラフ", "토큰 사용량 추세 차트") }
     static var syncUsageData: String { t("Sync usage data", "同步使用数据", "同步使用資料", "使用データを同期", "사용 데이터 동기화") }
-    static var addWidgetsTitle: String { t("Add TokenTracker widgets", "添加 TokenTracker 小组件", "新增 TokenTracker 小元件", "TokenTracker ウィジェットを追加", "TokenTracker 위젯 추가") }
+    static var addWidgetsTitle: String { t("Add TokenOrbit widgets", "添加 TokenOrbit 小组件", "新增 TokenOrbit 小元件", "TokenOrbit ウィジェットを追加", "TokenOrbit 위젯 추가") }
     static var addWidgetsMessage: String {
         t(
-            "Right-click an empty area of your desktop, choose \"Edit Widgets\", then search for \"TokenTracker\" in the gallery.",
-            "右键点击桌面空白处，选择“编辑小组件”，然后在小组件库中搜索“TokenTracker”。",
-            "右鍵點選桌面空白處，選擇“編輯小元件”，然後在小元件庫中搜索“TokenTracker”。",
-            "デスクトップの空いている場所を右クリックし、「ウィジェットを編集」を選択して、ギャラリーで「TokenTracker」を検索してください。",
-            "바탕화면의 빈 공간을 마우스 오른쪽 버튼으로 클릭하고 \"위젯 편집\"을 선택한 다음 갤러리에서 \"TokenTracker\"를 검색하세요."
+            "Right-click an empty area of your desktop, choose \"Edit Widgets\", then search for \"TokenOrbit Widgets\" in the gallery.",
+            "右键点击桌面空白处，选择“编辑小组件”，然后在小组件库中搜索“TokenOrbit Widgets”。",
+            "右鍵點選桌面空白處，選擇“編輯小元件”，然後在小元件庫中搜索“TokenOrbit Widgets”。",
+            "デスクトップの空いている場所を右クリックし、「ウィジェットを編集」を選択して、ギャラリーで「TokenOrbit Widgets」を検索してください。",
+            "바탕화면의 빈 공간을 마우스 오른쪽 버튼으로 클릭하고 \"위젯 편집\"을 선택한 다음 갤러리에서 \"TokenOrbit Widgets\"를 검색하세요."
         )
     }
     static var gotItButton: String { t("Got it", "知道了", "知道了", "了解", "확인") }
 
     static var serverNotAvailableMessage: String {
         t(
-            "TokenTracker server not available.\nPlease reinstall the app or install: npm install -g tokentracker-cli",
-            "TokenTracker 服务不可用。\n请重新安装应用，或运行：npm install -g tokentracker-cli",
-            "TokenTracker 服務不可用。\n請重新安裝應用，或執行：npm install -g tokentracker-cli",
-            "TokenTracker サーバーを利用できません。\nアプリを再インストールするか、次を実行してください：npm install -g tokentracker-cli",
-            "TokenTracker 서버를 사용할 수 없습니다.\n앱을 재설치하거나 다음을 설치하세요: npm install -g tokentracker-cli"
+            "TokenOrbit server not available.\nPlease reinstall the app or install: npm install -g tokentracker-cli",
+            "TokenOrbit 服务不可用。\n请重新安装应用，或运行：npm install -g tokentracker-cli",
+            "TokenOrbit 服務不可用。\n請重新安裝應用，或執行：npm install -g tokentracker-cli",
+            "TokenOrbit サーバーを利用できません。\nアプリを再インストールするか、次を実行してください：npm install -g tokentracker-cli",
+            "TokenOrbit 서버를 사용할 수 없습니다.\n앱을 재설치하거나 다음을 설치하세요: npm install -g tokentracker-cli"
         )
     }
     static func serverNotResponding(port: Int) -> String {
@@ -381,7 +381,7 @@ enum Strings {
     static var restarting: String { t("Restarting...", "正在重启...", "正在重啟...", "再起動中...", "재시작 중...") }
     static var installationFailedTitle: String { t("Installation Failed", "安装失败", "安裝失敗", "インストールに失敗", "설치 실패") }
     static var manualInstallHint: String {
-        t("Please drag TokenTracker into Applications manually.", "请手动将 TokenTracker 拖入“应用程序”。", "請手動將 TokenTracker 拖入“應用程式”。", "TokenTracker を手動で「アプリケーション」にドラッグしてください。", "TokenTracker를 수동으로 응용 프로그램 폴더로 드래그하세요.")
+        t("Please drag TokenOrbit into Applications manually.", "请手动将 TokenOrbit 拖入“应用程序”。", "請手動將 TokenOrbit 拖入“應用程式”。", "TokenOrbit を手動で「アプリケーション」にドラッグしてください。", "TokenOrbit를 수동으로 응용 프로그램 폴더로 드래그하세요.")
     }
     static var updateCompleteTitle: String { t("Update Complete", "更新完成", "更新完成", "アップデート完了", "업데이트 완료") }
     static var updateCompleteMessage: String {

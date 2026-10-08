@@ -1,8 +1,8 @@
-> TokenTracker-Community is an independent MIT fork of [TokenTracker](https://github.com/xiufengsun/TokenTracker). Current fork downloads/support: [repository](https://github.com/baozibao728-cmd/TokenTracker-Community). The inherited npm/Homebrew instructions refer to upstream packages; Community uses its own backend and does not currently support cloud badges/share/automatic anticheat.
+> TokenOrbit (formerly TokenTracker Community) is an independent MIT fork of [TokenTracker](https://github.com/xiufengsun/TokenTracker). Current fork downloads/support: [repository](https://github.com/baozibao728-cmd/TokenTracker-Community). Compatibility identifiers and download filenames are unchanged. The inherited npm/Homebrew instructions refer to upstream packages; this fork uses its own backend and does not currently support cloud badges/share/automatic anticheat.
 
  <div align="center">
 
-# Token Tracker
+# TokenOrbit
 
 [English](./README.md) · [简体中文](./README.zh-CN.md) · [日本語](./README.ja.md) · **한국어** · [Deutsch](./README.de.md)
 

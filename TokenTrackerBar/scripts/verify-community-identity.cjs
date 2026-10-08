@@ -9,7 +9,7 @@ const test = require("node:test");
 const root = path.resolve(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 
-test("macOS package and callback have independent Community identity", () => {
+test("macOS display names are TokenOrbit while stable package identities remain intact", () => {
   const project = read("project.yml");
   const appInfo = read("TokenTrackerBar/Info.plist");
   const widgetInfo = read("TokenTrackerWidget/Info.plist");
@@ -17,21 +17,43 @@ test("macOS package and callback have independent Community identity", () => {
   const appEntitlements = read("TokenTrackerBar/TokenTrackerBar.entitlements");
   const widgetEntitlements = read("TokenTrackerWidget/TokenTrackerWidget.entitlements");
   const dmg = read("scripts/create-dmg.sh");
+  const strings = read("TokenTrackerBar/Utilities/Strings.swift");
+  const statusBar = read("TokenTrackerBar/Services/StatusBarController.swift");
+  const dashboardWindow = read("TokenTrackerBar/Services/DashboardWindowController.swift");
+  const island = read("TokenTrackerBar/Views/DynamicIslandView.swift");
+  const dmgBackground = read("scripts/generate_dmg_bg.swift");
 
   assert.match(project, /PRODUCT_BUNDLE_IDENTIFIER: com\.tokentracker\.community\s/);
   assert.match(project, /PRODUCT_BUNDLE_IDENTIFIER: com\.tokentracker\.community\.widget\s/);
-  assert.match(project, /PRODUCT_NAME: TokenTracker Community\s/);
+  assert.match(project, /PRODUCT_NAME: TokenOrbit\s/);
+  assert.match(project, /EXECUTABLE_NAME: TokenTracker Community\s/);
+  assert.match(project, /CFBundleDisplayName: TokenOrbit\s/);
+  assert.match(project, /CFBundleName: TokenOrbit\s/);
   assert.match(project, /CFBundleURLName: com\.tokentracker\.community\.auth\s/);
   assert.match(project, /- tokentracker-community\s/);
+  assert.match(project, /CFBundleDisplayName: TokenOrbit Widgets\s/);
+  assert.match(appInfo, /<string>TokenOrbit<\/string>/);
   assert.match(appInfo, /<string>tokentracker-community<\/string>/);
-  assert.match(widgetInfo, /<string>TokenTracker Community Widgets<\/string>/);
+  assert.match(widgetInfo, /<string>TokenOrbit Widgets<\/string>/);
   assert.match(snapshot, /group\.com\.tokentracker\.community/);
   assert.match(snapshot, /com\.tokentracker\.community\.widget/);
   assert.match(snapshot, /Application Support\/TokenTrackerCommunity/);
   assert.match(appEntitlements, /group\.com\.tokentracker\.community/);
   assert.match(widgetEntitlements, /group\.com\.tokentracker\.community/);
-  assert.match(dmg, /APP_NAME="TokenTracker Community"/);
+  assert.match(strings, /static var appTitle: String \{ "TokenOrbit" \}/);
+  assert.doesNotMatch(strings, /"[^"\r\n]*TokenTracker/);
+  assert.equal((strings.match(/TokenOrbit Widgets/g) || []).length, 5);
+  assert.match(statusBar, /TokenOrbit v\\\(version\)/);
+  assert.match(dashboardWindow, /window\.title = Strings\.appTitle/);
+  assert.match(island, /Text\(Strings\.appTitle\)/);
+  assert.match(dmg, /APP_BUNDLE_NAME="TokenOrbit"/);
+  assert.match(dmg, /VOLUME_NAME="TokenOrbit"/);
   assert.match(dmg, /DMG_FILENAME="TokenTrackerCommunity\.dmg"/);
+  assert.match(dmgBackground, /TOKENORBIT/);
+  const backgroundGeneration = dmg.indexOf('swift "$SCRIPT_DIR/generate_dmg_bg.swift"');
+  assert.ok(backgroundGeneration >= 0, "DMG helper must run the current background generator");
+  assert.ok(backgroundGeneration < dmg.indexOf('if [[ ! -f "$BG_IMAGE" ]]'));
+  assert.ok(backgroundGeneration < dmg.indexOf("hdiutil create"));
 });
 
 test("macOS server uses its own port and data without adopting another process", () => {
@@ -46,16 +68,26 @@ test("macOS server uses its own port and data without adopting another process",
   assert.match(server, /guard let embedded = findEmbeddedServer\(\)/);
 });
 
-test("macOS updater accepts only fork DMG and Community app bundle", () => {
+test("macOS updater preserves install-path compatibility for TokenOrbit", () => {
+  const project = read("project.yml");
   const updater = read("TokenTrackerBar/Services/UpdateChecker.swift");
   const bundle = read("scripts/bundle-node.sh");
+  const destinationPolicy = read("TokenTrackerBar/Models/AppInstallDestinationPolicy.swift");
 
   assert.match(updater, /repo = "baozibao728-cmd\/TokenTracker-Community"/);
   assert.match(updater, /asset\.name == "TokenTrackerCommunity\.dmg"/);
   assert.match(updater, /url\.path\.hasPrefix\("\/baozibao728-cmd\/TokenTracker-Community\/releases\/download\/"\)/);
-  assert.match(updater, /let appName = "TokenTracker Community\.app"/);
+  assert.match(updater, /let appName = "TokenOrbit\.app"/);
+  assert.match(updater, /AppInstallDestinationPolicy\.resolve\(/);
+  assert.match(updater, /legacyBundleName: "TokenTracker Community\.app"/);
+  assert.match(project, /- path: TokenTrackerBar\/Models\/AppInstallDestinationPolicy\.swift/);
+  assert.match(destinationPolicy, /Bundle\(url: url\)\?\.bundleIdentifier == expectedBundleIdentifier/);
+  assert.match(destinationPolicy, /if hasFileSystemEntry\(at: newDestination/);
+  assert.match(destinationPolicy, /destinationOfSymbolicLink\(atPath: url\.path\)/);
+  assert.match(destinationPolicy, /if isOwnedApplicationBundle\(/);
+  assert.match(destinationPolicy, /values\.isSymbolicLink != true/);
+  assert.match(destinationPolicy, /ResolutionError\.existingDestinationHasDifferentIdentity/);
   assert.match(updater, /sourceBundle\.bundleIdentifier == expectedBundleIdentifier/);
-  assert.match(updater, /Bundle\(url: destApp\)\?\.bundleIdentifier == expectedBundleIdentifier/);
   assert.doesNotMatch(updater, /contents\.first\(where:.*\.app|NSWorkspace\.shared\.open\(dmgURL\)/);
   assert.match(bundle, /RELEASE_CLIENT_CONFIG="\$REPO_ROOT\/\.tmp\/release-client-config\.json"/);
   assert.match(bundle, /cp "\$RELEASE_CLIENT_CONFIG" "\$TT_DIR\/src\/lib\/release-client-config\.json"/);

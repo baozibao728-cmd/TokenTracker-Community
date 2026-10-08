@@ -28,7 +28,7 @@ on-device in real time and never leave the machine.
 | **Weekend Warrior** (`weekend_warrior`) | Active days falling on a UTC Saturday or Sunday | 5 | 20 | 50 | 100 |
 | **Momentum** (`momentum`) | Biggest week-over-week growth between two *adjacent* ISO weeks; the earlier week must have ≥10M tokens | 2× | 6× | 15× | 40× |
 | **Model Polyglot** (`polyglot`) | Distinct models used | 5 | 15 | 30 | 60 |
-| **Trendsetter** (`trendsetter`) | Models you started using within 7 days of their global debut across all TokenTracker users (only models with ≥5 users count, so private/BYO model names can't self-qualify) | 2 | 5 | 10 | 20 |
+| **Trendsetter** (`trendsetter`) | Models you started using within 7 days of their global debut across all TokenOrbit users (only models with ≥5 users count, so private/BYO model names can't self-qualify) | 2 | 5 | 10 | 20 |
 | **Multitool** (`multitool`) | Distinct AI tools (providers) tracked | 2 | 4 | 6 | 10 |
 | **Podium** (`podium`) | Best-ever rank on the all-time leaderboard | Top 100 | Top 30 | Top 10 | Top 3 |
 | **Veteran** (`veteran`) | Days since your first tracked day | 30 | 90 | 180 | 365 |

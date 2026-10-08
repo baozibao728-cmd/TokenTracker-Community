@@ -60,6 +60,7 @@ file "$TMPDIR_PACKAGE/usr/share/icons/hicolor/512x512/apps/tokentracker-communit
 desktop_file="$TMPDIR_PACKAGE/usr/share/applications/tokentracker-community-linux.desktop"
 desktop-file-validate "$desktop_file"
 grep -Fxq 'Exec=tokentracker-community-linux %u' "$desktop_file"
+grep -Fxq 'Name=TokenOrbit' "$desktop_file"
 grep -Fxq 'Icon=tokentracker-community-linux' "$desktop_file"
 grep -Fxq 'MimeType=x-scheme-handler/tokentracker-community;' "$desktop_file"
 
@@ -82,7 +83,7 @@ SERVER_PID=$!
 
 for _ in {1..100}; do
   if curl -fsS "http://127.0.0.1:${PORT}/functions/tokentracker-user-status" >/dev/null; then
-    printf 'Validated TokenTracker Community Linux package %s\n' "$PACKAGE_PATH"
+    printf 'Validated TokenOrbit Linux package %s\n' "$PACKAGE_PATH"
     exit 0
   fi
   if ! kill -0 "$SERVER_PID" 2>/dev/null; then

@@ -32,9 +32,10 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.tokentracker.community
-        # App bundle / process / permission-dialog name. Target & scheme stay
-        # "TokenTrackerBar"; the Community DMG uses its own stable filename.
-        PRODUCT_NAME: TokenTracker Community
+        # The visible app bundle and permission-dialog name is TokenOrbit.
+        # Keep the executable name stable for embedded runtime probes/scripts.
+        PRODUCT_NAME: TokenOrbit
+        EXECUTABLE_NAME: TokenTracker Community
         INFOPLIST_VALUES: |
           LSUIElement = YES
         MARKETING_VERSION: "1.2.0"
@@ -48,9 +49,9 @@ targets:
       path: TokenTrackerBar/Info.plist
       properties:
         LSUIElement: true
-        CFBundleDisplayName: TokenTracker Community
+        CFBundleDisplayName: TokenOrbit
         # Keep in sync with CFBundleDisplayName: the app menu title uses CFBundleName.
-        CFBundleName: TokenTracker Community
+        CFBundleName: TokenOrbit
         CFBundleIconFile: AppIcon
         CFBundleIconName: AppIcon
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
@@ -104,7 +105,7 @@ targets:
     info:
       path: TokenTrackerWidget/Info.plist
       properties:
-        CFBundleDisplayName: TokenTracker Community Widgets
+        CFBundleDisplayName: TokenOrbit Widgets
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         NSExtension:
@@ -138,6 +139,7 @@ targets:
       - path: TokenTrackerBar/Services/ResumableDownloader.swift
       - path: TokenTrackerBar/Services/LocalAPIConfiguration.swift
       - path: TokenTrackerBar/Services/QueueActivityMonitor.swift
+      - path: TokenTrackerBar/Models/AppInstallDestinationPolicy.swift
       - path: TokenTrackerBar/Models/CompanionAnimationPolicy.swift
       - path: TokenTrackerBar/Models/ServerHealthCheckPolicy.swift
       - path: TokenTrackerBar/Utilities/DateHelpers.swift

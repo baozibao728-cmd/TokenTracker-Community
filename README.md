@@ -1,12 +1,12 @@
  <div align="center">
 
-# TokenTracker Community
+# TokenOrbit
 
 An independently maintained MIT fork of [xiufengsun/TokenTracker](https://github.com/xiufengsun/TokenTracker), with private Community Leaderboards. Upstream copyright and [MIT license](LICENSE) are retained.
 
 Current fork downloads and support: [Releases](https://github.com/baozibao728-cmd/TokenTracker-Community/releases) · [Issues](https://github.com/baozibao728-cmd/TokenTracker-Community/issues).
 
-The first Community release is being prepared; no public installer has been published yet. Community uses its own InsForge project. Native installation, data, URL scheme and updates are isolated from the official TokenTracker app. The inherited CLI/Homebrew examples below describe upstream packages, not a published Community CLI or tap. Cloud badges, share/likes and automatic anticheat are outside this fork's current backend scope.
+TokenOrbit is the new user-visible name of TokenTracker Community; existing technical-preview downloads retain their original names and bytes. The repository, release asset filenames, installation identity, data paths and protocols remain compatible. This fork uses its own InsForge project. Native installation, data, URL scheme and updates are isolated from the official TokenTracker app. The inherited CLI/Homebrew examples below describe upstream packages, not a published fork CLI or tap. Cloud badges, share/likes and automatic anticheat are outside this fork's current backend scope.
 
 **English** · [简体中文](./README.zh-CN.md) · [日本語](./README.ja.md) · [한국어](./README.ko.md) · [Deutsch](./README.de.md)
 
@@ -604,7 +604,7 @@ The Clawd character design belongs to Anthropic. This is a community project wit
 
 <div align="center">
 
-**Token Tracker** — Quantify your AI output.
+**TokenOrbit** — Quantify your AI output.
 
 <a href="https://github.com/baozibao728-cmd/TokenTracker-Community">TokenTracker-Community</a> · <a href="https://github.com/xiufengsun/TokenTracker">Upstream attribution</a>
 

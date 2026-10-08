@@ -14,14 +14,15 @@ public sealed class WindowsReleaseIdentityTests
 
         Assert.Contains("AppId={{638F4DBF-F2B4-4408-B654-5A5D0F5B7AC7}", setup);
         Assert.DoesNotContain("8F2A6C71-4E9D-4B7A-9C3E-1D5F0A2B6E84", setup);
-        Assert.Contains("#define MyAppName \"TokenTracker Community\"", setup);
+        Assert.Equal("TokenOrbit", Constants.AppDisplayName);
+        Assert.Contains("#define MyAppName \"TokenOrbit\"", setup);
         Assert.Contains("#define MyAppPublisher \"baozibao728-cmd\"", setup);
         Assert.Contains($"#define MyAppExeName \"{Constants.AppExeName}\"", setup);
         Assert.Contains("DefaultDirName={localappdata}\\Programs\\TokenTrackerCommunity", setup);
         Assert.Contains("OutputBaseFilename=TokenTracker-Community-Setup-v{#MyAppVersion}", setup);
         Assert.Contains("Type: filesandordirs; Name: \"{app}\\EmbeddedServer\\tokentracker\\dashboard\\dist\"", setup);
         Assert.Contains("<AssemblyName>TokenTrackerCommunity</AssemblyName>", project);
-        Assert.Contains("<Product>TokenTracker Community</Product>", project);
+        Assert.Contains("<Product>TokenOrbit</Product>", project);
         Assert.Contains($"<Company>{Constants.PublisherName}</Company>", project);
     }
 
@@ -48,6 +49,22 @@ public sealed class WindowsReleaseIdentityTests
         Assert.Contains("psi.Environment[\"TOKENTRACKER_DATA_ROOT\"] = Constants.CliDataRoot", ReadWindowsFile("ServerManager.cs"));
         Assert.Contains("private const string Repo = Constants.GitHubRepo", ReadWindowsFile("UpdateChecker.cs"));
         Assert.Contains("private const string SetupAssetName = Constants.SetupAssetName", ReadWindowsFile("UpdateChecker.cs"));
+    }
+
+    [Fact]
+    public void LegacyShortcutMigrationRequiresTheExactProductTarget()
+    {
+        var setup = ReadWindowsFile("installer/TokenTracker.iss");
+        Assert.Contains("Shortcut.TargetPath", setup);
+        Assert.Contains("CompareText(ExpandFileName(Target)", setup);
+        Assert.Contains("ExpandFileName(ExpandConstant('{app}\\{#MyAppExeName}')))", setup);
+        Assert.Contains("{userprograms}\\TokenTracker Community.lnk", setup);
+        Assert.Contains("{userdesktop}\\TokenTracker Community.lnk", setup);
+        Assert.Contains("Check: ShouldCreateDesktopShortcut", setup);
+        Assert.Contains("WizardIsTaskSelected('desktopicon') or IsShortcutForThisInstallation", setup);
+        Assert.DoesNotContain("{userprograms}\\TokenTracker.lnk", setup);
+        Assert.DoesNotContain("{userdesktop}\\TokenTracker.lnk", setup);
+        Assert.DoesNotContain("Name: \"{userdesktop}\\TokenTracker Community\"", setup);
     }
 
     private static string ReadWindowsFile(string relativePath, [CallerFilePath] string testFile = "")

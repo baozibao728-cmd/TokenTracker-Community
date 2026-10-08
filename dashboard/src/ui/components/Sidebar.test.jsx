@@ -27,6 +27,7 @@ const LABELS = {
   "nav.close_menu": "Close navigation menu",
   "nav.aside_label": "Main navigation",
   "nav.nav_label": "Primary navigation",
+  "shared.app_name": "TokenOrbit",
   "shared.github.star": "Star",
 };
 
@@ -85,6 +86,11 @@ describe("AppLayout sidebar controls", () => {
       removeListener: (_listener) => {},
       dispatchEvent: vi.fn(),
     }));
+  });
+
+  it("uses the registered product name in the mobile header", () => {
+    renderLayout();
+    expect(screen.getByRole("link", { name: "TokenOrbit" })).toHaveAttribute("href", "/landing");
   });
 
   it("marks Communities active on a nested detail route", () => {

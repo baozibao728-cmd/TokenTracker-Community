@@ -746,7 +746,7 @@ const TrendChart = GObject.registerClass({
 const TokenTrackerIndicator = GObject.registerClass(
 class TokenTrackerIndicator extends PanelMenu.Button {
     _init(extension) {
-        super._init(0.5, 'TokenTracker Community');
+        super._init(0.5, 'TokenOrbit');
         this._extension = extension;
         this._session = new Soup.Session({timeout: 20});
         this._cancellable = new Gio.Cancellable();
@@ -901,7 +901,7 @@ class TokenTrackerIndicator extends PanelMenu.Button {
             fallback_icon_name: 'view-restore-symbolic',
             icon_size: 13,
         }));
-        openBox.add_child(new St.Label({text: 'Open Dashboard', y_align: Clutter.ActorAlign.CENTER}));
+        openBox.add_child(new St.Label({text: 'Open TokenOrbit Dashboard', y_align: Clutter.ActorAlign.CENTER}));
         open.child = openBox;
         open.connect('clicked', () => {
             this.menu.close();
@@ -1118,7 +1118,7 @@ class TokenTrackerIndicator extends PanelMenu.Button {
         this._clawd.opacity = 128;
         this._clawd.setEyesClosed(false);
         this._setStatsVisible(false);
-        this._renderMessage('TokenTracker Community isn’t running. Open the app to start tracking.');
+        this._renderMessage('TokenOrbit isn’t running. Open the app to start tracking.');
     }
 
     async _setPeriod(period) {

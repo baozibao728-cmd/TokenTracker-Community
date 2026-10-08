@@ -5,7 +5,7 @@ import CoreGraphics
 import Foundation
 
 // ==========================================================
-// DMG Background — TokenTracker
+// DMG Background — TokenOrbit
 // Inspired by Sketch/Linear DMG: clean, refined, professional
 //
 // Coordinate system:
@@ -140,7 +140,7 @@ cg.fill(CGRect(x: W / 2 - 180, y: sepY, width: 360, height: 1))
     ])
 
 // Brand wordmark
-("TOKENTRACKER" as NSString).draw(
+("TOKENORBIT" as NSString).draw(
     in: NSRect(x: 0, y: 40, width: W, height: 24),
     withAttributes: [
         .font: NSFont.systemFont(ofSize: 13, weight: .medium),

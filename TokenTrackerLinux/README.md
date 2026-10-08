@@ -1,6 +1,6 @@
-# TokenTracker Community Linux Client
+# TokenOrbit Linux Client
 
-A Tauri desktop client for TokenTracker Community. It is the Linux counterpart of the macOS
+A Tauri desktop client for TokenOrbit. It is the Linux counterpart of the macOS
 menu bar app and the Windows tray app: a native shell that starts the bundled
 TokenTracker CLI on a loopback port, loads the same dashboard in a WebKitGTK
 window, and keeps a tray icon alive.
@@ -76,7 +76,7 @@ Uninstall with `sudo pacman -R tokentracker-community-linux`.
 
 ## Run
 
-Start **TokenTracker Community** from your application launcher, or run
+Start **TokenOrbit** from your application launcher, or run
 `tokentracker-community-linux` (Arch package) / the AppImage directly.
 
 On launch the window shows a loading screen while the bundled server starts, then
@@ -87,8 +87,8 @@ error and lists every location it checked, rather than hanging on the splash.
 
 - Closing the window hides it to the tray; the app keeps syncing in the
   background.
-- Tray **Open Dashboard** restores the window.
-- Tray **Quit** stops the bundled Node server and exits.
+- Tray **Open TokenOrbit Dashboard** restores the window.
+- Tray **Quit TokenOrbit** stops the bundled Node server and exits.
 
 ### The tray menu is the only tray interaction
 
@@ -97,7 +97,7 @@ limitation rather than a bug. Linux tray icons go through
 libayatana-appindicator, whose backend in the `tray-icon` crate never emits click
 events — both Tauri and `tray-icon` document it as *"Linux: Unsupported. The
 event is not emitted even though the icon is shown."* libappindicator opens the
-menu on left click anyway, so **Open Dashboard** is the first menu item.
+menu on left click anyway, so **Open TokenOrbit Dashboard** is the first menu item.
 
 ### GNOME does not show tray icons by default
 

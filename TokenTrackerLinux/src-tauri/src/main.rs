@@ -93,7 +93,7 @@ fn report_startup_failure(app: &AppHandle, window: &WebviewWindow, error: &str) 
 ///
 /// Runs on a worker thread. Doing this inside `setup()` would block the main
 /// thread for up to 20 seconds before the event loop starts: no window would be
-/// mapped and the tray menu's "Open Dashboard" would silently do nothing,
+/// mapped and the tray menu's "Open TokenOrbit Dashboard" would silently do nothing,
 /// because `show_main_window` looks for a "main" window that does not exist
 /// yet.
 fn start_dashboard(app: AppHandle, window: WebviewWindow) {
@@ -301,7 +301,7 @@ fn main() {
                 external::open_in_browser(url);
                 false
             })
-            .title("TokenTracker Community")
+            .title("TokenOrbit")
             .inner_size(1180.0, 820.0)
             .min_inner_size(960.0, 640.0)
             .build()?;
@@ -318,7 +318,7 @@ fn main() {
             }
         })
         .build(tauri::generate_context!())
-        .expect("failed to build TokenTracker Linux client")
+        .expect("failed to build TokenOrbit Linux client")
         .run(|_app, event| {
             if matches!(event, tauri::RunEvent::ExitRequested { .. }) {
                 stop_server();

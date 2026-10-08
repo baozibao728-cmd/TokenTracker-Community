@@ -441,29 +441,33 @@ final class UpdateChecker {
             detach.waitUntilExit()
         }
 
-        // 2. Accept only the Community app with the expected bundle identity.
-        // The DMG must never choose an arbitrary .app or replace the official app.
+        // 2. Accept only the TokenOrbit app with the expected bundle identity.
+        // Preserve an owned pre-rename installation path so upgrades replace it
+        // in place; unrelated or symlinked legacy bundles are left untouched.
         let fm = FileManager.default
-        let appName = "TokenTracker Community.app"
+        let appName = "TokenOrbit.app"
         let expectedBundleIdentifier = "com.tokentracker.community"
         let appsDir = URL(fileURLWithPath: "/Applications", isDirectory: true)
         let sourceApp = URL(fileURLWithPath: mountPoint).appendingPathComponent(appName)
-        let destApp = appsDir.appendingPathComponent(appName)
+        let destApp: URL
+        do {
+            destApp = try AppInstallDestinationPolicy.resolve(
+                in: appsDir,
+                newBundleName: appName,
+                legacyBundleName: "TokenTracker Community.app",
+                expectedBundleIdentifier: expectedBundleIdentifier,
+                fileManager: fm
+            )
+        } catch {
+            throw UpdateError.installFailed("Existing app at the TokenOrbit destination has a different identity")
+        }
         let sourceValues = try sourceApp.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
         guard sourceValues.isDirectory == true,
               sourceValues.isSymbolicLink != true,
               let sourceBundle = Bundle(url: sourceApp),
               sourceBundle.bundleIdentifier == expectedBundleIdentifier,
               sourceBundle.infoDictionary?["CFBundleShortVersionString"] as? String == targetVersion else {
-            throw UpdateError.installFailed("DMG does not contain the expected TokenTracker Community app and version")
-        }
-        if fm.fileExists(atPath: destApp.path) {
-            let destValues = try destApp.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
-            guard destValues.isDirectory == true,
-                  destValues.isSymbolicLink != true,
-                  Bundle(url: destApp)?.bundleIdentifier == expectedBundleIdentifier else {
-                throw UpdateError.installFailed("Existing app at the Community destination has a different identity")
-            }
+            throw UpdateError.installFailed("DMG does not contain the expected TokenOrbit app and version")
         }
 
         // 3. Stage the new bundle next to the old one, then swap.

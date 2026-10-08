@@ -4,7 +4,7 @@ Guidance for Claude Code working in this repository. Every line here is loaded i
 
 ## Project shape
 
-Token Tracker is a local-first AI token usage tracker.
+TokenOrbit is the user-visible brand of this local-first AI token usage tracker. Compatibility identifiers, executables, data paths, protocols and release asset filenames remain TokenTracker Community; the GitHub repository is not renamed.
 
 - **CLI** (`src/`, CommonJS, Node ≥20) — entry `bin/tracker.js` → `src/cli.js`. `serve` runs a local HTTP server on `:7680`, `sync` parses logs into `~/.tokentracker/queue.jsonl`.
 - **Dashboard** (`dashboard/`, React 18 + Vite 7 + TS strict + Tailwind) — built to `dashboard/dist/`, served by the CLI locally; this fork has no independent hosted dashboard yet.

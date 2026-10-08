@@ -757,7 +757,7 @@ fn run_background_sync(paths: &RuntimePaths, child_slot: &Mutex<Option<Child>>) 
     let mut command = match node_command(&paths.node) {
         Ok(command) => command,
         Err(error) => {
-            eprintln!("[TokenTracker Community] failed to configure background sync: {error}");
+            eprintln!("[TokenOrbit] failed to configure background sync: {error}");
             return;
         }
     };

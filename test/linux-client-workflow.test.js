@@ -228,13 +228,13 @@ test('Linux release identity coexists with the official client', () => {
   assert.equal(conf.identifier, 'io.github.baozibao728cmd.tokentrackercommunity');
   assert.equal(pkg.name, 'tokentracker-community-linux');
   assert.equal(extensionMeta.uuid, 'tokentracker-community@tokentracker.cc');
-  assert.equal(extensionMeta.name, 'TokenTracker Community');
+  assert.equal(extensionMeta.name, 'TokenOrbit');
   assert.match(extensionReadme, /extensions\/tokentracker-community@tokentracker\.cc/);
   assert.match(extensionReadme, /gnome-extensions enable tokentracker-community@tokentracker\.cc/);
   assert.doesNotMatch(extensionReadme, /gnome-extensions enable tokentracker@tokentracker\.cc/);
   assert.match(cargo, /^name = "tokentracker-community-linux"$/m);
   assert.match(cargo, /^\[\[bin\]\][\s\S]*?^name = "tokentracker-community-linux"$/m);
-  assert.match(desktop, /^Name=TokenTracker Community$/m);
+  assert.match(desktop, /^Name=TokenOrbit$/m);
   assert.match(desktop, /^Exec=tokentracker-community-linux %u$/m);
   assert.match(desktop, /^MimeType=x-scheme-handler\/tokentracker-community;$/m);
   assert.match(oauth, /tokentracker-community-appimage\.desktop/);
