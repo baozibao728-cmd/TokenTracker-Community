@@ -135,6 +135,8 @@ test/tokenorbit-package-name.test.js
 
 新增 `AppInstallDestinationPolicyTests.swift` 的 8 个 XCTest 覆盖旧 owned bundle、全新安装、foreign/symlink（含 broken symlink）旧路径、当前路径优先级及新路径冲突。固定候选的普通 CI macOS job 实际运行 **8/8 PASS**。该策略只处理本地 app 落点兼容性，不验证完整更新下载、签名或 GUI 流程。
 
+该策略由**新客户端**的 `UpdateChecker.swift` 调用；旧客户端二进制不会因此自动获得此策略。它不代表旧客户端已经成功自动升级到 TokenOrbit，也不证明旧版本的下载、DMG 识别、替换、重启或版本判断链路。**旧客户端自动升级仍 NOT_TESTED**，与 macOS GUI/RUNTIME 未验收及完整升级链限制一并保留。
+
 ### Linux 内部目录
 
 三个 Linux 包分别验证实际 payload 中的 `TokenTracker Community/EmbeddedServer/node`，再从解包根目录动态定位 Node 并执行 runtime 检查。窗口、托盘和 desktop entry 显示 TokenOrbit；Tauri `productName`、包身份和运行时目录保持旧值。固定候选的 AppImage、deb、rpm 分别 **BUILD/PACKAGE PASS**，不是用一个格式代替另外两个。
@@ -157,6 +159,8 @@ test/tokenorbit-package-name.test.js
 | 固定源码 SHA `04842178…`，普通 CI [37726143349](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37726143349) | **4/4 PASS** | Windows .NET 8、Linux Rust、Node validation/build、macOS unit 全部成功；PR 合并 checkout 为 `aee6494ef7c29632dc6e8e22a8c1cfaaa136f927` |
 | 固定源码 SHA，build-only RC [37726143381](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37726143381) | **三平台 BUILD/PACKAGE + delivery PASS** | 每个 job 显式 checkout `04842178b611f52c3a6180fbd27b089e0737bccf`；六包的实际字节校验成功 |
 | 最终 RC artifact | **8/8 下载回核 PASS** | artifact `11527574101`；下表为实际包字节与两个原始元数据文件自身摘要 |
+| 额外文档 HEAD `4161dd5eb491e8282d8b6f0a77fd46aeb459d69a`，普通 CI [37924883867](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37924883867) | **4/4 PASS** | 实际 PR merge checkout 为 `1afd51b20ca604d375f4f7c1928707ff829476a4`；不是原包源码 |
+| 同一文档 HEAD 自动触发的额外 RC [37924883949](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37924883949) | **三平台 BUILD/PACKAGE + delivery PASS** | candidate、Windows、macOS、Linux、delivery 均成功；仅作额外 CI 记录，未下载回核或安装其产物，不替换 `04842178…` / artifact `11527574101` |
 | 收尾文档与截图 | 后续纯文档提交 | 最终 PR HEAD 与该提交 CI 在 PR 摘要记录，不循环追加本文自身 SHA；包和原生证据仍归属固定源码 `04842178…` |
 
 原八文件下载回核 **8/8 PASS**。交付 [artifact 11527574101](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/37726143381/artifacts/11527574101)，外层 ZIP 大小 499,047,277 bytes，SHA-256 `bf2b6de748bb51a60540c326068554770ea0de397629c816cfc0070d39e222b4`，与 GitHub artifact digest 完全一致。外层 ZIP 解压后恰好八个文件；六包与原 manifest/SHA256SUMS 逐一核对，两个元数据文件自身摘要也保留如下，没有重写、重新签名或重压缩。manifest version=`1.2.0`，source_sha=checkout_sha=`04842178b611f52c3a6180fbd27b089e0737bccf`。
@@ -215,10 +219,22 @@ test/tokenorbit-package-name.test.js
 
 Windows 本轮覆盖安装、名称及账户/数据保留的定向验收 **PASS**。没有据此宣称完整更高版本 updater 链通过。macOS/Linux 包内容检查和正式构建 **PASS**，但对应桌面安装、窗口/菜单、Widget 与实际运行 **GUI/RUNTIME NOT_TESTED**；macOS 新安装路径策略的 XCTest 不代替 GUI 升级验收。
 
+## 旧名称文案遗留（后续清理）
+
+主界面与安装显示名的已验收结论保持；仍有少量继承的 README 正文/tagline 和 Linux 异常提示使用旧名称。本轮仅记录，不修改产品源码或另行重打包。例如：
+
+| 位置 | 旧文案 / 分类 |
+|---|---|
+| `README.md:405` | “TokenTracker Community reads provider sessions passively”；产品说明正文，留待后续清理 |
+| `README.zh-CN.md:524`、`README.de.md:544` | “Token Tracker —— 把你的 AI 产出量化。”及德文 tagline；显示文案，留待后续清理 |
+| `TokenTrackerLinux/src-tauri/src/server.rs:494`、`:836` | “failed to start TokenTracker server” / “TokenTracker server did not become ready…”；故障提示，留待后续清理 |
+
+上述位置对应固定源码 `04842178…`，不是本轮新增回归。上游 TokenTracker 归属、许可证、仓库链接，以及 Community 的下载文件名、包身份、内部 exe/runtime 路径、协议和数据目录属于必须保留的来源/兼容契约，不纳入显示旧名清理。
+
 ## 持续保留的限制
 
 Windows 包未签名；macOS 使用 ad-hoc signature，不等于 Developer ID / notarization。macOS/Linux GUI 和 runtime 未测试。真实 WSL、完整下载与更高版本 updater 链、旧 metadata 迁移未测试；已有配置差异缺少写入者证据，仍未归因。既有 Dashboard 两个基线失败及 macOS notify 限制保持原报告结论。本次未重跑这些流程，也不把旧报告结果改写成本候选结果。参见 [Windows 组合 RC 验收记录](windows-combined-rc-acceptance.md) 与 [品牌图标验证记录](brand-icon-validation.md)。
 
-本轮源码、固定包和 Windows 定向实机证据已具备交 review 条件，Draft PR 保持未合并。收尾只补报告、截图、Windows README 标题和本地 DMG 文档命令，最终文档 HEAD/普通 CI 在 PR 摘要记录。现有 RC 触发规则会把 `TokenTrackerWin/README.md` 计入平台路径，因此文档 push 可能自动产生另一轮 build-only 运行；该运行不替代已验收的 `04842178…` 包，不重新安装或改写产物来源。未手动 dispatch 发布或重复打包流程，十个继承工作流继续禁用。
+此前 `4161dd5…` 报告收尾时，结论为 **READY FOR REVIEW**、Draft PR 尚未合并；这描述当时状态。本次按 review 只补充本报告的旧名遗留、macOS 证据边界及额外自动 RC 结果。最终文档 HEAD、普通 CI、实际 merge/main SHA 与合并树核对结果统一记录在 PR #9 收尾摘要，不循环追加本文自身 SHA。
 
-**READY FOR REVIEW；稳定版仍 NOT_READY。** 未合并、未改版本，未创建 tag/Release，未改公开预览资产或云端。
+已验收产物始终固定为 `04842178b611f52c3a6180fbd27b089e0737bccf` / artifact `11527574101`。额外自动 RC 单独记录，不替换原包或重复安装验收；未手动 dispatch 发布或打包流程，十个继承工作流继续禁用。未改版本、产品源码、公开预览资产或云端，未创建 tag/Release。**稳定版仍 NOT_READY。**
