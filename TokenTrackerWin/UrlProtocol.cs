@@ -26,15 +26,18 @@ internal static class UrlProtocol
             if (string.IsNullOrEmpty(exe)) return;
 
             var command = CommandLine(exe);
-            // Already pointing at this exe? Skip the writes.
+            // Keep the existing protocol/executable identity, updating only its
+            // friendly label when a product display name changes.
             using (var cmdRead = Registry.CurrentUser.OpenSubKey(
                 $@"Software\Classes\{Scheme}\shell\open\command"))
+            using (var labelRead = Registry.CurrentUser.OpenSubKey($@"Software\Classes\{Scheme}"))
             {
-                if (cmdRead?.GetValue(null) as string == command) return;
+                if (cmdRead?.GetValue(null) as string == command
+                    && labelRead?.GetValue(null) as string == $"URL:{Constants.AppDisplayName} Protocol") return;
             }
 
             using var key = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{Scheme}");
-            key.SetValue(null, "URL:TokenTracker Community Protocol");
+            key.SetValue(null, $"URL:{Constants.AppDisplayName} Protocol");
             key.SetValue("URL Protocol", "");
             using var cmd = key.CreateSubKey(@"shell\open\command");
             cmd.SetValue(null, command);

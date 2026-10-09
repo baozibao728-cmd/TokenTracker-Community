@@ -269,7 +269,7 @@ test("Community backend configuration is validated before draft release creation
 
 test("macOS app and DMG use Community names", () => {
   const content = loadWorkflow();
-  assert.match(content, /TokenTracker Community\.app/);
+  assert.match(content, /TokenOrbit\.app/);
   assert.match(content, /TokenTrackerCommunity\.dmg/);
 });
 

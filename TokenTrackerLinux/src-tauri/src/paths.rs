@@ -181,7 +181,7 @@ pub fn resolve_runtime_paths_from(roots: &RuntimeRoots) -> Result<RuntimePaths, 
     }
 
     Err(format!(
-        "TokenTracker Community runtime not found. Checked {}",
+        "TokenOrbit runtime not found. Checked {}",
         candidates
             .iter()
             .map(|candidate| candidate.display().to_string())

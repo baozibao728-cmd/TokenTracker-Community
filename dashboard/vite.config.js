@@ -10,6 +10,7 @@ import os from "node:os";
 import { copyRegistryPlugin } from "./scripts/copy-registry-plugin.mjs";
 
 const COPY_REQUIRED_KEYS = [
+  "shared.app_name",
   "landing.meta.title",
   "landing.meta.description",
   "landing.meta.og_site_name",
@@ -155,6 +156,7 @@ function buildMeta(prefix = "landing") {
   }
 
   return {
+    appName: map.get("shared.app_name") || "",
     title: read("title"),
     description: read("description"),
     ogSiteName: read("og_site_name"),
@@ -177,6 +179,7 @@ function resolveMetaPrefix(ctx) {
 function injectRichMeta(html, prefix) {
   const meta = buildMeta(prefix);
   const replacements = {
+    __TOKENTRACKER_APP_NAME__: meta.appName,
     __TOKENTRACKER_TITLE__: meta.title,
     __TOKENTRACKER_DESCRIPTION__: meta.description,
     __TOKENTRACKER_OG_SITE_NAME__: meta.ogSiteName,
@@ -227,6 +230,7 @@ function richLinkMetaPlugin() {
 // files (see vercel.json). Runtime JS still boots the SPA and renders the real
 // route, so users see the interactive page while crawlers get a self-canonical,
 // route-specific document.
+const APP_DISPLAY_NAME = loadCopyRegistry().get("shared.app_name") || "TokenOrbit";
 const ROUTE_SEO_PAGES = [
   {
     file: "ip-check.html",
@@ -240,7 +244,7 @@ const ROUTE_SEO_PAGES = [
         {
           "@type": "Organization",
           "@id": "https://www.tokentracker.cc/#organization",
-          name: "Token Tracker",
+          name: APP_DISPLAY_NAME,
           url: "https://www.tokentracker.cc/",
         },
         {
@@ -283,7 +287,7 @@ const ROUTE_SEO_PAGES = [
               name: "How do I check the exit IP used for Claude Code?",
               acceptedAnswer: {
                 "@type": "Answer",
-                text: "Open the Token Tracker IP check page. It detects your current public exit IP and shows its geolocation, network type, and reputation/risk signals so you can decide whether to switch networks before using Claude Code.",
+                text: `Open the ${APP_DISPLAY_NAME} IP check page. It detects your current public exit IP and shows its geolocation, network type, and reputation/risk signals so you can decide whether to switch networks before using Claude Code.`,
               },
             },
           ],
@@ -311,9 +315,9 @@ const ROUTE_SEO_PAGES = [
         <li>IP reputation and a cleanliness/risk score (纯净度 / 风险).</li>
         <li>Whether the IP is likely to trigger Claude sign-in verification or rate limits.</li>
       </ul>
-      <h2>Part of Token Tracker</h2>
+      <h2>Part of ${APP_DISPLAY_NAME}</h2>
       <p>
-        Token Tracker is a free, open-source, local-first dashboard that monitors AI token usage and cost
+        ${APP_DISPLAY_NAME} is a free, open-source, local-first dashboard that monitors AI token usage and cost
         across 27 AI coding tools including Claude Code. Install with <code>npx tokentracker-cli</code>.
       </p>
     </main>`,
@@ -323,14 +327,14 @@ const ROUTE_SEO_PAGES = [
     url: "https://www.tokentracker.cc/leaderboard",
     title: "AI Coding Token Usage Leaderboard — Claude, Codex, Cursor",
     description:
-      "Public Token Tracker leaderboard ranking AI coding token usage across Claude Code, Codex, Cursor, Gemini and 27 tools. Opt-in, privacy-first — token counts only, never prompts.",
+      `Public ${APP_DISPLAY_NAME} leaderboard ranking AI coding token usage across Claude Code, Codex, Cursor, Gemini and 27 tools. Opt-in, privacy-first — token counts only, never prompts.`,
     jsonld: {
       "@context": "https://schema.org",
       "@graph": [
         {
           "@type": "Organization",
           "@id": "https://www.tokentracker.cc/#organization",
-          name: "Token Tracker",
+          name: APP_DISPLAY_NAME,
           url: "https://www.tokentracker.cc/",
         },
         {
@@ -354,7 +358,7 @@ const ROUTE_SEO_PAGES = [
     seed: `<main class="aeo-seed-content" aria-label="AI Coding Token Usage Leaderboard AI-readable summary">
       <h1>AI coding token usage leaderboard</h1>
       <p>
-        The Token Tracker leaderboard ranks opt-in AI coding token usage across Claude Code, OpenAI Codex,
+        The ${APP_DISPLAY_NAME} leaderboard ranks opt-in AI coding token usage across Claude Code, OpenAI Codex,
         Cursor, Gemini CLI and 27 supported tools. It is privacy-first: entries are opt-in and expose token
         counts only — never prompts or conversation content. See how your AI coding token consumption
         compares with other developers by model, tool, and time window.
@@ -364,11 +368,11 @@ const ROUTE_SEO_PAGES = [
         <li>Opt-in only — you choose whether to appear, using a public display name.</li>
         <li>Token counts only — never prompts, code, or conversation content.</li>
         <li>Ranks usage across Claude Code, Codex, Cursor, Gemini and 27 AI coding tools.</li>
-        <li>Powered by optional Token Tracker cloud sync; local-first by default.</li>
+        <li>Powered by optional ${APP_DISPLAY_NAME} cloud sync; local-first by default.</li>
       </ul>
-      <h2>Part of Token Tracker</h2>
+      <h2>Part of ${APP_DISPLAY_NAME}</h2>
       <p>
-        Token Tracker is a free, open-source, local-first dashboard that monitors AI token usage and cost
+        ${APP_DISPLAY_NAME} is a free, open-source, local-first dashboard that monitors AI token usage and cost
         across 27 AI coding tools. Install with <code>npx tokentracker-cli</code>.
       </p>
     </main>`,

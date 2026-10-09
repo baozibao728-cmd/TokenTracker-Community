@@ -19,7 +19,7 @@ internal static class Constants
     /// <summary>How long to wait for the server to answer after launch.</summary>
     public const int StartupTimeoutSeconds = 20;
 
-    public const string AppDisplayName = "TokenTracker Community";
+    public const string AppDisplayName = "TokenOrbit";
     public const string AppExeName = "TokenTrackerCommunity.exe";
     public const string PublisherName = "baozibao728-cmd";
     public const string GitHubRepo = "baozibao728-cmd/TokenTracker-Community";

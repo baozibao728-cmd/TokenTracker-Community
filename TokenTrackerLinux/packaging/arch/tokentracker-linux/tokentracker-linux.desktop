@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=TokenTracker Community
+Name=TokenOrbit
 Comment=Community AI token usage tracker
 Exec=tokentracker-community-linux %u
 Icon=tokentracker-community-linux

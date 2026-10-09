@@ -44,6 +44,14 @@ function requiredRuntimeFiles(platform) {
   if (platform === "windows") required.push("dashboard/dist/pet.html", "dashboard/dist/quota.html");
   return required;
 }
+function verifyDisplayNames(dist) {
+  for (const file of ['index.html', 'share.html']) {
+    const html = fs.readFileSync(path.join(dist, file), 'utf8');
+    const title = /<title>([^<]*)<\/title>/i.exec(html)?.[1] || '';
+    if (!title.includes('TokenOrbit') || /Token ?Tracker/.test(title))
+      throw new Error(`Packaged ${file} does not use the TokenOrbit display name.`);
+  }
+}
 function verifyRuntime(root, nativeBinary, platform) {
   const expected = validateReleaseClientConfig();
   const version = require("../../package.json").version;
@@ -64,6 +72,7 @@ function verifyRuntime(root, nativeBinary, platform) {
     brandSourceHashes[file] = crypto.createHash("sha256").update(sourceBytes).digest("hex");
   }
   verifyBrandCacheReferences(path.join(tracker, 'dashboard/dist'), brandSourceHashes);
+  verifyDisplayNames(path.join(tracker, 'dashboard/dist'));
   const config = JSON.parse(fs.readFileSync(path.join(tracker, "src/lib/release-client-config.json")));
   // Compare without printing either public client credential. Never accept a management credential.
   if (config.baseUrl !== expected.baseUrl || config.anonKey !== expected.anonKey)
@@ -94,4 +103,4 @@ if (require.main === module) {
   try { verifyRuntime(...process.argv.slice(2)); }
   catch (error) { console.error(error.message); process.exitCode = 1; }
 }
-module.exports = { verifyRuntime, requiredRuntimeFiles, WEB_BRAND_ASSETS, verifyBrandCacheReferences };
+module.exports = { verifyRuntime, requiredRuntimeFiles, WEB_BRAND_ASSETS, verifyBrandCacheReferences, verifyDisplayNames };

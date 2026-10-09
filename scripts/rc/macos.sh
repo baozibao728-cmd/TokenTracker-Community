@@ -17,7 +17,7 @@ xcodebuild -scheme TokenTrackerBar -configuration Release -derivedDataPath build
   ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO CODE_SIGN_IDENTITY="-" \
   CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
   OTHER_SWIFT_FLAGS='$(inherited) -Xfrontend -solver-expression-time-threshold=120' clean build
-app="$PWD/build/DerivedData/Build/Products/Release/TokenTracker Community.app"
+app="$PWD/build/DerivedData/Build/Products/Release/TokenOrbit.app"
 appex="$app/Contents/PlugIns/TokenTrackerWidget.appex"
 test -d "$appex"
 # Same inner-to-outer ad-hoc signing as the formal packaging workflow.
@@ -37,13 +37,17 @@ mount="$RUNNER_TEMP/community-rc-dmg"
 mkdir -p "$mount"
 hdiutil attach -readonly -nobrowse -mountpoint "$mount" build/rc/macos/TokenTrackerCommunity.dmg
 trap 'hdiutil detach "$mount"' EXIT
-app="$mount/TokenTracker Community.app"
+app="$mount/TokenOrbit.app"
 plist="$app/Contents/Info.plist"
 version="$(node -p "require('./package.json').version")"
 test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$plist")" = "$version"
 test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$plist")" = 'com.tokentracker.community'
+test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleName' "$plist")" = 'TokenOrbit'
+test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleDisplayName' "$plist")" = 'TokenOrbit'
+test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$plist")" = 'TokenTracker Community'
 test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleURLTypes:0:CFBundleURLSchemes:0' "$plist")" = 'tokentracker-community'
 test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Contents/PlugIns/TokenTrackerWidget.appex/Contents/Info.plist")" = 'com.tokentracker.community.widget'
+test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleDisplayName' "$app/Contents/PlugIns/TokenTrackerWidget.appex/Contents/Info.plist")" = 'TokenOrbit Widgets'
 for executable in "$app/Contents/MacOS/TokenTracker Community" "$app/Contents/Resources/EmbeddedServer/node" "$app/Contents/PlugIns/TokenTrackerWidget.appex/Contents/MacOS/TokenTrackerWidget"; do
   archs="$(lipo -archs "$executable")"
   [[ "$archs" == *arm64* && "$archs" == *x86_64* ]]

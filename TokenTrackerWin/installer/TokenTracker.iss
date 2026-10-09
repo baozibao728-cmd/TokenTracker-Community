@@ -24,7 +24,7 @@
   #define PublishDir "..\publish"
 #endif
 
-#define MyAppName "TokenTracker Community"
+#define MyAppName "TokenOrbit"
 #define MyAppPublisher "baozibao728-cmd"
 #define MyAppURL "https://github.com/baozibao728-cmd/TokenTracker-Community"
 #define MyAppExeName "TokenTrackerCommunity.exe"
@@ -80,12 +80,61 @@ Source: "{#PublishDir}\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubd
 
 [Icons]
 Name: "{userprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{userdesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{userdesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Check: ShouldCreateDesktopShortcut
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent
 
 [Code]
+function IsShortcutForThisInstallation(const ShortcutFile: String): Boolean;
+var
+  Shell, Shortcut: Variant;
+  Target: String;
+begin
+  { Read the actual target; a familiar filename alone does not prove ownership.
+    Never touch official TokenTracker shortcuts, or an unverified old link. }
+  Result := False;
+  if not FileExists(ShortcutFile) then exit;
+  try
+    Shell := CreateOleObject('WScript.Shell');
+    Shortcut := Shell.CreateShortcut(ShortcutFile);
+    Target := Shortcut.TargetPath;
+    Result := CompareText(ExpandFileName(Target),
+      ExpandFileName(ExpandConstant('{app}\{#MyAppExeName}'))) = 0;
+  except
+    Log('Legacy shortcut retained: ownership could not be verified.');
+  end;
+end;
+
+function ShouldCreateDesktopShortcut: Boolean;
+begin
+  { Recreate an owned old desktop entry through [Icons] so the new name is also
+    recorded for uninstall. A rename alone would leave an untracked shortcut. }
+  Result := WizardIsTaskSelected('desktopicon') or IsShortcutForThisInstallation(
+    ExpandConstant('{userdesktop}\TokenTracker Community.lnk'));
+end;
+
+procedure MigrateOwnedLegacyShortcut(const LegacyShortcut, NewShortcut: String);
+begin
+  if IsShortcutForThisInstallation(LegacyShortcut) and
+    IsShortcutForThisInstallation(NewShortcut) then
+    if not DeleteFile(LegacyShortcut) then
+      Log('Owned legacy shortcut could not be removed.');
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssPostInstall then
+  begin
+    MigrateOwnedLegacyShortcut(
+      ExpandConstant('{userprograms}\TokenTracker Community.lnk'),
+      ExpandConstant('{userprograms}\{#MyAppName}.lnk'));
+    MigrateOwnedLegacyShortcut(
+      ExpandConstant('{userdesktop}\TokenTracker Community.lnk'),
+      ExpandConstant('{userdesktop}\{#MyAppName}.lnk'));
+  end;
+end;
+
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 begin
   if CurUninstallStep = usPostUninstall then

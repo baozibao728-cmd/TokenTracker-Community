@@ -8,7 +8,7 @@ dotnet publish TokenTrackerWin/TokenTrackerWin.csproj -c Release -r win-x64 --se
 Copy-Item TokenTrackerWin/EmbeddedServer TokenTrackerWin/publish/EmbeddedServer -Recurse -Force
 $publish = (Resolve-Path TokenTrackerWin/publish).Path
 $info = [System.Diagnostics.FileVersionInfo]::GetVersionInfo("$publish/TokenTrackerCommunity.exe")
-if (($info.ProductVersion -split '\+')[0] -ne $version -or $info.ProductName -ne 'TokenTracker Community' -or $info.CompanyName -ne 'baozibao728-cmd') {
+if (($info.ProductVersion -split '\+')[0] -ne $version -or $info.ProductName -ne 'TokenOrbit' -or $info.CompanyName -ne 'baozibao728-cmd') {
     throw 'Native product version/identity mismatch.'
 }
 $out = Join-Path $repoRoot 'build/rc/windows'
@@ -29,8 +29,7 @@ New-Item $work -ItemType Directory -Force | Out-Null
 $portable = Join-Path $work 'portable'
 $installed = Join-Path $work 'installed'
 Expand-Archive $zip $portable
-$result = Start-Process -FilePath $setup -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-', '/TASKS=', "/DIR=`"$installed`"") -Wait -PassThru -WindowStyle Hidden
-if ($result.ExitCode -ne 0) { throw "Installer payload extraction failed: $($result.ExitCode)" }
+& "$PSScriptRoot/verify-windows-shortcuts.ps1" -Installer $setup -InstalledPath $installed
 foreach ($file in (Get-ChildItem $portable -File -Recurse)) {
     $relative = [IO.Path]::GetRelativePath($portable, $file.FullName)
     $target = Join-Path $installed $relative
@@ -52,7 +51,7 @@ node scripts/rc/verify-brand-icon.cjs windows dashboard/public/icon.svg TokenTra
     "$portable/TokenTrackerCommunity.exe" "$installed/TokenTrackerCommunity.exe" $setup
 node scripts/rc/verify-brand-icon.cjs windows-tray TokenTrackerWin/assets $portable $installed
 $uninstall = Get-ItemProperty 'HKCU:/Software/Microsoft/Windows/CurrentVersion/Uninstall/{638F4DBF-F2B4-4408-B654-5A5D0F5B7AC7}_is1'
-if ($uninstall.DisplayVersion -ne $version -or $uninstall.DisplayName -ne 'TokenTracker Community' -or $uninstall.Publisher -ne 'baozibao728-cmd') {
+if ($uninstall.DisplayVersion -ne $version -or $uninstall.DisplayName -ne 'TokenOrbit' -or $uninstall.Publisher -ne 'baozibao728-cmd') {
     throw 'Installer independent registration/version mismatch.'
 }
 Write-Output 'PACKAGE PASS Windows ZIP and Setup: complete equal file payloads, x64, self-contained, independent installer identity'

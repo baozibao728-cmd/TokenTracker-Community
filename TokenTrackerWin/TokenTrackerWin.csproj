@@ -23,7 +23,7 @@
     <ApplicationIcon>assets\trayicon.ico</ApplicationIcon>
     <!-- Keep in sync with package.json / project.yml on release. -->
     <Version>1.2.0</Version>
-    <Product>TokenTracker Community</Product>
+    <Product>TokenOrbit</Product>
     <Company>baozibao728-cmd</Company>
     <!-- App UI strings live in TrayStrings/NativeLocalization (no .resx), so the
          self-contained publish only needs English framework satellite resources;

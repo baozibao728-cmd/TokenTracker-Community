@@ -1,4 +1,4 @@
-# TokenTracker Community GNOME Shell extension
+# TokenOrbit GNOME Shell extension
 
 Puts today's tokens and cost in the GNOME top bar, next to a pixel Clawd,
 like the macOS menu bar item. Clicking it opens a dropdown modelled on the
@@ -9,7 +9,7 @@ link to the dashboard.
 It reads everything from the Linux desktop app's local server on
 `127.0.0.1:17681`, so the app has to be running. It sends nothing anywhere
 else. If something else holds 17681 when the app starts, the app falls back
-to a random port and the extension shows "TokenTracker isn't running". Free
+to a random port and the extension shows "TokenOrbit isn’t running". Free
 the port and restart the app.
 
 Community-maintained: the core team has no GNOME setup to test on, so

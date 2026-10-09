@@ -68,6 +68,13 @@ jobs:
       - name: Test dashboard limits preferences
         run: npm --prefix dashboard test -- src/hooks/use-limits-display-prefs.test.js
 
+      - name: Test registered product branding
+        run: >-
+          npm --prefix dashboard test --
+          src/lib/copy.branding.test.ts
+          src/ui/components/Shell.test.jsx
+          src/ui/components/Sidebar.test.jsx
+
       - name: Test sync preferences and OAuth relay isolation
         run: >-
           npm --prefix dashboard test --

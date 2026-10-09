@@ -1,7 +1,7 @@
 [package]
 name = "tokentracker-community-linux"
 version = "1.2.0"
-description = "TokenTracker Community Linux desktop client"
+description = "TokenOrbit Linux desktop client"
 authors = ["TokenTracker Community"]
 edition = "2021"
 license = "MIT"

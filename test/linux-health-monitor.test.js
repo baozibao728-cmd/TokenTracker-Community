@@ -116,7 +116,7 @@ test('Linux tray does not ship a click handler that cannot fire', () => {
   assert.doesNotMatch(tray, /\.on_tray_icon_event\(/);
   assert.doesNotMatch(tray, /MouseButton::/);
   // The menu is the only affordance, so it must still open the dashboard.
-  assert.match(tray, /Open Dashboard/);
+  assert.match(tray, /Open TokenOrbit Dashboard/);
   assert.match(tray, /Linux/, 'the platform limitation should be documented in place');
 });
 

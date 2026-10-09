@@ -2,14 +2,15 @@
 set -euo pipefail
 
 # =============================================================================
-# create-dmg.sh — Create a professional DMG installer for TokenTracker Community
-# Usage: ./create-dmg.sh [path/to/TokenTracker Community.app]
+# create-dmg.sh — Create a professional DMG installer for TokenOrbit
+# Usage: ./create-dmg.sh [path/to/TokenOrbit.app]
 # Set CI=true to skip Finder/AppleScript customization (headless mode)
 # =============================================================================
 
-APP_NAME="TokenTracker Community"
-VOLUME_NAME="TokenTracker Community"
+APP_BUNDLE_NAME="TokenOrbit"
+VOLUME_NAME="TokenOrbit"
 DMG_FILENAME="TokenTrackerCommunity.dmg"
+TEMP_DMG_NAME="TokenTracker Community-temp.dmg"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 BUILD_DIR="${PROJECT_DIR}/build"
@@ -32,22 +33,27 @@ if [[ -n "${1:-}" ]]; then
 else
     # Find latest build from DerivedData
     DERIVED="$HOME/Library/Developer/Xcode/DerivedData"
-    APP_PATH=$(find "$DERIVED" -maxdepth 4 -name "${APP_NAME}.app" -path "*/Build/Products/*" \
+    APP_PATH=$(find "$DERIVED" -maxdepth 4 -name "${APP_BUNDLE_NAME}.app" -path "*/Build/Products/*" \
         -not -path "*/Index.noindex/*" 2>/dev/null | head -1 || true)
 
     if [[ -z "$APP_PATH" ]]; then
         # Try our local build directory
-        APP_PATH="${BUILD_DIR}/${APP_NAME}.app"
+        APP_PATH="${BUILD_DIR}/${APP_BUNDLE_NAME}.app"
     fi
 fi
 
 if [[ ! -d "$APP_PATH" ]]; then
-    echo "Error: ${APP_NAME}.app not found at: $APP_PATH"
-    echo "Usage: $0 [path/to/${APP_NAME}.app]"
+    echo "Error: ${APP_BUNDLE_NAME}.app not found at: $APP_PATH"
+    echo "Usage: $0 [path/to/${APP_BUNDLE_NAME}.app]"
     exit 1
 fi
 
 echo "==> App source: $APP_PATH"
+
+# Regenerate beside this script so the packaged background follows the current
+# brand even when the historical checked-in PNG has not been refreshed yet.
+echo "==> Generating DMG background..."
+swift "$SCRIPT_DIR/generate_dmg_bg.swift"
 
 # --- Verify background image ---
 if [[ ! -f "$BG_IMAGE" ]]; then
@@ -64,7 +70,7 @@ fi
 mkdir -p "$BUILD_DIR"
 
 # --- Clean up previous artifacts ---
-TEMP_DMG="${BUILD_DIR}/${APP_NAME}-temp.dmg"
+TEMP_DMG="${BUILD_DIR}/${TEMP_DMG_NAME}"
 FINAL_DMG="${BUILD_DIR}/${DMG_FILENAME}"
 rm -f "$TEMP_DMG" "$FINAL_DMG"
 
@@ -75,7 +81,7 @@ trap 'rm -rf "$STAGING"' EXIT
 echo "==> Staging in $STAGING"
 
 # Copy app
-cp -a "$APP_PATH" "$STAGING/${APP_NAME}.app"
+cp -a "$APP_PATH" "$STAGING/${APP_BUNDLE_NAME}.app"
 
 # Create Applications symlink
 ln -s /Applications "$STAGING/Applications"
@@ -87,7 +93,7 @@ if $HAS_BG; then
 fi
 
 # --- Calculate DMG size ---
-APP_SIZE_KB=$(du -sk "$STAGING/${APP_NAME}.app" | cut -f1)
+APP_SIZE_KB=$(du -sk "$STAGING/${APP_BUNDLE_NAME}.app" | cut -f1)
 DMG_SIZE_KB=$(( APP_SIZE_KB + 20480 ))  # app + 20MB headroom
 echo "==> App size: ${APP_SIZE_KB}KB, DMG allocation: ${DMG_SIZE_KB}KB"
 
@@ -130,7 +136,7 @@ if [[ "${CI:-}" == "true" ]]; then
         --window-pos 200 120 \
         --window-size "$WIN_W" "$WIN_H" \
         --icon-size "$ICON_SIZE" \
-        --icon "${APP_NAME}.app" "$APP_X" "$APP_Y" \
+        --icon "${APP_BUNDLE_NAME}.app" "$APP_X" "$APP_Y" \
         --app-drop-link "$APPS_X" "$APPS_Y" \
         "${BG_ARGS[@]}" \
         "$FINAL_DMG" \
@@ -184,7 +190,7 @@ tell application "Finder"
         set arrangement of viewOptions to not arranged
         set icon size of viewOptions to $ICON_SIZE
         ${BG_CLAUSE}
-        set position of item "${APP_NAME}.app" of container window to {${APP_X}, ${APP_Y}}
+        set position of item "${APP_BUNDLE_NAME}.app" of container window to {${APP_X}, ${APP_Y}}
         set position of item "Applications" of container window to {${APPS_X}, ${APPS_Y}}
         close
         open

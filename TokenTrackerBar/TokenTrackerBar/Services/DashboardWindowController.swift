@@ -166,7 +166,7 @@ final class DashboardWindowController: NSObject, NSWindowDelegate, WKNavigationD
             defer: false
         )
         window.minSize = NSSize(width: 800, height: 600)
-        window.title = "TokenTracker"
+        window.title = Strings.appTitle
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
         let toolbar = NSToolbar(identifier: "DashboardToolbar")

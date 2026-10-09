@@ -1,4 +1,4 @@
-# TokenTracker Community for Windows (tray app)
+# TokenOrbit for Windows (tray app)
 
 The Windows counterpart of the macOS menu-bar app (`TokenTrackerBar/`). It is a
 thin native shell around the same cross-platform pieces — the Node CLI, the local

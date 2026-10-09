@@ -151,6 +151,6 @@ find "$TT_DIR/node_modules" -type d \( \
   -name ".github" \
 \) -exec rm -rf {} + 2>/dev/null || true
 
-printf 'Bundled TokenTracker Community Linux runtime at %s\n' "$EMBED_DIR"
+printf 'Bundled TokenOrbit Linux runtime at %s\n' "$EMBED_DIR"
 printf 'Node: %s\n' "$("$EMBED_DIR/node" -p 'process.versions.node')"
 printf 'Size: %s\n' "$(du -sh "$EMBED_DIR" | cut -f1)"
