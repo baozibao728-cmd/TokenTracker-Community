@@ -4,7 +4,8 @@
 
 - Base main: `5c78cf918ea165c5c054adca3a6d799d818289b0`.
 - Branch: `codex/nickname-community-source-breakdown`.
-- Fixed product / packaging source: `6b9999998db3f2dddcef35434a89527b9f4934fd`.
+- Current fixed product / packaging source: `b1c53c7469255d26d590a6bb5359db6168b6369c` (nickname shared-state review fix).
+- Initial candidate source: `6b9999998db3f2dddcef35434a89527b9f4934fd`; its CI, packages and download verification below remain historical evidence, not validation of the follow-up fix.
 - Initial product and screenshot source: `3bdab4cf25ba4b793fe441b8402ea17b699f97a5`. Follow-up commits normalize PostgreSQL catalog comparison and express the exact trillion unit as `10n ** 12n`; neither changes RPC output or the pictured layout.
 - Draft PR: [#12](https://github.com/baozibao728-cmd/TokenTracker-Community/pull/12).
 - Package version remains **1.2.0**. Later report/screenshot commits are documentation; they must not replace the package source SHA.
@@ -38,7 +39,7 @@ The existing HTTP `no-store`, short in-memory cache, account/session/community/p
 
 Reviewed committed Git-blob SHA-256 (LF): new migration `6a02d576c8266f4e217fb6c8dfa8f9afa09717f01149b274f87118574bf090cf`; rollback companion `bae8ed90c180cd0c8937ec2240f41a56e64e7c91c05858efff52cca1fa0a5381`. Neither artifact has been applied to the hosted project.
 
-## Local targeted validation
+## Initial local targeted validation — historical evidence
 
 | Check | Actual result |
 | --- | --- |
@@ -60,12 +61,12 @@ The first sandboxed Vitest attempt failed before collecting tests (`EPERM realpa
 
 Historical Dashboard baseline failures (`period changes cache timeout`, `Preloaded User missing`) remain recorded in earlier reports. Both affected selected global tests passed in this run; this is not a claim that those historical intermittent failures were fixed. The full Dashboard suite was not required or run locally.
 
-## CI and fixed-source build-only RC
+## Initial candidate CI and fixed-source RC — historical evidence
 
-- Final-source ordinary CI: [38117408007](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/38117408007) — **4/4 PASS** (Node/frontend/build, Windows, macOS unit tests, Linux Rust).
+- Initial-source ordinary CI: [38117408007](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/38117408007) — **4/4 PASS** (Node/frontend/build, Windows, macOS unit tests, Linux Rust).
 - PR event head: `6b9999998db3f2dddcef35434a89527b9f4934fd`; PR merge ref: `d5393bf226452e1e7c4300a2ff755946bdbe6727` (ordinary CI checks out the PR merge ref).
 - Exact-source RC: [38117407991](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/38117407991) — **5/5 PASS** (candidate, Windows, macOS, Linux, delivery). Every platform explicitly checks out and verifies `6b9999998db3f2dddcef35434a89527b9f4934fd`, not the ordinary-CI merge ref.
-- Final-source isolated PostgreSQL **15.18** upgrade/rollback regression: **5/5 PASS** ([job 114404961353](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/38117408007/job/114404961353)). It verifies Foundation catalog/data fingerprints, unchanged RPC ACL, source/precision/period/page/permission assertions and byte-equivalent historical responses after rollback. This is isolated runner data, not a cloud fingerprint or cloud deployment result.
+- Initial-source isolated PostgreSQL **15.18** upgrade/rollback regression: **5/5 PASS** ([job 114404961353](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/38117408007/job/114404961353)). It verifies Foundation catalog/data fingerprints, unchanged RPC ACL, source/precision/period/page/permission assertions and byte-equivalent historical responses after rollback. This is isolated runner data, not a cloud fingerprint or cloud deployment result.
 - Eight-file artifact download and byte verification: **PASS**. The original artifact container matches GitHub's server digest; a new extraction directory contains exactly the six packages and two original metadata files. `scripts/rc/artifacts.cjs verify` and an independent eight-file inventory/hash check pass. Manifest version is **1.2.0**, and both `source_sha` and `checkout_sha` equal `6b9999998db3f2dddcef35434a89527b9f4934fd`. No previous candidate artifact is used as evidence for this source.
 
 | Platform | Actual package checks in the fixed-source RC | Runtime boundary |
@@ -109,7 +110,7 @@ Screenshots are isolated browser renders of the **actual React components** with
 
 - Before source: `5c78cf918ea165c5c054adca3a6d799d818289b0`.
 - After source: `3bdab4cf25ba4b793fe441b8402ea17b699f97a5`.
-- The account components, Community component, shared columns and copy are unchanged between capture source and final package source. The later formatter edit changes only equivalent trillion-unit notation; screenshots are still attributed to their actual capture source.
+- The account layout components, Community component, shared columns and copy remain as pictured. The follow-up nickname hook/AuthContext behavior differs from the capture source and is verified by its new integration regressions; old screenshots do not prove that repair. The earlier formatter edit changes only equivalent trillion-unit notation. All captures retain their actual source attribution.
 - Inventory, source-file digests, image SHA-256, viewport, scroll measurements and network guard: [evidence.json](docs/validation/nickname-community-sources/evidence.json). External requests observed: **0**. Temporary capture harness was removed.
 
 | View | Before | After |
@@ -120,7 +121,45 @@ Screenshots are isolated browser renders of the **actual React components** with
 
 The account fixture omits the native cloud-sync control; unchanged sync behavior is supported by targeted component/upload-gate tests, not claimed as a GUI toggle test. Fixture dates and values illustrate layout; period boundaries are verified separately by the isolated database regression.
 
-An independent read-only evidence review found no actionable product defect, rehashed all six PNGs against `evidence.json` successfully and checked nickname payload isolation, source-only SQL aggregation and historical rollback compatibility. This is supplementary review, not a replacement for CI, deployment or native runtime evidence.
+The initial read-only evidence review rehashed all six PNGs against `evidence.json` successfully and checked nickname payload isolation, source-only SQL aggregation and historical rollback compatibility. A later independent review identified the shared nickname race documented below; its absence from the initial component-only review is not treated as a pass for that path. Review is supplementary evidence, not a replacement for CI, deployment or native runtime evidence.
+
+## Follow-up review: shared nickname state isolation
+
+Review identified a P2 in the reused AuthContext path: after a successful nickname POST, the extra profile GET could complete after logout/account change and overwrite the shared sidebar name. An account with no saved nickname could also inherit the previous account's cached name. A failed extra GET left the sidebar's old name despite a successful save.
+
+The fix resets shared nickname/resolution state at existing user/session boundaries and guards reads with the existing session epoch, user ID and an in-memory request sequence. Confirmed save results invalidate older reads and immediately update both settings and shared state with the server-returned normalized `display_name`; a missing response field retains the validated submitted-name fallback. Ordinary explicit profile refresh remains supported. Authentication, OAuth, persistent logout, privacy settings, Community cache and cloud-sync preference mechanisms are unchanged.
+
+| Targeted evidence | Actual result |
+| --- | --- |
+| Old `55e4421c` implementation, real Provider + AccountSection | **6 FAIL / 1 PASS** across the initial seven tests: shared-state race, account fallback, normalized-save and prior-GET failures reproduced; same-session normal refresh passed |
+| Final follow-up integration suite | **8/8 PASS**, including direct A/B switch, logout before late completion, same-ID new session, B without custom name, B read failure, server-normalized save without another GET, normal refresh and pre-save GET invalidation |
+| Nickname / Auth / session epoch / Community cache / upload-gate group | **91/91 PASS**, 12 files; the eight new integration regressions use the real Provider and settings path with synthetic transport only |
+| Sidebar and cloud-sync preferences | **13/13 PASS** |
+| Selected global leaderboard suite | **15/16 PASS**; the known period-change cache timeout recurred. No global tests, timing limits or product ranking logic were changed. The historical `Preloaded User missing` limitation is also retained |
+| Typecheck / production build / version / architecture / staged credential-path / whitespace | **PASS** |
+
+The initial sandboxed runner failed before collection (`EPERM realpath`), then the old-code red run succeeded outside that sandbox. The first post-fix combined run had one test-harness container-query failure after its shared-state assertion passed; the query was corrected and the final 91-test group rerun passed. No assertions or production behavior were weakened. A separate read-only review found no blocker in the new isolation logic; its suggested B-read-failure case is included in the eighth test.
+
+New-source ordinary CI [38121270532](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/38121270532) is **4/4 PASS**. Event head is `b1c53c7469255d26d590a6bb5359db6168b6369c`; actual checkout from the completed Node job log is PR merge ref `cbd3771811c05c009ab5abe8d305667a3b08c009`. The new nickname integration suite is explicitly included. Isolated runner PG15 upgrade/rollback remains **5/5 PASS**; no hosted resources were touched.
+
+Fixed-source three-platform RC [38121270600](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/38121270600) is **5/5 PASS**. The candidate job log records actual checkout `b1c53c7469255d26d590a6bb5359db6168b6369c`; all platform jobs enforce that same SHA and retain the existing individual package-content checks. No new native installation or cloud operation is authorized in this follow-up.
+
+New-source delivery artifact: [11695862640](https://github.com/baozibao728-cmd/TokenTracker-Community/actions/runs/38121270600/artifacts/11695862640), `community-rc-b1c53c7469255d26d590a6bb5359db6168b6369c`. Original eight-file download verification completed at **2026-10-11 07:41:12 UTC: PASS**. The original Actions ZIP is **499,065,065 bytes**; its local SHA-256 matches GitHub's server digest, `c065559395c8af86a55b49d3698f32b98ee6283d6758697d47714c76bf1b6d6c`. This container hash is separate from the deliverable hashes below.
+
+The archive has exactly the expected eight flat filenames. The guarded artifact verifier and an independent inventory/hash comparison both pass. Manifest `source_sha` and `checkout_sha` equal `b1c53c7469255d26d590a6bb5359db6168b6369c`; version remains **1.2.0**. `SHA256SUMS` matches all six original package bytes, and both original metadata files are independently hashed. No package or metadata was rebuilt, signed, recompressed or rewritten during verification. Original files, the verified ZIP and the safe inventory are retained locally outside Git; initial-candidate packages remain historical evidence only.
+
+| New-source original file | Bytes | SHA-256 |
+| --- | ---: | --- |
+| TokenTrackerCommunity.dmg | 61,893,808 | `2c1ce1224547b85e9d8215afa408dd54f9ea8c8d8b42bc754236eec83a327cd0` |
+| TokenTracker-Community-win-x64.zip | 114,959,075 | `0ee9568ac55205c3989872444648c1a49a3a8c40380cfc2c46ca41537c17f0b6` |
+| TokenTracker-Community-Setup.exe | 80,794,954 | `9e7d68f3b521f1599a58e47ed8dfb1806108c25b2c2de2b9a0ffa74358ba7984` |
+| TokenTracker-Community-linux-x86_64.AppImage | 127,470,072 | `738b34749b390180689f6044f2fbe592d5fb35324fedf90519015bebde97bea5` |
+| TokenTracker-Community-linux-x86_64.deb | 56,989,050 | `39fd11e9d61a70fe236b871410a135eab4e7adb91ad40bd040073fa441d2bbb7` |
+| TokenTracker-Community-linux-x86_64.rpm | 56,954,657 | `26051dcdedcf0470ffd5c85fad26d500cc29bdf9d2cbc8c1c2f273a8fd4d5779` |
+| SHA256SUMS | 615 | `cde44665b320fd634a653c750e46a8ecd0b6ca74c607a1122ae6b0480f290448` |
+| RC_MANIFEST.json | 1,598 | `8c746f51670e961417511196f446fb54b8bceef323b0f0944e932079271bd00a` |
+
+Architectures remain macOS arm64 + x86_64, Windows x86_64 and Linux x86_64. BUILD/PACKAGE and download-byte verification do not establish native runtime or hosted migration acceptance. The follow-up changes no backend files; committed migration/rollback hashes above remain unchanged.
 
 ## Proposed deployment, compatibility and recovery — NOT EXECUTED
 
