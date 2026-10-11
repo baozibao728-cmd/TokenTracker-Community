@@ -53,7 +53,8 @@ async function foundationDataFingerprint() {
 async function communityRpcContract() {
   return query(`SELECT pg_get_userbyid(p.proowner) AS owner,
       p.proargtypes::regtype[]::text AS argument_types,p.proargnames,
-      p.proargdefaults,p.provolatile,p.prosecdef,p.proconfig,p.proacl::text AS acl,
+      pg_get_expr(p.proargdefaults,0) AS argument_defaults,
+      p.provolatile,p.prosecdef,p.proconfig,p.proacl::text AS acl,
       pg_get_function_identity_arguments(p.oid) AS identity_arguments
     FROM pg_proc p WHERE p.oid='public.community_leaderboard(uuid,uuid,text,integer,integer,uuid[],timestamp with time zone)'::regprocedure`);
 }
