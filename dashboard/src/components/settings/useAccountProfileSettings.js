@@ -258,15 +258,16 @@ function useNameActions(state, mutateProfile, refreshDisplayName) {
     const saved = await mutateProfile({ display_name: trimmed }, {
       label: "save display name",
       onError: () => state.setNameError(copy("settings.account.displayNameSaveFailed")),
-      onSuccess: () => {
-        state.setCustomDisplayName(trimmed);
+      onSuccess: (response) => {
+        const confirmedName = typeof response?.display_name === "string" ? response.display_name : trimmed;
+        state.setCustomDisplayName(confirmedName);
         state.setEditingName(false);
         state.setNameError(null);
         // Propagate to the shared auth-context displayName so the sidebar
         // avatar/name updates immediately, without a full page reload. The
         // leaderboard self-name comes from a server snapshot and updates on
         // its own refresh cadence.
-        refreshDisplayName?.();
+        refreshDisplayName?.(confirmedName);
       },
     });
     if (!saved) state.setNameError(copy("settings.account.displayNameSaveFailed"));

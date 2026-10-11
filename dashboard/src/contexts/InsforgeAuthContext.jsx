@@ -89,6 +89,9 @@ export function InsforgeAuthProvider({ children }) {
   const userRef = useRef(null);
   const sessionEpochRef = useRef(0);
   const [sessionEpoch, setSessionEpoch] = useState(0);
+  const [cloudDisplayName, setCloudDisplayName] = useState(null);
+  const [displayNameResolved, setDisplayNameResolved] = useState(false);
+  const displayNameRequestRef = useRef(0);
 
   const commitUser = useCallback((nextUser, { newSession = false } = {}) => {
     const previousUser = userRef.current;
@@ -101,6 +104,11 @@ export function InsforgeAuthProvider({ children }) {
     if (changed || newSession || (previousId && !nextId)) {
       sessionEpochRef.current += 1;
       setSessionEpoch(sessionEpochRef.current);
+      // Clear shared identity state at the session boundary, before another
+      // account can render or an older profile read can complete.
+      displayNameRequestRef.current += 1;
+      setCloudDisplayName(null);
+      setDisplayNameResolved(false);
     }
     userRef.current = nextUser;
     setUser(nextUser);
@@ -290,44 +298,40 @@ export function InsforgeAuthProvider({ children }) {
   }, [client]);
 
   // Unified display name: cloud custom name > OAuth provider name.
-  // Fetched once when user signs in; updated via refreshDisplayName().
-  const [cloudDisplayName, setCloudDisplayName] = useState(null);
-  const [displayNameResolved, setDisplayNameResolved] = useState(false);
+  // A successful save can supply its confirmed name without a second GET.
   const authDisplayName = useMemo(() => pickDisplayNameFromUser(user), [user]);
+  const userId = user?.id || null;
 
-  useEffect(() => {
-    if (!user || !client) {
-      setCloudDisplayName(null);
-      setDisplayNameResolved(false);
+  const refreshDisplayName = useCallback(async (confirmedName) => {
+    const isCurrentSession = () => userRef.current?.id === userId && sessionEpochRef.current === sessionEpoch;
+    if (!client || !userId || !isCurrentSession()) return;
+    const request = ++displayNameRequestRef.current;
+    const isCurrent = () => isCurrentSession() && displayNameRequestRef.current === request;
+    if (typeof confirmedName === "string") {
+      setCloudDisplayName(confirmedName || null);
+      setDisplayNameResolved(true);
       return;
     }
-    let active = true;
-    (async () => {
-      try {
-        const token = await resolveInsforgeClientAccessToken(client);
-        if (!active || !token) { if (active) setDisplayNameResolved(true); return; }
-        const data = await getPublicVisibility({ accessToken: token });
-        if (active && data?.display_name) setCloudDisplayName(data.display_name);
-      } catch { /* ignore */ }
-      if (active) setDisplayNameResolved(true);
-    })();
-    return () => { active = false; };
-  }, [user, client]);
+    try {
+      const token = await resolveInsforgeClientAccessToken(client);
+      if (!token || !isCurrent()) return;
+      const data = await getPublicVisibility({ accessToken: token });
+      if (isCurrent()) setCloudDisplayName(data?.display_name || null);
+    } catch { /* keep the current session's name on read failure */ }
+    finally {
+      if (isCurrent()) setDisplayNameResolved(true);
+    }
+  }, [client, userId, sessionEpoch]);
+
+  useEffect(() => {
+    void refreshDisplayName();
+    return () => { displayNameRequestRef.current += 1; };
+  }, [refreshDisplayName]);
 
   // Don't flash the OAuth name before cloud name resolves
   const displayName = displayNameResolved
     ? (cloudDisplayName || authDisplayName)
     : "";
-
-  const refreshDisplayName = useCallback(async () => {
-    if (!client) return;
-    try {
-      const token = await resolveInsforgeClientAccessToken(client);
-      if (!token) return;
-      const data = await getPublicVisibility({ accessToken: token });
-      if (data?.display_name) setCloudDisplayName(data.display_name);
-    } catch { /* ignore */ }
-  }, [client]);
 
   const value = useMemo(() => {
     if (!isCloudInsforgeConfigured() || !client) {

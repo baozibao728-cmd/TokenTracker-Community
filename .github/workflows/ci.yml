@@ -100,7 +100,10 @@ jobs:
           src/lib/__tests__/leaderboard-columns.test.js
 
       - name: Test nickname and independent profile preferences
-        run: npm --prefix dashboard test -- src/components/settings/AccountSection.test.jsx
+        run: >-
+          npm --prefix dashboard test --
+          src/components/settings/AccountSection.test.jsx
+          src/contexts/__tests__/InsforgeAuthContext.display-name.test.jsx
 
       - name: Install isolated PostgreSQL validation dependencies
         run: npm ci --prefix backend/bootstrap --ignore-scripts --no-audit --no-fund
