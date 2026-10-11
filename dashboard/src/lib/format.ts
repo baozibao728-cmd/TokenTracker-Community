@@ -52,7 +52,7 @@ export function formatCompactNumber(
 ) {
   const integer = formatIntegerUnits(value, decimals, [
     { divisor: 1000n, suffix: thousandSuffix }, { divisor: 1000000n, suffix: millionSuffix },
-    { divisor: 1000000000n, suffix: billionSuffix }, { divisor: 1000000000000n, suffix: trillionSuffix },
+    { divisor: 1000000000n, suffix: billionSuffix }, { divisor: 10n ** 12n, suffix: trillionSuffix },
   ]);
   if (integer !== null) return integer;
   const n = Number(String(value));
@@ -106,7 +106,7 @@ export function formatChineseNumber(
 ) {
   const integer = formatIntegerUnits(value, decimals, [
     { divisor: 10000n, suffix: "万" }, { divisor: 100000000n, suffix: "亿" },
-    { divisor: 1000000000000n, suffix: "万亿" },
+    { divisor: 10n ** 12n, suffix: "万亿" },
   ]);
   if (integer !== null) return integer;
   const n = Number(String(value));
