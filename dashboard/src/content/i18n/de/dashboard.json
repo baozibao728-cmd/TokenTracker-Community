@@ -474,6 +474,7 @@
   "communities.refreshing": "Wird aktualisiert…",
   "communities.rank_members": "{{count}} Mitglieder",
   "communities.rank_sync_hint": "Community-Ranglisten verwenden bereits mit der Cloud synchronisierte Nutzung. Aktiviere die Cloud-Synchronisierung in den Einstellungen, damit deine aktuelle Nutzung einfließt.",
+  "communities.rank_breakdown_unavailable": "Die Tool-Aufschlüsselung ist für dieses Backend noch nicht verfügbar. Token-Gesamtzahl und Rangfolge bleiben unverändert.",
   "communities.created_notice": "Community erstellt.",
   "communities.joined_notice": "Community beigetreten.",
   "communities.memberships": "Communitys verwalten",

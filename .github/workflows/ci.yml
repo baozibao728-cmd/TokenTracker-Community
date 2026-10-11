@@ -96,6 +96,20 @@ jobs:
           src/contexts/__tests__/InsforgeAuthContext.session-epoch.test.jsx
           src/pages/CommunityPages.test.jsx
           src/pages/CommunityLeaderboardPage.test.jsx
+          src/lib/token-format.test.js
+          src/lib/__tests__/leaderboard-columns.test.js
+
+      - name: Test nickname and independent profile preferences
+        run: npm --prefix dashboard test -- src/components/settings/AccountSection.test.jsx
+
+      - name: Install isolated PostgreSQL validation dependencies
+        run: npm ci --prefix backend/bootstrap --ignore-scripts --no-audit --no-fund
+
+      - name: Verify additive Community source migration and rollback on PostgreSQL 15
+        run: |
+          npm --prefix backend/community run check:migration
+          npm --prefix backend/community run check:source-breakdown
+          npm --prefix backend/community run test:source-breakdown
 
       # The bot character's renderer and its cross-host contracts live on the dashboard
       # side, so npm test alone does not cover them; test/bot-parity.test.js only pins

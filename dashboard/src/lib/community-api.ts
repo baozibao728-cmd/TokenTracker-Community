@@ -52,6 +52,11 @@ export type CommunityDetail = Quotas & {
 export type CommunityRank = {
   user_id: string; display_name: string; avatar_url: string | null;
   total_tokens: string; rank: number;
+  // Optional during additive RPC rollout; absence must never become fake zero.
+  gpt_tokens?: string; claude_tokens?: string; gemini_tokens?: string;
+  cursor_tokens?: string; kiro_tokens?: string; copilot_tokens?: string;
+  kimi_tokens?: string; opencode_tokens?: string; openclaw_tokens?: string;
+  hermes_tokens?: string; other_tokens?: string;
 };
 export type CommunityLeaderboard = {
   ok: true; community_id: string; period: "week" | "month" | "total";

@@ -9,6 +9,7 @@ import { clearAllCommunityQueryCache, fetchCommunityQuery, invalidateCommunityQu
 import { communityLeaderboardPath, readCommunityLeaderboardNavigation } from "../lib/community-leaderboard-navigation.js";
 import { CommunityApiError } from "../lib/community-api";
 import { copy } from "../lib/copy";
+import { LEADERBOARD_TOKEN_COLUMNS } from "../lib/leaderboard-columns.js";
 import * as api from "../lib/api";
 
 const auth = vi.hoisted(() => ({ enabled: true, signedIn: true, loading: false, sessionEpoch: 1, user: { id: "user-a" }, getAccessToken: vi.fn() }));
@@ -19,8 +20,9 @@ const memberships = [
   { id: "community-b", name: "Joined circle", is_owner: false },
 ];
 const list = { communities: memberships, joined_count: 2, owned_count: 1, limits: { max_owned: 10, max_joined: 20, max_members: 2000 } };
-const me = { user_id: "user-a", display_name: "Ada", rank: 4, total_tokens: "9007199254740993", avatar_url: null };
-const board = { community_id: "community-a", period: "week", rows: [{ ...me, rank: 1 }, { user_id: "user-b", display_name: "Bea", rank: 1, total_tokens: "9007199254740993" }, { user_id: "user-c", display_name: "Zero", rank: 2, total_tokens: "0" }], me, member_count: 41, ranked_count: 41, from_day: "2026-09-28", to_day: "2026-10-04", basis: "client_reported_tokens", automatic_anticheat: false };
+const zeroSources = Object.fromEntries(LEADERBOARD_TOKEN_COLUMNS.map(({ key }) => [key, "0"]));
+const me = { ...zeroSources, gpt_tokens: "9007199254740993", user_id: "user-a", display_name: "Ada", rank: 4, total_tokens: "9007199254740993", avatar_url: null };
+const board = { community_id: "community-a", period: "week", rows: [{ ...me, rank: 1 }, { ...me, user_id: "user-b", display_name: "Bea", rank: 1 }, { ...zeroSources, user_id: "user-c", display_name: "Zero", rank: 2, total_tokens: "0" }], me, member_count: 41, ranked_count: 41, from_day: "2026-09-28", to_day: "2026-10-04", basis: "client_reported_tokens", automatic_anticheat: false };
 const deferred = () => { let resolve; let reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; };
 
 function Navigation() {
@@ -61,9 +63,9 @@ describe("Unified community leaderboard navigation and server data", () => {
     expect(screen.getByRole("heading", { name: "Joined circle" })).toBeInTheDocument();
     expect(api.getCommunityLeaderboard).toHaveBeenCalledWith(expect.objectContaining({ communityId: "community-b", period: "month", limit: 10, offset: 10 }));
   });
-  it("renders only API rank/user/token columns, dense ties, zero usage and exact bigint", async () => {
+  it("renders shared tool columns, API dense ties, real zero usage and exact bigint", async () => {
     render(tree()); const table = await ready();
-    expect(within(table).getAllByRole("columnheader")).toHaveLength(3);
+    expect(within(table).getAllByRole("columnheader")).toHaveLength(3 + LEADERBOARD_TOKEN_COLUMNS.length);
     const rows = within(table).getAllByRole("row").slice(1);
     expect(rows.map(row => within(row).getAllByRole("cell")[0].textContent)).toEqual(["1", "1", "2"]);
     expect(rows[0]).toHaveAttribute("data-current-user", "true");
@@ -71,7 +73,39 @@ describe("Unified community leaderboard navigation and server data", () => {
     expect(screen.getByText("#4")).toBeInTheDocument(); // me comes from the API, not row position.
     expect(screen.queryByText(/Top \d+%/)).not.toBeInTheDocument();
     expect(screen.getAllByText(new Intl.NumberFormat().format(BigInt(me.total_tokens))).length).toBeGreaterThan(0);
-    expect(within(table).getAllByRole("columnheader").map(node => node.textContent)).toEqual([copy("leaderboard.column.rank"), copy("leaderboard.column.user"), copy("communities.tokens")]);
+    expect(within(table).getAllByRole("columnheader").map(node => node.textContent)).toEqual([copy("leaderboard.column.rank"), copy("leaderboard.column.user"), copy("leaderboard.column.total"), ...LEADERBOARD_TOKEN_COLUMNS.map(column => copy(column.copyKey))]);
+    expect(rows[0].querySelector('[data-column-key="gpt_tokens"]')).toHaveAttribute("title", expect.stringContaining("9,007,199,254,740,993"));
+    expect([...rows[2].querySelectorAll("[data-column-key]")].map(cell => cell.textContent)).toEqual(LEADERBOARD_TOKEN_COLUMNS.map(() => "0"));
+    expect(within(table).queryByText(copy("leaderboard.column.est_cost"))).not.toBeInTheDocument();
+  });
+  it("displays each source field without inferring tools from model or user names", async () => {
+    const sources = Object.fromEntries(LEADERBOARD_TOKEN_COLUMNS.map(({ key }, index) => [key, String(index + 1)]));
+    const row = { ...me, ...sources, display_name: "Claude GPT Gemini", total_tokens: "66" };
+    api.getCommunityLeaderboard.mockResolvedValue({ ...board, rows: [row], me: row });
+    render(tree()); const table = await ready();
+    const cells = within(table).getAllByRole("row")[1].querySelectorAll("[data-column-key]");
+    expect([...cells].map(cell => cell.textContent)).toEqual(LEADERBOARD_TOKEN_COLUMNS.map((_, index) => String(index + 1)));
+    expect(within(table).getByText("Claude GPT Gemini")).toBeInTheDocument();
+    expect(table.parentElement).toHaveClass("overflow-x-auto");
+  });
+  it("uses the global board's saved source column order", async () => {
+    const order = LEADERBOARD_TOKEN_COLUMNS.map(column => column.key).reverse();
+    window.localStorage.setItem("tokentracker.leaderboard.columnOrder.v1", JSON.stringify(order));
+    try {
+      render(tree()); const table = await ready();
+      expect([...table.querySelectorAll("thead [data-column-key]")].map(cell => cell.dataset.columnKey)).toEqual(order);
+      expect([...table.querySelectorAll("tbody tr:first-child [data-column-key]")].map(cell => cell.dataset.columnKey)).toEqual(order);
+    } finally {
+      window.localStorage.removeItem("tokentracker.leaderboard.columnOrder.v1");
+    }
+  });
+  it.each([undefined, "bad", "9007199254740992"])("does not invent zero breakdowns from old or inconsistent payloads (%s)", async (gpt_tokens) => {
+    const row = { ...me, gpt_tokens };
+    api.getCommunityLeaderboard.mockResolvedValue({ ...board, rows: [row], me: row });
+    render(tree()); const table = await ready();
+    expect(await screen.findByText(copy("communities.rank_breakdown_unavailable"))).toBeInTheDocument();
+    expect([...within(table).getAllByRole("row")[1].querySelectorAll("[data-column-key]")].map(cell => cell.textContent)).toEqual(LEADERBOARD_TOKEN_COLUMNS.map(() => "-"));
+    expect(screen.getAllByText("9,007,199,254,740,993").length).toBeGreaterThan(0);
   });
   it("resets pagination on period/community changes and restores browser history", async () => {
     render(tree(communityLeaderboardPath("community-a", { page: 2 }))); await ready();

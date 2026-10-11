@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Check, Copy, LogOut } from "lucide-react";
 import { copy } from "../../lib/copy";
 import { useAccountProfileSettings } from "./useAccountProfileSettings.js";
-import { PublicProfileFields, SignedOutAccountSection } from "./AccountSectionParts.jsx";
+import { DisplayNameField, PublicProfileFields, SignedOutAccountSection } from "./AccountSectionParts.jsx";
 import { SectionCard, SettingsRow, ToggleSwitch } from "./Controls.jsx";
 
 export function AccountSection() {
@@ -18,14 +18,22 @@ export function AccountSection() {
       subtitle={settings.email || (settings.name.customDisplayName || settings.name.displayName)}
       action={<SignOutButton onSignOut={settings.signOut} />}
     >
+      <DisplayNameField name={settings.name} />
       <UserIdRow userId={settings.userId} />
       <CloudSyncRow settings={settings} />
       <PublicProfileToggleRow
-        checked={settings.publicProfileOn}
-        disabled={settings.profileLoading || settings.profileSaving}
+        checked={Boolean(settings.publicProfileOn)}
+        disabled={settings.profileLoading || settings.profileLoadFailed || settings.profileSaving}
+        loadFailed={settings.profileLoadFailed}
         onChange={settings.handlePublicProfileToggle}
       />
-      <PublicProfileDetails visible={settings.publicProfileOn} name={settings.name} github={settings.github} />
+      <AnonymousToggleRow
+        checked={Boolean(settings.name.anonymousOn)}
+        disabled={settings.profileLoading || settings.profileLoadFailed || settings.profileSaving}
+        loadFailed={settings.profileLoadFailed}
+        onChange={settings.name.handleAnonymousToggle}
+      />
+      <PublicProfileDetails visible={settings.publicProfileOn} github={settings.github} />
     </SectionCard>
   );
 }
@@ -98,11 +106,11 @@ function CloudSyncRow({ settings }) {
   );
 }
 
-function PublicProfileToggleRow({ checked, disabled, onChange }) {
+function PublicProfileToggleRow({ checked, disabled, loadFailed, onChange }) {
   return (
     <SettingsRow
       label={copy("settings.account.publicProfile")}
-      hint={copy("settings.account.publicProfileHint")}
+      hint={copy(loadFailed ? "settings.account.profileLoadFailed" : "settings.account.publicProfileHint")}
       control={
         <ToggleSwitch
           checked={checked}
@@ -115,7 +123,24 @@ function PublicProfileToggleRow({ checked, disabled, onChange }) {
   );
 }
 
-function PublicProfileDetails({ visible, name, github }) {
+function AnonymousToggleRow({ checked, disabled, loadFailed, onChange }) {
+  return (
+    <SettingsRow
+      label={copy("settings.account.anonymousMode")}
+      hint={copy(loadFailed ? "settings.account.profileLoadFailed" : "settings.account.anonymousModeHint")}
+      control={
+        <ToggleSwitch
+          checked={checked}
+          onChange={onChange}
+          disabled={disabled}
+          ariaLabel={copy("settings.account.anonymousMode")}
+        />
+      }
+    />
+  );
+}
+
+function PublicProfileDetails({ visible, github }) {
   return (
     <AnimatePresence initial={false}>
       {visible ? (
@@ -131,7 +156,7 @@ function PublicProfileDetails({ visible, name, github }) {
           style={{ overflow: "hidden" }}
           className="divide-y divide-oai-gray-200/60 dark:divide-oai-gray-800/60"
         >
-          <PublicProfileFields name={name} github={github} />
+          <PublicProfileFields github={github} />
         </motion.div>
       ) : null}
     </AnimatePresence>

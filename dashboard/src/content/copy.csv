@@ -564,7 +564,11 @@ settings.appearance.currency.rate_source.default,ui,SettingsPage,SettingsPage,ra
 settings.appearance.currency.rate_source.fetched,ui,SettingsPage,SettingsPage,rate_source_fetched,"Source: open.er-api.com",,active
 settings.appearance.currency.rate_updated,ui,SettingsPage,SettingsPage,rate_updated,"updated {{when}}",,active
 settings.appearance.currency.rate_never,ui,SettingsPage,SettingsPage,rate_never,"awaiting first refresh",,active
-settings.account.displayName,ui,SettingsPage,SettingsPage,display_name,"Display name",,active
+settings.account.displayName,ui,SettingsPage,SettingsPage,display_name,"Nickname (display name)",,active
+settings.account.anonymousMode,ui,SettingsPage,SettingsPage,anonymous_mode,"Anonymous mode",,active
+settings.account.anonymousModeHint,ui,SettingsPage,SettingsPage,anonymous_mode_hint,"Hide your name and avatar on the public leaderboard.",,active
+settings.account.displayNameSaveFailed,ui,SettingsPage,SettingsPage,display_name_save_failed,"Could not save your display name. Please try again.",,active
+settings.account.profileLoadFailed,ui,SettingsPage,SettingsPage,profile_load_failed,"Could not load profile settings. Refresh and try again.",,active
 settings.account.edit,ui,SettingsPage,SettingsPage,edit,"Edit",,active
 settings.account.save,ui,SettingsPage,SettingsPage,save,"Save",,active
 settings.account.saving,ui,SettingsPage,SettingsPage,saving,"Saving...",,active
@@ -577,8 +581,6 @@ settings.account.cloudSync,ui,SettingsPage,SettingsPage,cloud_sync,"Cloud sync",
 settings.account.cloudSyncHint,ui,SettingsPage,SettingsPage,cloud_sync_hint,"Upload local usage to your TokenOrbit cloud account.",,active
 settings.account.publicProfile,ui,SettingsPage,SettingsPage,public_profile,"Public profile",,active
 settings.account.publicProfileHint,ui,SettingsPage,SettingsPage,public_profile_hint,"Show your usage on the public leaderboard.",,active
-settings.account.displayNameAnonymousHint,ui,SettingsPage,SettingsPage,display_name_anon_hint,"Anonymous — your name and avatar are hidden on the leaderboard",,active
-settings.account.displayNameDisabledWhileAnon,ui,SettingsPage,SettingsPage,display_name_disabled,"Turn on the switch first to edit your name",,active
 settings.account.githubUrl,ui,SettingsPage,SettingsPage,github_url,"GitHub profile",,active
 settings.account.githubUrlHint,ui,SettingsPage,SettingsPage,github_url_hint,"Show a GitHub link next to your name on the leaderboard.",,active
 settings.account.githubUrlPlaceholder,ui,SettingsPage,SettingsPage,github_url_placeholder,"username or https://github.com/username",,active
@@ -1785,6 +1787,7 @@ communities.rank_unavailable,dashboard,CommunityPages,CommunityPages,rank_unavai
 communities.refreshing,dashboard,CommunityPages,CommunityPages,refreshing,"Updating…",,active
 communities.rank_members,dashboard,CommunityPages,CommunityPages,rank_members,"{{count}} members",,active
 communities.rank_sync_hint,dashboard,CommunityPages,CommunityPages,rank_sync_hint,"Community rankings use usage already synced to the cloud. Enable cloud sync in Settings to include your latest usage.",,active
+communities.rank_breakdown_unavailable,dashboard,CommunityPages,CommunityLeaderboardPage,rank_breakdown_unavailable,"Tool breakdown is not available from this backend yet. Total tokens and ranks are unchanged.",,active
 communities.created_notice,dashboard,CommunityPages,CommunityPages,created_notice,"Community created.",,active
 communities.joined_notice,dashboard,CommunityPages,CommunityPages,joined_notice,"Joined community.",,active
 communities.memberships,dashboard,CommunityPages,CommunityPages,memberships,"Manage communities",,active
