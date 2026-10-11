@@ -19,6 +19,25 @@ source hashes. The platform migration runner supplies the transaction; do not
 execute individual source files against a project. Foundation must already be
 present. Reapplying this migration fails rather than overwriting existing objects.
 
+The later additive source-breakdown release has its own generator:
+
+```sh
+node backend/community/build-source-breakdown-migration.mjs
+node backend/community/build-source-breakdown-migration.mjs --check
+node backend/community/validate-source-breakdown.mjs
+```
+
+It writes `backend/deploy/migrations/20261011000000_community-leaderboard-source-breakdown.sql`
+and a local rollback companion at
+`backend/community/source-breakdown/rollback-generated.sql`. The original v1
+source and generator remain the historical baseline. Apply the new migration
+after v1; it keeps the existing RPC signature and adds decimal-string provider
+totals to each `rows` entry and `me`. The existing Edge handler already relays
+the JSONB value, so no Edge redeployment is required. If rolling back after a
+client begins reading these fields, revert that client first, then apply the
+generated rollback SQL through the controlled database change process. The
+rollback companion must never be copied into the automatic migrations directory.
+
 Tests use the existing isolated PostgreSQL 15.18 runtime and foundation fixture.
 The runtime's additional-connection factory is test-only; it cannot accept an
 external database URL. No test reads `.insforge`, dotenv, or platform credentials.
@@ -121,7 +140,13 @@ the unchanged `leaderboard_usage_grouped(from,to)` inside PostgreSQL, filters th
 current members, sums per-user tokens, fills zeros, computes `dense_rank` by tokens
 alone, orders ties by UUID, then paginates. Historical usage before joining counts.
 Token sums are returned as decimal strings, including values beyond JavaScript's
-safe integer range. No token data is copied and no community snapshots are stored.
+safe integer range. Source totals follow the Foundation Edge's source mapping and
+are also decimal strings: `gpt_tokens`, `claude_tokens`, `gemini_tokens`,
+`cursor_tokens`, `kiro_tokens`, `copilot_tokens`, `kimi_tokens`, `opencode_tokens`,
+`openclaw_tokens`, `hermes_tokens`, and `other_tokens`. Attribution uses only the
+`source` field; unrecognized sources go to `other_tokens`, and the source totals
+sum exactly to `total_tokens`. No token data is copied and no community snapshots
+are stored.
 
 Periods match the existing MVP global UTC calendar ranges: Monday–Sunday week,
 calendar month, and epoch through today's end for total. The `to_exclusive` bound

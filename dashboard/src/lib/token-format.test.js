@@ -22,6 +22,18 @@ function createStorage(initial = {}) {
 }
 
 describe("token number formatting", () => {
+  it("rounds decimal-string aggregates without a lossy Number conversion", () => {
+    const huge = "9007199254740993500000000000";
+    expect(formatTokenCount(huge)).toBe("9007199254740993.5T");
+    expect(formatTokenCount(huge, { unitSystem: TOKEN_UNIT_SYSTEMS.CHINESE })).toBe("9007199254740993.5万亿");
+    expect(formatTokenTooltip(huge)).toContain(new Intl.NumberFormat().format(BigInt(huge)));
+    expect(formatTokenCount(huge, { mode: TOKEN_FORMAT_MODES.FULL })).toBe(new Intl.NumberFormat().format(BigInt(huge)));
+    expect(formatTokenCount("999950")).toBe("1M");
+    expect(formatTokenCount("99999500", { unitSystem: TOKEN_UNIT_SYSTEMS.CHINESE })).toBe("1亿");
+    expect(formatTokenCount("0")).toBe("0");
+    expect(formatTokenCount("-12345")).toBe("-12.3K");
+    expect(formatTokenCount("9".repeat(320))).not.toBe("-");
+  });
   it("uses compact K/M/B/T output by default", () => {
     expect(formatTokenCount(12_345)).toBe("12.3K");
     expect(formatTokenCount(12_345_678)).toBe("12.3M");

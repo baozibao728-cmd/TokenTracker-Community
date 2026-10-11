@@ -463,6 +463,7 @@
   "communities.refreshing": "更新中…",
   "communities.rank_members": "{{count}} 人のメンバー",
   "communities.rank_sync_hint": "コミュニティランキングには、クラウドに同期済みの使用量が反映されます。最新の使用量を含めるには、設定でクラウド同期を有効にしてください。",
+  "communities.rank_breakdown_unavailable": "このバックエンドではツール別の内訳をまだ取得できません。合計トークン数と順位は変わりません。",
   "communities.created_notice": "コミュニティを作成しました。",
   "communities.joined_notice": "コミュニティに参加しました。",
   "communities.memberships": "コミュニティを管理",

@@ -67,8 +67,11 @@ describe("Community Edge transport", () => {
     await expect(api.getCommunities({ accessToken: token })).rejects.toMatchObject({ code: "UNAUTHORIZED", status: 401 });
   });
   it("keeps decimal Token strings intact and never retries a failed POST", async () => {
-    fetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ ok: true, rows: [{ total_tokens: "9007199254740993" }] }) });
-    expect((await api.getCommunityLeaderboard({ accessToken: token, communityId: "c", period: "total" })).rows[0].total_tokens).toBe("9007199254740993");
+    const row = { total_tokens: "9007199254740993", gpt_tokens: "9007199254740992", other_tokens: "1" };
+    fetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ ok: true, rows: [row], me: row }) });
+    const response = await api.getCommunityLeaderboard({ accessToken: token, communityId: "c", period: "total" });
+    expect(response.rows[0]).toEqual(row);
+    expect(response.me).toEqual(response.rows[0]);
     fetch.mockRejectedValue(new Error("private network detail"));
     await expect(api.createCommunity({ accessToken: token, name: "Friends" })).rejects.toMatchObject({ code: "NETWORK_ERROR", message: "NETWORK_ERROR" });
     expect(fetch).toHaveBeenCalledTimes(2);

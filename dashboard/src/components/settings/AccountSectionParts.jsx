@@ -26,28 +26,47 @@ function InlineEditorActions({ disabled, onCancel, onSave, saveLabel = copy("set
   );
 }
 
-function EditNameControls({ nameInput, setEditingName, setNameInput, profileSaving, handleSaveName }) {
+function EditNameControls({
+  nameError,
+  nameInput,
+  onCancel,
+  setNameInput,
+  setNameError,
+  profileSaving,
+  handleSaveName,
+}) {
   return (
-    <div className="mt-2 flex items-center gap-2">
-      <input
-        type="text"
-        value={nameInput}
-        onChange={(e) => setNameInput(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") handleSaveName();
-          if (e.key === "Escape") setEditingName(false);
-        }}
-        maxLength={50}
-        autoFocus
-        className="flex-1 rounded-md border border-oai-gray-300 bg-transparent px-2.5 py-1.5 text-sm text-oai-black outline-none focus:border-oai-brand-500 focus:ring-1 focus:ring-inset focus:ring-oai-brand-500 dark:border-oai-gray-700 dark:text-white"
-        placeholder={copy("settings.account.displayName")}
-      />
-      <InlineEditorActions
-        disabled={profileSaving || !nameInput.trim()}
-        onCancel={() => setEditingName(false)}
-        onSave={handleSaveName}
-        saveLabel={profileSaving ? copy("settings.account.saving") : undefined}
-      />
+    <div className="mt-2">
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          value={nameInput}
+          onChange={(event) => {
+            setNameInput(event.target.value);
+            if (nameError) setNameError(null);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") handleSaveName();
+            if (event.key === "Escape") onCancel();
+          }}
+          aria-label={copy("settings.account.displayName")}
+          maxLength={50}
+          autoFocus
+          className="flex-1 rounded-md border border-oai-gray-300 bg-transparent px-2.5 py-1.5 text-sm text-oai-black outline-none focus:border-oai-brand-500 focus:ring-1 focus:ring-inset focus:ring-oai-brand-500 dark:border-oai-gray-700 dark:text-white"
+          placeholder={copy("settings.account.displayName")}
+        />
+        <InlineEditorActions
+          disabled={profileSaving || !nameInput.trim()}
+          onCancel={onCancel}
+          onSave={handleSaveName}
+          saveLabel={profileSaving ? copy("settings.account.saving") : undefined}
+        />
+      </div>
+      {nameError ? (
+        <div role="alert" className="mt-1.5 text-xs text-red-600 dark:text-red-400">
+          {nameError}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -134,47 +153,34 @@ function SettingsField({ actions, editing, editor, hint, label }) {
 }
 
 function DisplayNameActions({ name }) {
-  const title = name.anonymousOn
-    ? copy("settings.account.displayNameDisabledWhileAnon")
-    : undefined;
-
   return (
     <div className="flex shrink-0 items-center gap-2">
       <EditButton
-        disabled={name.anonymousOn}
+        disabled={name.profileLoading || name.profileSaving}
         label={copy("settings.account.edit")}
         onClick={name.startEditingName}
-        title={title}
-      />
-      <ToggleSwitch
-        checked={!name.anonymousOn}
-        onChange={name.handleAnonymousToggle}
-        disabled={name.profileLoading || name.profileSaving}
-        ariaLabel={copy("settings.account.displayName")}
       />
     </div>
   );
 }
 
-function DisplayNameField({ name }) {
+export function DisplayNameField({ name }) {
   const {
-    anonymousOn,
     customDisplayName,
     displayName,
     editingName,
-    handleAnonymousToggle,
     handleSaveName,
+    handleCancelNameEdit,
     nameInput,
+    nameError,
     profileLoading,
     profileSaving,
-    setEditingName,
+    setNameError,
     setNameInput,
     startEditingName,
   } = name;
 
-  const displayValue = anonymousOn
-    ? copy("settings.account.displayNameAnonymousHint")
-    : (customDisplayName || displayName);
+  const displayValue = customDisplayName || displayName;
 
   return (
     <SettingsField
@@ -183,8 +189,10 @@ function DisplayNameField({ name }) {
       hint={displayValue}
       editor={
         <EditNameControls
+          nameError={nameError}
           nameInput={nameInput}
-          setEditingName={setEditingName}
+          onCancel={handleCancelNameEdit}
+          setNameError={setNameError}
           setNameInput={setNameInput}
           profileSaving={profileSaving}
           handleSaveName={handleSaveName}
@@ -265,11 +273,8 @@ export function SignedOutAccountSection() {
   );
 }
 
-export function PublicProfileFields({ name, github }) {
+export function PublicProfileFields({ github }) {
   return (
-    <>
-      <DisplayNameField name={name} />
-      <GithubProfileField github={github} />
-    </>
+    <GithubProfileField github={github} />
   );
 }

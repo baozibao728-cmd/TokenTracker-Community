@@ -86,7 +86,7 @@ Returns `ok`, `community_id`, `period`, `from_day`, `to_day`, `from`,
 Rows and independent `me` have the shape:
 
 ```json
-{"user_id":"<member UUID>","total_tokens":"130","rank":1,"display_name":"Member","avatar_url":null}
+{"user_id":"<member UUID>","total_tokens":"130","gpt_tokens":"10","claude_tokens":"20","gemini_tokens":"0","cursor_tokens":"0","kiro_tokens":"0","copilot_tokens":"0","kimi_tokens":"0","opencode_tokens":"0","openclaw_tokens":"0","hermes_tokens":"0","other_tokens":"100","rank":1,"display_name":"Member","avatar_url":null}
 ```
 
 Token totals are exact decimal strings. All current members, including zero-token
@@ -95,6 +95,9 @@ tokens alone; ties are displayed in UUID order. Manual exclusions come only from
 the server's environment and are applied before ranking. An excluded requester's
 `me` is null. No automatic anticheat is implemented:
 `basis=client_reported_tokens`, `automatic_anticheat=false`.
+Provider fields classify by `source` using the Foundation leaderboard mapping;
+unknown sources count as `other_tokens` regardless of model name. The eleven
+provider totals sum exactly to `total_tokens`.
 
 ## Environment and server credentials
 

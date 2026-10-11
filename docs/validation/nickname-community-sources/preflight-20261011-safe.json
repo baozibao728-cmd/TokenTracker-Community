@@ -1,0 +1,403 @@
+{
+  "captureStartedAt": "2026-10-11T08:15:50.586Z",
+  "capturedAt": "2026-10-11T08:16:30.534Z",
+  "readOnlyPreflight": "PASS",
+  "projectId": "a6ae494f-4e08-40b5-8985-fd69581d0409",
+  "baseUrl": "https://tc79bxhm.ap-southeast.insforge.app",
+  "identityEvidence": "Strict existing link project ID/base URL guard; all reads restricted to that host. The hosted metadata does not expose a project ID.",
+  "reviewedProductSource": "b1c53c7469255d26d590a6bb5359db6168b6369c",
+  "reviewedReportHead": "0d860aab5a61287f12e514b99ad7acc65b7f8499",
+  "artifactId": "11695862640",
+  "fingerprintMethod": "SHA-256 of UTF-8 JSON array of PostgreSQL to_jsonb(row)::text strings sorted with COLLATE C; aggregate over sorted safe per-scope records; no row content persisted",
+  "snapshotBoundary": "Sequential read interval, not one atomic database snapshot. Capture a fresh immutable same-scope baseline immediately before any authorized change.",
+  "migrationInventory": [
+    {
+      "version": "20260930000000",
+      "name": "tokentracker-mvp-bootstrap",
+      "statementsSha256": "62b7b840dd458be9e3a03b37fad5d0f6f9574ed0af7f5c7a64100637f44e7e67"
+    },
+    {
+      "version": "20261001000000",
+      "name": "community-leaderboard-v1",
+      "statementsSha256": "814203822e8d69f5c92e167bc26219ed5c8614a6cad9bc8a1a89857cd52876c8"
+    }
+  ],
+  "newMigrationAbsent": true,
+  "migrationInventoryMatchesHistorical": true,
+  "rpc": {
+    "signature": "community_leaderboard(uuid,uuid,text,integer,integer,uuid[],timestamp with time zone)",
+    "identityArguments": "p_actor uuid, p_community_id uuid, p_period text, p_limit integer, p_offset integer, p_excluded_user_ids uuid[], p_as_of timestamp with time zone",
+    "arguments": "p_actor uuid, p_community_id uuid, p_period text, p_limit integer DEFAULT 50, p_offset integer DEFAULT 0, p_excluded_user_ids uuid[] DEFAULT ARRAY[]::uuid[], p_as_of timestamp with time zone DEFAULT now()",
+    "result": "jsonb",
+    "owner": "project_admin",
+    "acl": "{project_admin=X/project_admin}",
+    "config": [
+      "search_path=pg_catalog, public, pg_temp",
+      "TimeZone=UTC"
+    ],
+    "securityDefiner": false,
+    "volatility": "s",
+    "parallel": "u",
+    "language": "plpgsql",
+    "bodySha256": "3de7bdebc4c5bc8f005985f7d1de70f8b594c5341d24b4d3901d89018d43be79",
+    "definitionSha256": "e195b0add53ad1bf5f394945e2d15f19957c5e5ef745dea8fbf8f432f140301b",
+    "historicalBodySha256": "3de7bdebc4c5bc8f005985f7d1de70f8b594c5341d24b4d3901d89018d43be79",
+    "bodyMatchesHistorical": true,
+    "contractMatchesHistorical": true
+  },
+  "manifestFiles": [
+    {
+      "file": "backend/edge/manifest.json",
+      "gitBlobSha256": "e59a701eca8d5a727b848f1e34e69d86b2ba8b059ff9f2a0e4e7053cbb6ec5c8"
+    },
+    {
+      "file": "backend/community/manifest.json",
+      "gitBlobSha256": "cfc03d7fd8537d84e9a962a7d62f86e3f4602ce2f9db1cd2d72e3f1a63ffea90"
+    }
+  ],
+  "edges": [
+    {
+      "name": "tokentracker-accept-community-transfer",
+      "status": "active",
+      "cloudSha256": "5f2961d65218e591307a1ccc60f4822a144672b581210ce7706c58cfa29cbfad",
+      "manifestSha256": "5f2961d65218e591307a1ccc60f4822a144672b581210ce7706c58cfa29cbfad",
+      "committedEntrySha256": "5f2961d65218e591307a1ccc60f4822a144672b581210ce7706c58cfa29cbfad",
+      "matches": true
+    },
+    {
+      "name": "tokentracker-account-daily",
+      "status": "active",
+      "cloudSha256": "ea8e3c59efd39352efd4df72e0abd9539dd32fb5850dec3448b2ca5b398fa4f9",
+      "manifestSha256": "ea8e3c59efd39352efd4df72e0abd9539dd32fb5850dec3448b2ca5b398fa4f9",
+      "committedEntrySha256": "ea8e3c59efd39352efd4df72e0abd9539dd32fb5850dec3448b2ca5b398fa4f9",
+      "matches": true
+    },
+    {
+      "name": "tokentracker-account-devices",
+      "status": "active",
+      "cloudSha256": "796f9089a1eb2073eaa3ac1068221264f815edf61c376d06694da32db620a378",
+      "manifestSha256": "796f9089a1eb2073eaa3ac1068221264f815edf61c376d06694da32db620a378",
+      "committedEntrySha256": "796f9089a1eb2073eaa3ac1068221264f815edf61c376d06694da32db620a378",
+      "matches": true
+    },
+    {
+      "name": "tokentracker-account-heatmap",
+      "status": "active",
+      "cloudSha256": "4466ae1bbd9a8834440aebbf5e2b1f5445d8ec2c7721095e2ed66c024fa6aa44",
+      "manifestSha256": "4466ae1bbd9a8834440aebbf5e2b1f5445d8ec2c7721095e2ed66c024fa6aa44",
+      "committedEntrySha256": "4466ae1bbd9a8834440aebbf5e2b1f5445d8ec2c7721095e2ed66c024fa6aa44",
+      "matches": true
+    },
+    {
+      "name": "tokentracker-account-hourly",
+      "status": "active",
+      "cloudSha256": "c9884ee1132498f36b56b2ceb915743977608ff1dbbf78c45ae4042a49cdebbe",
+      "manifestSha256": "c9884ee1132498f36b56b2ceb915743977608ff1dbbf78c45ae4042a49cdebbe",
+      "committedEntrySha256": "c9884ee1132498f36b56b2ceb915743977608ff1dbbf78c45ae4042a49cdebbe",
+      "matches": true
+    },
+    {
+      "name": "tokentracker-account-model-breakdown",
+      "status": "active",
+      "cloudSha256": "94134958d1298ef858b96b97a8cde639fc1386709a44e943b4efce82065fdf66",
+      "manifestSha256": "94134958d1298ef858b96b97a8cde639fc1386709a44e943b4efce82065fdf66",
+      "committedEntrySha256": "94134958d1298ef858b96b97a8cde639fc1386709a44e943b4efce82065fdf66",
+      "matches": true
+    },
+    {
+      "name": "tokentracker-account-monthly",
+      "status": "active",
+      "cloudSha256": "5cb67b0e38034c86c3e53f2bd6554d70dc1e894e2d0709bb7346ff38774f19c4",
+      "manifestSha256": "5cb67b0e38034c86c3e53f2bd6554d70dc1e894e2d0709bb7346ff38774f19c4",
+      "committedEntrySha256": "5cb67b0e38034c86c3e53f2bd6554d70dc1e894e2d0709bb7346ff38774f19c4",
+      "matches": true
+    },
+    {
+      "name": "tokentracker-account-summary",
+      "status": "active",
+      "cloudSha256": "d9701db9aeda4b3766c346314792bb738a603d269718cf757e5a969466b7e4d8",
+      "manifestSha256": "d9701db9aeda4b3766c346314792bb738a603d269718cf757e5a969466b7e4d8",
+      "committedEntrySha256": "d9701db9aeda4b3766c346314792bb738a603d269718cf757e5a969466b7e4d8",
+      "matches": true
+    },
+    {
+      "name": "tokentracker-community-detail",
+      "status": "active",
+      "cloudSha256": "f889591154a818484c3e3bbc388b8a21cff373ea27e001b7eefc513cacbeb395",
+      "manifestSha256": "f889591154a818484c3e3bbc388b8a21cff373ea27e001b7eefc513cacbeb395",
+      "committedEntrySha256": "f889591154a818484c3e3bbc388b8a21cff373ea27e001b7eefc513cacbeb395",
+      "matches": true
+    },
+    {
+      "name": "tokentracker-community-leaderboard",
+      "status": "active",
+      "cloudSha256": "8ef27e43689c2bb9caa1fdef303e71a03819c33462900f16114365d85a6598e9",
+      "manifestSha256": "8ef27e43689c2bb9caa1fdef303e71a03819c33462900f16114365d85a6598e9",
+      "committedEntrySha256": "8ef27e43689c2bb9caa1fdef303e71a03819c33462900f16114365d85a6598e9",
+      "matches": true
+    },
+    {
+      "name": "tokentracker-create-community",
+      "status": "active",
+      "cloudSha256": "9097213fc46bc5e61db2bb283e3e1a1fc7b5d771e805dad605c150eac1b0f39c",
+      "manifestSha256": "9097213fc46bc5e61db2bb283e3e1a1fc7b5d771e805dad605c150eac1b0f39c",
+      "committedEntrySha256": "9097213fc46bc5e61db2bb283e3e1a1fc7b5d771e805dad605c150eac1b0f39c",
+      "matches": true
+    },
+    {
+      "name": "tokentracker-create-community-transfer",
+      "status": "active",
+      "cloudSha256": "e377b7e80b6ecd2d63c795dfcad6be270499ccf8646b37aef6c649e6a09ddaaf",
+      "manifestSha256": "e377b7e80b6ecd2d63c795dfcad6be270499ccf8646b37aef6c649e6a09ddaaf",
+      "committedEntrySha256": "e377b7e80b6ecd2d63c795dfcad6be270499ccf8646b37aef6c649e6a09ddaaf",
+      "matches": true
+    },
+    {
+      "name": "tokentracker-delete-community",
+      "status": "active",
+      "cloudSha256": "46e4d579f950d46a98b88de43b84984585c0d99d7191af897441c8564d02a952",
+      "manifestSha256": "46e4d579f950d46a98b88de43b84984585c0d99d7191af897441c8564d02a952",
+      "committedEntrySha256": "46e4d579f950d46a98b88de43b84984585c0d99d7191af897441c8564d02a952",
+      "matches": true
+    },
+    {
+      "name": "tokentracker-device-token-issue",
+      "status": "active",
+      "cloudSha256": "b0386445843a3d6e4131f7a2a4768894f97834d47879dd6ece9e932495e6a5f2",
+      "manifestSha256": "b0386445843a3d6e4131f7a2a4768894f97834d47879dd6ece9e932495e6a5f2",
+      "committedEntrySha256": "b0386445843a3d6e4131f7a2a4768894f97834d47879dd6ece9e932495e6a5f2",
+      "matches": true
+    },
+    {
+      "name": "tokentracker-ingest",
+      "status": "active",
+      "cloudSha256": "60c8ba1c2da774bc60a9a74f021b64187be4fa3e7276f863e47ab6bebae21be6",
+      "manifestSha256": "60c8ba1c2da774bc60a9a74f021b64187be4fa3e7276f863e47ab6bebae21be6",
+      "committedEntrySha256": "60c8ba1c2da774bc60a9a74f021b64187be4fa3e7276f863e47ab6bebae21be6",
+      "matches": true
+    },
+    {
+      "name": "tokentracker-join-community",
+      "status": "active",
+      "cloudSha256": "f21462bc066765923dfd1781a6495d05bdb33cd3be838c2fa6993d793e72d907",
+      "manifestSha256": "f21462bc066765923dfd1781a6495d05bdb33cd3be838c2fa6993d793e72d907",
+      "committedEntrySha256": "f21462bc066765923dfd1781a6495d05bdb33cd3be838c2fa6993d793e72d907",
+      "matches": true
+    },
+    {
+      "name": "tokentracker-leaderboard",
+      "status": "active",
+      "cloudSha256": "5a0d2c26594cb1b562ddbcfc1ca335a9cbc0b8c12c617a74bc171aaf55aa51d6",
+      "manifestSha256": "5a0d2c26594cb1b562ddbcfc1ca335a9cbc0b8c12c617a74bc171aaf55aa51d6",
+      "committedEntrySha256": "5a0d2c26594cb1b562ddbcfc1ca335a9cbc0b8c12c617a74bc171aaf55aa51d6",
+      "matches": true
+    },
+    {
+      "name": "tokentracker-leaderboard-profile",
+      "status": "active",
+      "cloudSha256": "5d6061fde5f7fd610a460832b0ace7ef70c400401b476476ed18ffeef23cd47b",
+      "manifestSha256": "5d6061fde5f7fd610a460832b0ace7ef70c400401b476476ed18ffeef23cd47b",
+      "committedEntrySha256": "5d6061fde5f7fd610a460832b0ace7ef70c400401b476476ed18ffeef23cd47b",
+      "matches": true
+    },
+    {
+      "name": "tokentracker-leaderboard-refresh",
+      "status": "active",
+      "cloudSha256": "bdf5c33e726c3a7f2af464462563f80e9b0daae5e301e828fc809c1b0382759f",
+      "manifestSha256": "bdf5c33e726c3a7f2af464462563f80e9b0daae5e301e828fc809c1b0382759f",
+      "committedEntrySha256": "bdf5c33e726c3a7f2af464462563f80e9b0daae5e301e828fc809c1b0382759f",
+      "matches": true
+    },
+    {
+      "name": "tokentracker-leave-community",
+      "status": "active",
+      "cloudSha256": "9324f5fe750c0395a98e64c0cbb28f58ce23b364e35d841e9ecc9fea2a8004fd",
+      "manifestSha256": "9324f5fe750c0395a98e64c0cbb28f58ce23b364e35d841e9ecc9fea2a8004fd",
+      "committedEntrySha256": "9324f5fe750c0395a98e64c0cbb28f58ce23b364e35d841e9ecc9fea2a8004fd",
+      "matches": true
+    },
+    {
+      "name": "tokentracker-public-visibility",
+      "status": "active",
+      "cloudSha256": "2d072cdb4d79f5f7800d604343b43300423a0caa3881c2fbfb1a4d5125fe51df",
+      "manifestSha256": "2d072cdb4d79f5f7800d604343b43300423a0caa3881c2fbfb1a4d5125fe51df",
+      "committedEntrySha256": "2d072cdb4d79f5f7800d604343b43300423a0caa3881c2fbfb1a4d5125fe51df",
+      "matches": true
+    },
+    {
+      "name": "tokentracker-reject-community-transfer",
+      "status": "active",
+      "cloudSha256": "d2322f769ec999c0c93104f1c33f3ac65c03e7ab33c95dd2c9c6ce92b35d0097",
+      "manifestSha256": "d2322f769ec999c0c93104f1c33f3ac65c03e7ab33c95dd2c9c6ce92b35d0097",
+      "committedEntrySha256": "d2322f769ec999c0c93104f1c33f3ac65c03e7ab33c95dd2c9c6ce92b35d0097",
+      "matches": true
+    }
+  ],
+  "tableFingerprints": [
+    {
+      "table": "tokentracker_account_session_states",
+      "rowCount": "1",
+      "rowContentSha256": "dbe798a9b73303d0791b0634aa0833bf54c17b72de0ceed43a8de9d084d1f366",
+      "historicalRowCount": "1"
+    },
+    {
+      "table": "tokentracker_account_usage_cache",
+      "rowCount": "10",
+      "rowContentSha256": "57f2987495b32916f3220dc8bc994cd3f09a93911c9b0fac4c345dd95bdbda1f",
+      "historicalRowCount": "8"
+    },
+    {
+      "table": "tokentracker_device_machine",
+      "rowCount": "0",
+      "rowContentSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "historicalRowCount": "0"
+    },
+    {
+      "table": "tokentracker_device_tokens",
+      "rowCount": "2",
+      "rowContentSha256": "6e7db4d334d9cbfe5666ba50dfc24132dfa530ba8d7d7100c74b41ce7c4b7333",
+      "historicalRowCount": "2"
+    },
+    {
+      "table": "tokentracker_devices",
+      "rowCount": "1",
+      "rowContentSha256": "0604c810c5b2e20bbc3af2f484cf8049c6891f1028588a9989207cf8d8a62505",
+      "historicalRowCount": "1"
+    },
+    {
+      "table": "tokentracker_hourly",
+      "rowCount": "1",
+      "rowContentSha256": "901c5d4bd25dcdab192181fd60edc95f74d6f0e7aceb09726c4aec8266e311a6",
+      "historicalRowCount": "1"
+    },
+    {
+      "table": "tokentracker_leaderboard_refresh_state",
+      "rowCount": "3",
+      "rowContentSha256": "35f2762f3212d034a89e9d8962b550f0228944b7e31a49019c1de6c91512f2d2",
+      "historicalRowCount": "3"
+    },
+    {
+      "table": "tokentracker_leaderboard_rollup_daily_v2",
+      "rowCount": "1",
+      "rowContentSha256": "21f81958cead6dd2a6bd237153f08317d428068ebd1dc69e6ce4b2e525f71abe",
+      "historicalRowCount": "1"
+    },
+    {
+      "table": "tokentracker_leaderboard_rollup_meta_v2",
+      "rowCount": "1",
+      "rowContentSha256": "ab1ed5e54e087dfed8d3baf13608eda8411a82d10df68f319e75ddcb73706e9b",
+      "historicalRowCount": "1"
+    },
+    {
+      "table": "tokentracker_leaderboard_rollup_total_v2",
+      "rowCount": "1",
+      "rowContentSha256": "e400506b807609b845fbd2bb2f2af97150cc40dada762bb1f9496a15138dc39d",
+      "historicalRowCount": "1"
+    },
+    {
+      "table": "tokentracker_leaderboard_snapshots",
+      "rowCount": "3",
+      "rowContentSha256": "e4e49e6d706bcbb528b49311eeb24566dad66fd2958fc6ce025a73711c679689",
+      "historicalRowCount": "3"
+    },
+    {
+      "table": "tokentracker_user_settings",
+      "rowCount": "1",
+      "rowContentSha256": "fb0c5d3914fb3698494fe11db092980f8f514c21376eedf932673bf804a4f52e",
+      "historicalRowCount": "1"
+    }
+  ],
+  "foundationAggregateSha256": "5ac5d6fc78911a5aa4cbb3f27f99590d39e81c0fb9ac7fae41e648b367d3a97e",
+  "schemaFingerprints": [
+    {
+      "scope": "columns",
+      "rowCount": 109,
+      "sha256": "ca1fb286c68acc098f50440b0977f0d7fe1530ebe71aeea66a2fe59cfb56d4e4"
+    },
+    {
+      "scope": "constraints",
+      "rowCount": 37,
+      "sha256": "640c05a3f390d1c147ec1c209a7b0f60ff3b187b77648fac3a2a6bc5e5defea5"
+    },
+    {
+      "scope": "defaults",
+      "rowCount": 6,
+      "sha256": "fa38a1499c42638a0bcc4ec17f55ca1c66b659de68a8dc7381ffe2e0f1543a61"
+    },
+    {
+      "scope": "functions",
+      "rowCount": 21,
+      "sha256": "2fbba62fe929b39ae973f673d136b474d4dbfa1d19f35c6a8be30d4993a125ec"
+    },
+    {
+      "scope": "indexes",
+      "rowCount": 23,
+      "sha256": "48e197c0ddab7e86a2dd2edfd9d4f87e511a77960dbcfc099bcf2d1144aeaf25"
+    },
+    {
+      "scope": "namespace",
+      "rowCount": 2,
+      "sha256": "c6d1d806779c88f7270213c701ad6ef29b938e1588141f820768b9e133159976"
+    },
+    {
+      "scope": "policies",
+      "rowCount": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "scope": "relations",
+      "rowCount": 13,
+      "sha256": "d6d727d77f92741ee439d89be8c9e904186c24fbc61a436cd419bb4d9e8220fa"
+    },
+    {
+      "scope": "roles",
+      "rowCount": 3,
+      "sha256": "68ac138bd39cd8426d664d06c84f3fe91206673152420e1d734bdc6ce8508a34"
+    },
+    {
+      "scope": "triggers",
+      "rowCount": 4,
+      "sha256": "3faef1f2f92f2a5daff32603f58108581eec34f8ab1f19e6aa27e15943d0061e"
+    },
+    {
+      "scope": "views",
+      "rowCount": 1,
+      "sha256": "4169ee8c670db554cb4503ad5074fee4b468c5d2ff1cb5d08dcc30de42babae7"
+    }
+  ],
+  "schemaAggregateSha256": "3138ac46013d340ee7843b6873ae37156307176e2fbf20eda3b6e643d6695916",
+  "business": {
+    "auth_users": "2",
+    "user_a": "1",
+    "user_b": "1",
+    "communities": "0",
+    "community_members": "0",
+    "community_transfer_requests": "0",
+    "hourly_rows": "1",
+    "total_tokens": "130"
+  },
+  "sourceAttribution": [
+    {
+      "source": "trae-cn",
+      "row_count": "1",
+      "total_tokens": "130",
+      "communityField": "other_tokens"
+    }
+  ],
+  "historicalComparison": "RPC body and contract, migration version/name inventory, Edge source/status compared directly. Historical row-content/schema hashes use an unspecified different serialization and are not claimed equal; this is a new immutable baseline.",
+  "validatorHistory": {
+    "initialResult": "FAIL: raw Windows CRLF working-copy bytes were compared directly with LF manifest bytes; immutable initial record retained",
+    "correction": "Compare unchanged cloud raw bytes to manifest and fixed-source Git blob. Normalize working-copy CRLF separately. All 22 match; no cloud change or read repeat.",
+    "originalBaselineFileSha256": "06f4f8a0796c706f4605183bfa529acf491462a917afecdd775bb04eb0840ad6",
+    "correctedLocalByteValidation": true
+  },
+  "operationsNotExecuted": [
+    "migration",
+    "Edge deployment",
+    "client installation/start",
+    "real nickname/privacy save",
+    "Community create/join/delete",
+    "Token ingest",
+    "credential or cloud configuration change"
+  ]
+}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useInsforgeAuth } from "../../contexts/InsforgeAuthContext.jsx";
 import { resolveAuthAccessTokenWithRetry } from "../../lib/auth-token";
 import { getPublicVisibility, setPublicVisibility } from "../../lib/api";
@@ -35,14 +35,16 @@ function useCloudSyncControl(getAccessToken, enabled, signedIn) {
 }
 
 function useProfileState(user) {
-  const [publicProfileOn, setPublicProfileOn] = useState(false);
-  const [anonymousOn, setAnonymousOn] = useState(false);
+  const [publicProfileOn, setPublicProfileOn] = useState(null);
+  const [anonymousOn, setAnonymousOn] = useState(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileSaving, setProfileSaving] = useState(false);
+  const [profileLoadFailed, setProfileLoadFailed] = useState(false);
   const [customDisplayName, setCustomDisplayName] = useState(null);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
-  const [showGithubOn, setShowGithubOn] = useState(false);
+  const [nameError, setNameError] = useState(null);
+  const [showGithubOn, setShowGithubOn] = useState(null);
   const [githubUrl, setGithubUrl] = useState("");
   const [githubInput, setGithubInput] = useState("");
   const [editingGithub, setEditingGithub] = useState(false);
@@ -53,8 +55,16 @@ function useProfileState(user) {
   const loadSetters = useMemo(() => ({
     setAnonymousOn,
     setCustomDisplayName,
+    setEditingGithub,
+    setEditingName,
     setGithubUrl,
+    setGithubError,
+    setGithubInput,
+    setNameError,
+    setNameInput,
     setProfileLoading,
+    setProfileLoadFailed,
+    setProfileSaving,
     setPublicProfileOn,
     setShowGithubOn,
   }), []);
@@ -71,7 +81,9 @@ function useProfileState(user) {
     githubUrl,
     loadSetters,
     nameInput,
+    nameError,
     profileLoading,
+    profileLoadFailed,
     profileSaving,
     publicProfileOn,
     setAnonymousOn,
@@ -82,6 +94,7 @@ function useProfileState(user) {
     setGithubInput,
     setGithubUrl,
     setNameInput,
+    setNameError,
     setProfileLoading,
     setProfileSaving,
     setPublicProfileOn,
@@ -91,24 +104,57 @@ function useProfileState(user) {
   };
 }
 
-function useProfileLoad(getAccessToken, signedIn, state) {
+function useProfileLoad(getAccessToken, signedIn, state, sessionEpoch) {
   useEffect(() => {
-    if (!signedIn) return undefined;
+    if (!signedIn) {
+      state.setProfileLoading(false);
+      state.setProfileSaving(false);
+      state.setPublicProfileOn(null);
+      state.setAnonymousOn(null);
+      state.setProfileLoadFailed(false);
+      state.setEditingName(false);
+      state.setNameInput("");
+      state.setNameError(null);
+      state.setEditingGithub(false);
+      state.setGithubInput("");
+      state.setGithubError(null);
+      return undefined;
+    }
     let active = true;
     state.setProfileLoading(true);
+    state.setProfileSaving(false);
+    state.setProfileLoadFailed(false);
+    state.setPublicProfileOn(null);
+    state.setAnonymousOn(null);
+    state.setCustomDisplayName(null);
+    state.setShowGithubOn(null);
+    state.setGithubUrl("");
+    state.setEditingName(false);
+    state.setNameInput("");
+    state.setNameError(null);
+    state.setEditingGithub(false);
+    state.setGithubInput("");
+    state.setGithubError(null);
     (async () => {
       try {
         const token = await resolveAuthAccessTokenWithRetry({ getAccessToken });
-        if (!active || !token) return;
+        if (!active) return;
+        if (!token) {
+          state.setProfileLoadFailed(true);
+          return;
+        }
         const data = await getPublicVisibility({ accessToken: token });
         if (!active) return;
         state.setPublicProfileOn(Boolean(data?.enabled));
         state.setAnonymousOn(Boolean(data?.anonymous));
-        if (data?.display_name) state.setCustomDisplayName(data.display_name);
+        state.setCustomDisplayName(data?.display_name || null);
         state.setShowGithubOn(Boolean(data?.show_github_url));
         state.setGithubUrl(data?.github_url || "");
       } catch (error) {
-        warnSettingsAction("load public profile", error);
+        if (active) {
+          state.setProfileLoadFailed(true);
+          warnSettingsAction("load public profile", error);
+        }
       } finally {
         if (active) state.setProfileLoading(false);
       }
@@ -116,27 +162,34 @@ function useProfileLoad(getAccessToken, signedIn, state) {
     return () => {
       active = false;
     };
-  }, [getAccessToken, signedIn, state]);
+  }, [getAccessToken, signedIn, sessionEpoch, state]);
 }
 
-function useProfileMutation(getAccessToken, state) {
+function useProfileMutation(getAccessToken, state, sessionEpoch) {
+  const currentSessionEpoch = useRef(sessionEpoch);
+  currentSessionEpoch.current = sessionEpoch;
+
   return useCallback(async (payload, { label, onError, onSuccess } = {}) => {
     if (state.profileSaving) return false;
+    const requestSessionEpoch = sessionEpoch;
     state.setProfileSaving(true);
     try {
       const token = await resolveAuthAccessTokenWithRetry({ getAccessToken });
+      if (currentSessionEpoch.current !== requestSessionEpoch) return true;
       if (!token) return false;
       const response = await setPublicVisibility({ accessToken: token, ...payload });
+      if (currentSessionEpoch.current !== requestSessionEpoch) return true;
       onSuccess?.(response);
       return true;
     } catch (error) {
+      if (currentSessionEpoch.current !== requestSessionEpoch) return true;
       if (onError) onError(error);
       else warnSettingsAction(label || "mutate profile", error);
       return false;
     } finally {
-      state.setProfileSaving(false);
+      if (currentSessionEpoch.current === requestSessionEpoch) state.setProfileSaving(false);
     }
-  }, [getAccessToken, state]);
+  }, [getAccessToken, sessionEpoch, state]);
 }
 
 function buildNameProps(state, actions) {
@@ -147,11 +200,14 @@ function buildNameProps(state, actions) {
     editingName: state.editingName,
     handleAnonymousToggle: actions.handleAnonymousToggle,
     handleSaveName: actions.handleSaveName,
+    handleCancelNameEdit: actions.handleCancelNameEdit,
     nameInput: state.nameInput,
+    nameError: state.nameError,
     profileLoading: state.profileLoading,
     profileSaving: state.profileSaving,
     setEditingName: state.setEditingName,
     setNameInput: state.setNameInput,
+    setNameError: state.setNameError,
     startEditingName: actions.startEditingName,
   };
 }
@@ -197,27 +253,38 @@ function useVisibilityActions(state, mutateProfile) {
 function useNameActions(state, mutateProfile, refreshDisplayName) {
   const handleSaveName = useCallback(async () => {
     const trimmed = state.nameInput.trim().slice(0, 50);
-    if (!trimmed) return;
-    await mutateProfile({ display_name: trimmed }, {
+    if (!trimmed || state.profileSaving) return;
+    state.setNameError(null);
+    const saved = await mutateProfile({ display_name: trimmed }, {
       label: "save display name",
-      onSuccess: () => {
-        state.setCustomDisplayName(trimmed);
+      onError: () => state.setNameError(copy("settings.account.displayNameSaveFailed")),
+      onSuccess: (response) => {
+        const confirmedName = typeof response?.display_name === "string" ? response.display_name : trimmed;
+        state.setCustomDisplayName(confirmedName);
         state.setEditingName(false);
+        state.setNameError(null);
         // Propagate to the shared auth-context displayName so the sidebar
         // avatar/name updates immediately, without a full page reload. The
         // leaderboard self-name comes from a server snapshot and updates on
         // its own refresh cadence.
-        refreshDisplayName?.();
+        refreshDisplayName?.(confirmedName);
       },
     });
+    if (!saved) state.setNameError(copy("settings.account.displayNameSaveFailed"));
   }, [mutateProfile, state, refreshDisplayName]);
 
   const startEditingName = useCallback(() => {
     state.setNameInput(state.customDisplayName || state.displayName);
+    state.setNameError(null);
     state.setEditingName(true);
   }, [state]);
 
-  return { handleSaveName, startEditingName };
+  const handleCancelNameEdit = useCallback(() => {
+    state.setNameError(null);
+    state.setEditingName(false);
+  }, [state]);
+
+  return { handleCancelNameEdit, handleSaveName, startEditingName };
 }
 
 function useGithubActions(state, mutateProfile) {
@@ -269,8 +336,8 @@ export function useAccountProfileSettings() {
   const auth = useInsforgeAuth();
   const state = useProfileState(auth.user);
   const cloudSync = useCloudSyncControl(auth.getAccessToken, auth.enabled, auth.signedIn);
-  useProfileLoad(auth.getAccessToken, auth.signedIn, state.loadSetters);
-  const mutateProfile = useProfileMutation(auth.getAccessToken, state);
+  useProfileLoad(auth.getAccessToken, auth.signedIn, state.loadSetters, auth.sessionEpoch);
+  const mutateProfile = useProfileMutation(auth.getAccessToken, state, auth.sessionEpoch);
   const visibilityActions = useVisibilityActions(state, mutateProfile);
   const nameActions = useNameActions(state, mutateProfile, auth.refreshDisplayName);
   const githubActions = useGithubActions(state, mutateProfile);
@@ -284,6 +351,7 @@ export function useAccountProfileSettings() {
     name: buildNameProps(state, { ...visibilityActions, ...nameActions }),
     github: buildGithubProps(state, githubActions),
     profileLoading: state.profileLoading,
+    profileLoadFailed: state.profileLoadFailed,
     profileSaving: state.profileSaving,
     publicProfileOn: state.publicProfileOn,
   };

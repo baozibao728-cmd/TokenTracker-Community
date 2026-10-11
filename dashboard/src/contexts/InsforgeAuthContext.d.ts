@@ -15,7 +15,8 @@ export interface InsforgeAuthValue {
   loading: boolean;
   displayName: string;
   refreshUser: () => Promise<void>;
-  refreshDisplayName: () => Promise<void>;
+  /** Supply a server-confirmed save result, or omit to read the current session's profile. */
+  refreshDisplayName: (confirmedName?: string) => Promise<void>;
   signInWithOAuth: (provider: string, redirectToOverride?: string) => Promise<any>;
   signInWithPassword: (request: any) => Promise<any>;
   signUp: (request: any) => Promise<any>;

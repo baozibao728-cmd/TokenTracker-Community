@@ -5,12 +5,18 @@ import { toDisplayNumber } from "../../lib/format";
 import { cn } from "../../lib/cn";
 import { useCommunityQuery } from "../../hooks/use-communities.js";
 import { useTokenFormat } from "../../hooks/useTokenFormat.js";
+import { useColumnOrder } from "../../hooks/use-column-order.js";
 import { LeaderboardAvatar } from "../LeaderboardAvatar.jsx";
 import { LeaderboardMeChip } from "../LeaderboardSummaryCard.jsx";
+import { LeaderboardProviderColumnHeader } from "../LeaderboardProviderColumnHeader.jsx";
+import { hasCommunitySourceBreakdown } from "../../lib/community-source-breakdown.js";
 import { Select } from "../../ui/components/Select.jsx";
-import { LB_STICKY_TH_RANK, LB_STICKY_TH_USER, lbStickyTdRank, lbStickyTdUser } from "../../lib/leaderboard-columns.js";
+import { LEADERBOARD_TOKEN_COLUMNS, LB_STICKY_TH_RANK, LB_STICKY_TH_USER, lbStickyTdRank, lbStickyTdUser } from "../../lib/leaderboard-columns.js";
 import { COMMUNITY_PAGE_SIZES } from "../../lib/community-leaderboard-navigation.js";
 import { CommunityAccessState, CommunityError, CommunityPagination, CommunityUpdating } from "./CommunityUI.jsx";
+
+const sourceColumnKeys = LEADERBOARD_TOKEN_COLUMNS.map(column => column.key);
+const sourceColumnsByKey = new Map(LEADERBOARD_TOKEN_COLUMNS.map(column => [column.key, column]));
 
 // A single board renderer for the unified leaderboard. Ranks and me are always
 // read from the Community Edge response, including dense ties and zero usage.
@@ -19,6 +25,8 @@ export function CommunityLeaderboard({ communityId, period, page, pageSize, onPa
   const loader = useCallback((accessToken, signal) => getCommunityLeaderboard({ accessToken, signal, communityId, period, limit: pageSize, offset }), [communityId, period, pageSize, offset]);
   const query = useCommunityQuery(["leaderboard", communityId, period, pageSize, offset], loader);
   const { formatTokens, formatTokensTooltip } = useTokenFormat();
+  const { order: columnOrder } = useColumnOrder(sourceColumnKeys);
+  const sourceColumns = columnOrder.map(key => sourceColumnsByKey.get(key)).filter(Boolean);
   const board = query.data;
   useEffect(() => {
     if (board && page > 1 && offset >= board.ranked_count) {
@@ -26,6 +34,9 @@ export function CommunityLeaderboard({ communityId, period, page, pageSize, onPa
     }
   }, [board, offset, page, pageSize, onPageChange]);
   if (!board) { return <CommunityAccessState query={query} />; }
+  const breakdownUnavailable = [...board.rows, ...(board.me ? [board.me] : [])].some(row => {
+    return !hasCommunitySourceBreakdown(row);
+  });
   return <section aria-label={copy("communities.leaderboard")} className="space-y-4">
     <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-oai-gray-500">
       <p>{copy("communities.date_range", { from: board.from_day, to: board.to_day })}</p>
@@ -37,27 +48,34 @@ export function CommunityLeaderboard({ communityId, period, page, pageSize, onPa
     </div>
     <CommunityUpdating query={query} />
     <CommunityError error={query.error} onRetry={query.reload} />
+    {breakdownUnavailable ? <p role="status" className="text-sm text-oai-gray-500">{copy("communities.rank_breakdown_unavailable")}</p> : null}
     <div className="overflow-hidden rounded-xl border border-oai-gray-200 bg-white dark:border-oai-gray-800 dark:bg-oai-gray-950">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
+        <table className="min-w-max w-full text-left text-sm">
           <caption className="sr-only">{copy("communities.leaderboard")}</caption>
           <thead className="border-b border-oai-gray-200 dark:border-oai-gray-800"><tr>
             <th scope="col" className={cn(LB_STICKY_TH_RANK, "text-[11px] font-semibold uppercase tracking-wider text-oai-gray-400")}>{copy("leaderboard.column.rank")}</th>
             <th scope="col" className={cn(LB_STICKY_TH_USER, "text-[11px] font-semibold uppercase tracking-wider text-oai-gray-400")}>{copy("leaderboard.column.user")}</th>
-            <th scope="col" className="px-3 py-4 text-right text-[11px] font-semibold uppercase tracking-wider text-oai-gray-400 sm:px-4">{copy("communities.tokens")}</th>
+            <th scope="col" className="whitespace-nowrap px-3 py-4 text-right text-[11px] font-semibold uppercase tracking-wider text-oai-gray-400 sm:px-4">{copy("leaderboard.column.total")}</th>
+            {sourceColumns.map(column => <th key={column.key} scope="col" data-column-key={column.key} className="whitespace-nowrap px-3 py-4 text-right text-[11px] font-semibold uppercase tracking-wider text-oai-gray-400 sm:px-4"><LeaderboardProviderColumnHeader iconSrc={column.icon} label={copy(column.copyKey)} /></th>)}
           </tr></thead>
           <tbody className="divide-y divide-oai-gray-100 dark:divide-oai-gray-800/50">
             {board.rows.map((row) => {
               const isMe = row.user_id === board.me?.user_id;
               const exact = toDisplayNumber(row.total_tokens);
               const formatted = formatTokens(row.total_tokens);
+              const hasBreakdown = hasCommunitySourceBreakdown(row);
               return <tr key={row.user_id} data-current-user={isMe || undefined} className={cn("group transition-colors", isMe ? "bg-oai-brand-50 dark:bg-oai-brand-900/10" : "hover:bg-oai-gray-50 dark:hover:bg-oai-gray-900/60")}>
                 <td className={cn(lbStickyTdRank(isMe), "font-medium tabular-nums", isMe ? "text-oai-brand-600 dark:text-oai-brand-400" : "text-oai-gray-500")}>{row.rank}</td>
                 <td className={lbStickyTdUser(isMe)}><div className="flex min-w-0 items-center gap-2"><LeaderboardAvatar avatarUrl={row.avatar_url} displayName={row.display_name} seed={row.user_id} /><span className={cn("truncate font-medium", isMe && "font-semibold")}>{row.display_name}</span>{isMe ? <span className="shrink-0 text-xs text-oai-gray-500">{copy("communities.you")}</span> : null}</div></td>
                 <td title={formatTokensTooltip(row.total_tokens)} className="whitespace-nowrap px-3 py-4 text-right font-semibold tabular-nums sm:px-4">{formatted}{formatted !== exact ? <span className="mt-1 block text-xs font-normal text-oai-gray-500">{exact}</span> : null}</td>
+                {sourceColumns.map(column => {
+                  const value = hasBreakdown ? row[column.key] : undefined;
+                  return <td key={column.key} data-column-key={column.key} title={formatTokensTooltip(value)} className="whitespace-nowrap px-3 py-4 text-right tabular-nums text-oai-gray-500 dark:text-oai-gray-400 sm:px-4">{formatTokens(value)}</td>;
+                })}
               </tr>;
             })}
-            {!board.rows.length ? <tr><td colSpan={3} className="px-6 py-12 text-center text-oai-gray-500">{copy("communities.rank_empty")}</td></tr> : null}
+            {!board.rows.length ? <tr><td colSpan={3 + LEADERBOARD_TOKEN_COLUMNS.length} className="px-6 py-12 text-center text-oai-gray-500">{copy("communities.rank_empty")}</td></tr> : null}
           </tbody>
         </table>
       </div>

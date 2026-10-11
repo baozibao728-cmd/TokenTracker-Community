@@ -1,0 +1,189 @@
+{
+  "claim": "Local component preview using synthetic fixtures; not cloud, native-app, or release-candidate runtime validation.",
+  "fixture": {
+    "displayName": "Casey Local",
+    "email": "casey.local@example.invalid",
+    "communityRows": [
+      "Local Atlas",
+      "Casey Local",
+      "Local Zero"
+    ]
+  },
+  "baseCommit": "5c78cf918ea165c5c054adca3a6d799d818289b0",
+  "workspaceHead": "3bdab4cf25ba4b793fe441b8402ea17b699f97a5",
+  "sourceCommit": "3bdab4cf25ba4b793fe441b8402ea17b699f97a5",
+  "workingTree": "product source files match committed source; evidence output generated after commit",
+  "networkPolicy": "Playwright permits file:, data:, and localhost static-preview requests only; all other requests are aborted and reported.",
+  "captures": [
+    {
+      "file": "after-community-desktop.png",
+      "source": "committed source at fixed sourceCommit",
+      "view": "community",
+      "viewport": {
+        "width": 1780,
+        "height": 1100
+      },
+      "tableColumnCount": 14,
+      "sampleOtherTokens": "350",
+      "zeroUsageTotal": "0",
+      "imageDimensions": {
+        "width": 1780,
+        "height": 1100
+      },
+      "imageBytes": 53350,
+      "imageSha256": "03114e29be80727e87b965bb552dbda4885e016e71a4d20110d9f1bf588e3fa3"
+    },
+    {
+      "file": "after-community-mobile-left.png",
+      "source": "committed source at fixed sourceCommit",
+      "view": "community",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "horizontalScroll": {
+        "clientWidth": 356,
+        "scrollWidth": 1276,
+        "scrollLeft": 0
+      },
+      "imageDimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "imageBytes": 35080,
+      "imageSha256": "d9099e95977fe079c59cd04cb0baf4432fcde018efc95c5ad3fe68d89c199772"
+    },
+    {
+      "file": "after-community-mobile-right.png",
+      "source": "committed source at fixed sourceCommit",
+      "view": "community",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "scrolledToRight": {
+        "text": "其他",
+        "scrollLeft": 920,
+        "fullyVisible": true
+      },
+      "imageDimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "imageBytes": 32870,
+      "imageSha256": "fa8bf77c07c3d3178912402c995cad8457639d3c448e32a574ca7d1ddc82a3e9"
+    },
+    {
+      "file": "before-account-desktop.png",
+      "source": "git archive at baseCommit",
+      "view": "account",
+      "viewport": {
+        "width": 1280,
+        "height": 980
+      },
+      "publicProfile": true,
+      "anonymous": true,
+      "displayNameVisibilityToggleChecked": false,
+      "displayNameEditDisabled": true,
+      "imageDimensions": {
+        "width": 1280,
+        "height": 980
+      },
+      "imageBytes": 32291,
+      "imageSha256": "8e336fe5fdbacb353ee4bc87f1e5471b9b504b36ad5928e73e889d7f3e8ecbb1"
+    },
+    {
+      "file": "before-community-desktop.png",
+      "source": "git archive at baseCommit",
+      "view": "community",
+      "viewport": {
+        "width": 1780,
+        "height": 1100
+      },
+      "tableColumnCount": 3,
+      "imageDimensions": {
+        "width": 1780,
+        "height": 1100
+      },
+      "imageBytes": 42514,
+      "imageSha256": "7d2582a1aa19469171bc705a140d82f261cec0d40357930c755b7ba2d216f450"
+    },
+    {
+      "file": "after-account-desktop.png",
+      "source": "committed source at fixed sourceCommit",
+      "view": "account",
+      "viewport": {
+        "width": 1280,
+        "height": 980
+      },
+      "publicProfile": false,
+      "anonymous": true,
+      "displayNameEditDisabled": false,
+      "imageDimensions": {
+        "width": 1280,
+        "height": 980
+      },
+      "imageBytes": 29769,
+      "imageSha256": "532836f0f555773cf285481edfd7ebfd36b3c06cc153187324c91075b0f1384c"
+    }
+  ],
+  "sourceDigests": {
+    "before": {
+      "account-section": "710a19749224b0e4a2c0a34012ba333bceb55457ad3c94125c1c62818e06f67b",
+      "account-parts": "deb5c78f17733fb16e7e6f3c9d3184575399295b7d13c8bbde598153e9e6ffc6",
+      "account-hook": "fc71d6ad602708bd402a2824676915cfe83cac9a65cfdc5e8ebe505f0713137f",
+      "community": "fd4acb067b698125fb2479c315b816fc10f05fb282923fbf519a9d17e753d8e9",
+      "columns": "351cf869753fa35c9b90d513c31503aee3878c47dcaddb0c5f93bc8a73e96636",
+      "columnOrder": "ff373780cca9d2da280f3ee46e377034a9b6f22e5e5aa8cea8211e91fd8035b9",
+      "tokenFormat": "df69eb83ae405428e1dd93a1be4e021fa03aa05dcab4b8d1a37db7f7ccdaf633",
+      "copy": "0de0ba00548eb54fb9ef2038583c32f81e603a9128c00a2ada47c589817a6b40"
+    },
+    "after": {
+      "account-section": "a39f3bf01d75416c6f8fc56aa0116623d4e92f166c3f60279f7e3eec2c1dcaae",
+      "account-parts": "0697981ee5170170486dff283605cecfa65246c56a850b1819bfe4fbe4ce2c40",
+      "account-hook": "ef08bff64d3dc211c3c79f9b400b09217b1194fa57630dafc572e779089c8f7e",
+      "community": "4a05107ea33cbd139f8db5853f3bac1b6c4a3b57ccf5deb7b300154e0b597a7a",
+      "columns": "351cf869753fa35c9b90d513c31503aee3878c47dcaddb0c5f93bc8a73e96636",
+      "sourceBreakdown": "4ff1e6480cc8fd78c435bf9e37bfd19421007144f6a93035875654136b5b2213",
+      "columnOrder": "ff373780cca9d2da280f3ee46e377034a9b6f22e5e5aa8cea8211e91fd8035b9",
+      "tokenFormat": "13ae609d90b258ca6b2ea2cd253db0dff5ebd0c6e4949b65f801ccf6397eae10",
+      "copy": "af26241752e39182ee165f3bfe19869d15bf31d326527e208636fdfc8d4c153f"
+    }
+  },
+  "blockedRequests": [],
+  "renderMethod": "esbuild bundle of actual React AccountSection and CommunityLeaderboard components plus actual styles; only auth/API/community-query integrations are stubbed with local synthetic fixtures",
+  "captureEnvironment": {
+    "browser": "headless Google Chrome via the existing Playwright package",
+    "networkGuard": {
+      "result": "passed",
+      "allowedRequests": [
+        "file:",
+        "data:",
+        "localhost static-preview only"
+      ],
+      "externalRequestsObserved": 0,
+      "blockedRequests": []
+    }
+  },
+  "sourceFiles": {
+    "actualComponents": [
+      "dashboard/src/components/settings/AccountSection.jsx",
+      "dashboard/src/components/settings/AccountSectionParts.jsx",
+      "dashboard/src/components/settings/useAccountProfileSettings.js",
+      "dashboard/src/components/community/CommunityLeaderboard.jsx"
+    ],
+    "dataFormatting": [
+      "dashboard/src/lib/leaderboard-columns.js",
+      "dashboard/src/lib/community-source-breakdown.js",
+      "dashboard/src/hooks/use-column-order.js",
+      "dashboard/src/lib/format.ts",
+      "dashboard/src/content/copy.csv"
+    ]
+  },
+  "commands": [
+    "node dashboard/.tmp/nickname-community-sources-sG6s4I/harness/build.mjs",
+    "node dashboard/.tmp/nickname-community-sources-sG6s4I/harness/capture.mjs --captures=community-after",
+    "node dashboard/.tmp/nickname-community-sources-sG6s4I/harness/capture.mjs --captures=before,account-after"
+  ],
+  "temporaryHarness": "Removed after capture; the recorded build/capture commands were executed before cleanup."
+}

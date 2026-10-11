@@ -777,6 +777,7 @@
   "communities.refreshing": "正在更新…",
   "communities.rank_members": "{{count}} 位成員",
   "communities.rank_sync_hint": "社群排名使用已同步至雲端的用量。需要納入最新用量時，請在設定中啟用雲端同步。",
+  "communities.rank_breakdown_unavailable": "目前後端尚未提供工具分項，Token 總量與排名仍依原有方式顯示。",
   "communities.created_notice": "社群已建立。",
   "communities.joined_notice": "已加入社群。",
   "communities.memberships": "管理社群",

@@ -11,6 +11,29 @@ export function toDisplayNumber(value: any) {
   }
 }
 
+// RPC aggregates travel as decimal strings. Round their displayed units with
+// integer arithmetic too: Number would lose precision before rounding or
+// overflow a valid PostgreSQL numeric. Exact tooltips still use toDisplayNumber.
+function formatIntegerUnits(value: any, decimals: number, units: { divisor: bigint; suffix: string }[]) {
+  if (typeof value !== "bigint" && (typeof value !== "string" || !/^-?\d+$/.test(value.trim()))) return null;
+  const n = BigInt(value);
+  const abs = n < 0n ? -n : n;
+  const sign = n < 0n ? "-" : "";
+  if (abs < units[0].divisor) return `${sign}${abs}`;
+  const places = Math.max(0, Math.min(6, Math.floor(decimals)));
+  const scale = 10n ** BigInt(places);
+  let index = units.length - 1;
+  while (index > 0 && abs < units[index].divisor) index--;
+  const rounded = (divisor: bigint) => (abs * scale + divisor / 2n) / divisor;
+  let amount = rounded(units[index].divisor);
+  if (index + 1 < units.length && amount >= units[index + 1].divisor / units[index].divisor * scale) {
+    index++;
+    amount = rounded(units[index].divisor);
+  }
+  const fraction = places ? (amount % scale).toString().padStart(places, "0").replace(/0+$/, "") : "";
+  return `${sign}${amount / scale}${fraction ? `.${fraction}` : ""}${units[index].suffix}`;
+}
+
 export function formatCompactNumber(
   value: any,
   {
@@ -27,6 +50,11 @@ export function formatCompactNumber(
     decimals?: number;
   } = {},
 ) {
+  const integer = formatIntegerUnits(value, decimals, [
+    { divisor: 1000n, suffix: thousandSuffix }, { divisor: 1000000n, suffix: millionSuffix },
+    { divisor: 1000000000n, suffix: billionSuffix }, { divisor: 10n ** 12n, suffix: trillionSuffix },
+  ]);
+  if (integer !== null) return integer;
   const n = Number(String(value));
   if (!Number.isFinite(n)) return "-";
   const sign = n < 0 ? "-" : "";
@@ -76,6 +104,11 @@ export function formatChineseNumber(
   value: any,
   { decimals = 1 }: { decimals?: number } = {},
 ) {
+  const integer = formatIntegerUnits(value, decimals, [
+    { divisor: 10000n, suffix: "万" }, { divisor: 100000000n, suffix: "亿" },
+    { divisor: 10n ** 12n, suffix: "万亿" },
+  ]);
+  if (integer !== null) return integer;
   const n = Number(String(value));
   if (!Number.isFinite(n)) return "-";
   const sign = n < 0 ? "-" : "";
